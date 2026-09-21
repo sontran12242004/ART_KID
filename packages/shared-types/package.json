@@ -1,0 +1,13 @@
+{
+  "name": "@artkids/shared-types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types, DTOs and schemas for ArtKids Monorepo",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["artkids", "shared", "types", "dto"],
+  "author": "ArtKids Team",
+  "license": "ISC"
+}

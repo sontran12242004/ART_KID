@@ -1,0 +1,13 @@
+{
+  "name": "@artkids/shared-configs",
+  "version": "1.0.0",
+  "description": "Shared ESLint, Prettier, and TypeScript configurations across ArtKids Monorepo",
+  "main": "index.js",
+  "files": [
+    "tsconfig.base.json",
+    "eslint.base.json"
+  ],
+  "keywords": ["artkids", "config", "eslint", "tsconfig"],
+  "author": "ArtKids Team",
+  "license": "ISC"
+}

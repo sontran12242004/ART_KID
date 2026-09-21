@@ -1,0 +1,10 @@
+{
+  "name": "@artkids/ui-kit",
+  "version": "1.0.0",
+  "description": "Shared UI Kit, Design System tokens, and reusable components for ArtKids Web Applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "keywords": ["artkids", "ui-kit", "design-system", "theme"],
+  "author": "ArtKids Team",
+  "license": "ISC"
+}

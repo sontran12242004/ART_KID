@@ -1,0 +1,14 @@
+{
+  "name": "@artkids/api-contracts",
+  "version": "1.0.0",
+  "description": "OpenAPI / Swagger specifications and API contract endpoints for all ArtKids services",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "openapi.yaml"
+  ],
+  "keywords": ["artkids", "openapi", "swagger", "api-contracts"],
+  "author": "ArtKids Team",
+  "license": "ISC"
+}
