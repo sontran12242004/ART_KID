@@ -1,6 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
-/// Cache offline: bài học đã tải, model AI đã generate
+/// Cache offline cho nội dung bài học và cài đặt cục bộ.
 class LocalStorageService {
   LocalStorageService(this._box);
   final Box<dynamic> _box;

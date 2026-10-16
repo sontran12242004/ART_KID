@@ -7,7 +7,6 @@ class ChildProgressReport extends Equatable {
     required this.totalArtworksCount,
     required this.totalBadgesCount,
     required this.learningMinutesThisWeek,
-    this.latestCreatures = const [],
   });
 
   final String childId;
@@ -15,15 +14,12 @@ class ChildProgressReport extends Equatable {
   final int totalArtworksCount;
   final int totalBadgesCount;
   final int learningMinutesThisWeek;
-  final List<String> latestCreatures;
-
   @override
   List<Object?> get props => [
-        childId,
-        completedLessonsCount,
-        totalArtworksCount,
-        totalBadgesCount,
-        learningMinutesThisWeek,
-        latestCreatures,
-      ];
+    childId,
+    completedLessonsCount,
+    totalArtworksCount,
+    totalBadgesCount,
+    learningMinutesThisWeek,
+  ];
 }

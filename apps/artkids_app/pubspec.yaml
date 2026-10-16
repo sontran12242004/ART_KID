@@ -29,12 +29,8 @@ dependencies:
   # Environment config
   flutter_dotenv: ^5.2.1
 
-  # Drawing canvas
-  flutter_painter: ^1.0.1
-
   # Animation & 3D
   rive: ^0.13.20
-  lottie: ^3.2.0
   model_viewer_plus: ^1.9.1
   confetti: ^0.7.0
 

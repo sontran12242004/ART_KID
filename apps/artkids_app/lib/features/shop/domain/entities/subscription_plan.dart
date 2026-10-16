@@ -9,7 +9,7 @@ class SubscriptionPlan extends Equatable {
     this.durationMonths = 1,
     this.features = const [
       'Toàn bộ video bài giảng theo độ tuổi',
-      'Không giới hạn AI sinh mô hình hoạt hình 2D/3D',
+      'Không giới hạn lượt nộp bài vẽ và nhận xét',
       'Bộ sưu tập huy hiệu & phòng trưng bày của bé',
     ],
     this.includesKit = false,
@@ -27,13 +27,13 @@ class SubscriptionPlan extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        priceMonthly,
-        priceVnd,
-        durationMonths,
-        features,
-        includesKit,
-        kitDeliveryIncluded,
-      ];
+    id,
+    name,
+    priceMonthly,
+    priceVnd,
+    durationMonths,
+    features,
+    includesKit,
+    kitDeliveryIncluded,
+  ];
 }

@@ -7,7 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 class _FakeDataSource implements ParentDashboardDataSource {
   @override
-  Future<List<CourseProgress>> getChildCoursesProgress(String childId) async => [];
+  Future<List<CourseProgress>> getChildCoursesProgress(String childId) async =>
+      [];
 
   @override
   Future<ChildProgressReport> getChildProgress(String childId) async {
@@ -20,7 +21,10 @@ class _FakeDataSource implements ParentDashboardDataSource {
   }
 
   @override
-  Future<void> updateKidPin({required String parentId, required String newPin}) async {}
+  Future<void> updateKidPin({
+    required String parentId,
+    required String newPin,
+  }) async {}
 }
 
 void main() {
@@ -71,15 +75,39 @@ void main() {
       expect(progress0.progressPercentageInt, 0);
     });
 
-    test('CourseProgressStatus.fromString nhận diện đúng tiếng Việt và enum name', () {
-      expect(CourseProgressStatus.fromString('Đang học'), CourseProgressStatus.inProgress);
-      expect(CourseProgressStatus.fromString('inProgress'), CourseProgressStatus.inProgress);
-      expect(CourseProgressStatus.fromString('Hoàn thành'), CourseProgressStatus.completed);
-      expect(CourseProgressStatus.fromString('completed'), CourseProgressStatus.completed);
-      expect(CourseProgressStatus.fromString('Chưa bắt đầu'), CourseProgressStatus.notStarted);
-      expect(CourseProgressStatus.fromString('notStarted'), CourseProgressStatus.notStarted);
-      expect(CourseProgressStatus.fromString(null), CourseProgressStatus.notStarted);
-    });
+    test(
+      'CourseProgressStatus.fromString nhận diện đúng tiếng Việt và enum name',
+      () {
+        expect(
+          CourseProgressStatus.fromString('Đang học'),
+          CourseProgressStatus.inProgress,
+        );
+        expect(
+          CourseProgressStatus.fromString('inProgress'),
+          CourseProgressStatus.inProgress,
+        );
+        expect(
+          CourseProgressStatus.fromString('Hoàn thành'),
+          CourseProgressStatus.completed,
+        );
+        expect(
+          CourseProgressStatus.fromString('completed'),
+          CourseProgressStatus.completed,
+        );
+        expect(
+          CourseProgressStatus.fromString('Chưa bắt đầu'),
+          CourseProgressStatus.notStarted,
+        );
+        expect(
+          CourseProgressStatus.fromString('notStarted'),
+          CourseProgressStatus.notStarted,
+        );
+        expect(
+          CourseProgressStatus.fromString(null),
+          CourseProgressStatus.notStarted,
+        );
+      },
+    );
 
     test('Chuyển đổi toJson và fromJson bảo toàn dữ liệu', () {
       final now = DateTime(2026, 9, 17, 8, 30);
@@ -118,48 +146,63 @@ void main() {
       expect(courses.length, 4);
 
       // Có đủ 3 trạng thái: inProgress, completed, notStarted
-      final hasInProgress = courses.any((c) => c.status == CourseProgressStatus.inProgress);
-      final hasCompleted = courses.any((c) => c.status == CourseProgressStatus.completed);
-      final hasNotStarted = courses.any((c) => c.status == CourseProgressStatus.notStarted);
+      final hasInProgress = courses.any(
+        (c) => c.status == CourseProgressStatus.inProgress,
+      );
+      final hasCompleted = courses.any(
+        (c) => c.status == CourseProgressStatus.completed,
+      );
+      final hasNotStarted = courses.any(
+        (c) => c.status == CourseProgressStatus.notStarted,
+      );
 
       expect(hasInProgress, isTrue);
       expect(hasCompleted, isTrue);
       expect(hasNotStarted, isTrue);
     });
 
-    test('Logic sắp xếp theo thời điểm học gần nhất và lấy top 3 khóa học', () async {
-      final courses = await repo.getChildCoursesProgress('child-1');
+    test(
+      'Logic sắp xếp theo thời điểm học gần nhất và lấy top 3 khóa học',
+      () async {
+        final courses = await repo.getChildCoursesProgress('child-1');
 
-      // Sắp xếp giảm dần theo lastLearnedAt (null nằm cuối)
-      final sortedCourses = List<CourseProgress>.from(courses)
-        ..sort((a, b) {
-          if (a.lastLearnedAt == null && b.lastLearnedAt == null) return 0;
-          if (a.lastLearnedAt == null) return 1;
-          if (b.lastLearnedAt == null) return -1;
-          return b.lastLearnedAt!.compareTo(a.lastLearnedAt!);
-        });
+        // Sắp xếp giảm dần theo lastLearnedAt (null nằm cuối)
+        final sortedCourses = List<CourseProgress>.from(courses)
+          ..sort((a, b) {
+            if (a.lastLearnedAt == null && b.lastLearnedAt == null) return 0;
+            if (a.lastLearnedAt == null) return 1;
+            if (b.lastLearnedAt == null) return -1;
+            return b.lastLearnedAt!.compareTo(a.lastLearnedAt!);
+          });
 
-      // Lấy 3 khóa học gần nhất
-      final top3 = sortedCourses.take(3).toList();
-      expect(top3.length, 3);
-      expect(sortedCourses.length > 3, isTrue);
+        // Lấy 3 khóa học gần nhất
+        final top3 = sortedCourses.take(3).toList();
+        expect(top3.length, 3);
+        expect(sortedCourses.length > 3, isTrue);
 
-      // Khóa học gần nhất phải có lastLearnedAt sau cùng
-      expect(top3.first.courseId, 'course_2_cute_animals');
-      // Khóa học chưa bắt đầu phải ở cuối
-      expect(sortedCourses.last.courseId, 'course_4_landscape_nature');
-      expect(sortedCourses.last.lastLearnedAt, isNull);
-    });
+        // Khóa học gần nhất phải có lastLearnedAt sau cùng
+        expect(top3.first.courseId, 'course_2_cute_animals');
+        // Khóa học chưa bắt đầu phải ở cuối
+        expect(sortedCourses.last.courseId, 'course_4_landscape_nature');
+        expect(sortedCourses.last.lastLearnedAt, isNull);
+      },
+    );
 
-    test('Multi-child: Bé chưa học khóa nào (child-empty) trả về danh sách rỗng', () async {
-      final emptyCourses = await repo.getChildCoursesProgress('child-empty');
-      expect(emptyCourses, isEmpty);
-    });
+    test(
+      'Multi-child: Bé chưa học khóa nào (child-empty) trả về danh sách rỗng',
+      () async {
+        final emptyCourses = await repo.getChildCoursesProgress('child-empty');
+        expect(emptyCourses, isEmpty);
+      },
+    );
 
     test('Multi-child: Bé thứ 2 (child-2) trả về dữ liệu riêng biệt', () async {
       final child2Courses = await repo.getChildCoursesProgress('child-2');
       expect(child2Courses.length, 2);
-      expect(child2Courses.any((c) => c.courseId == 'course_5_creature_ai'), isTrue);
+      expect(
+        child2Courses.any((c) => c.courseId == 'course_3_color_magic'),
+        isTrue,
+      );
     });
   });
 }

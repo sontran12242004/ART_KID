@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Hộp thoại xác nhận của phụ huynh (COPPA / GDPR-K Gate)
-/// Đảm bảo phụ huynh đồng ý trước khi ảnh vẽ được tải lên pipeline AI.
+/// Hộp thoại xác nhận của phụ huynh (COPPA / GDPR-K Gate).
+/// Đảm bảo phụ huynh đồng ý trước khi ảnh bài vẽ được gửi đi.
 class ParentalConsentDialog extends StatefulWidget {
-  const ParentalConsentDialog({
-    super.key,
-    required this.onConsentGranted,
-  });
+  const ParentalConsentDialog({super.key, required this.onConsentGranted});
 
   final VoidCallback onConsentGranted;
 
@@ -65,7 +62,10 @@ class _ParentalConsentDialogState extends State<ParentalConsentDialog> {
         children: [
           Icon(Icons.family_restroom, color: Color(0xFFFF6B6B), size: 28),
           SizedBox(width: 8),
-          Text('Xác nhận của Phụ huynh', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            'Xác nhận của Phụ huynh',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
       content: SingleChildScrollView(
@@ -75,7 +75,7 @@ class _ParentalConsentDialogState extends State<ParentalConsentDialog> {
           children: [
             const Text(
               'Để bảo vệ quyền riêng tư của trẻ (tuân thủ COPPA/GDPR-K), '
-              'vui lòng giải phép tính dưới đây để xác nhận gửi bài vẽ lên hệ thống AI tạo hình con vật:',
+              'vui lòng giải phép tính dưới đây để xác nhận gửi ảnh bài vẽ cho cô giáo:',
               style: TextStyle(fontSize: 14, color: Colors.black87),
             ),
             const SizedBox(height: 16),
@@ -89,7 +89,11 @@ class _ParentalConsentDialogState extends State<ParentalConsentDialog> {
               child: Center(
                 child: Text(
                   '$_num1 × $_num2 = ?',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 2),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
                 ),
               ),
             ),
@@ -101,7 +105,9 @@ class _ParentalConsentDialogState extends State<ParentalConsentDialog> {
               decoration: InputDecoration(
                 hintText: 'Nhập kết quả',
                 errorText: _error,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onSubmitted: (_) => _verify(),
             ),
@@ -118,9 +124,11 @@ class _ParentalConsentDialogState extends State<ParentalConsentDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFFF6B6B),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-          child: const Text('Đồng ý & Gửi AI'),
+          child: const Text('Đồng ý & Gửi bài'),
         ),
       ],
     );

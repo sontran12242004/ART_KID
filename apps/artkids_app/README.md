@@ -1,6 +1,6 @@
 # 🎨 ArtKids Mobile App — Architecture & Scaffolding Guide
 
-Ứng dụng di động học vẽ online kết hợp học cụ vật lý (Art Kits) dành cho trẻ em (4–12 tuổi), tích hợp trí tuệ nhân tạo (AI Pipeline) biến tranh vẽ thành con vật hoạt hình sống động (2D/3D Animation) kèm âm thanh đặc trưng.
+Ứng dụng di động học vẽ online kết hợp học cụ vật lý (Art Kits) dành cho trẻ em (4–12 tuổi). Trẻ học theo bài, vẽ trên giấy thật, chụp ảnh tác phẩm và gửi cho giáo viên xem.
 
 ---
 
@@ -10,12 +10,12 @@
 2. [Kiến trúc Phần mềm: Feature-First Clean Architecture](#-2-kiến-trúc-phần-mềm-feature-first-clean-architecture)
 3. [Lựa chọn Công nghệ & Đánh đổi Kỹ thuật](#-3-lựa-chọn-công-nghệ--đánh-đổi-kỹ-thuật)
    - [State Management: Riverpod](#31-state-management-riverpod)
-   - [Canvas Vẽ tay: Vector/Raster & Export](#32-canvas-vẽ-tay-vectorraster--export)
+   - [Chụp và nộp bài vẽ tay](#32-chụp-và-nộp-bài-vẽ-tay)
    - [Đồ họa 2D Animation (Rive) vs 3D Model: Phân tích & Đánh đổi](#33-đồ-họa-2d-animation-rive-vs-3d-model-phân-tích--đánh-đổi)
    - [Âm thanh: just_audio](#34-âm-thanh-just_audio)
    - [Offline Cache: Hive](#35-offline-cache-hive)
 4. [Cây thư mục hoàn chỉnh (Feature-First Structure)](#-4-cây-thư-mục-hoàn-chỉnh-feature-first-structure)
-5. [Sơ đồ Luồng dữ liệu: Tranh vẽ → AI Pipeline → Con vật hoạt hình](#-5-sơ-đồ-luồng-dữ-liệu-tranh-vẽ--ai-pipeline--con-vật-hoạt-hình)
+5. [Sơ đồ Luồng dữ liệu: Tranh giấy → Giáo viên](#-5-sơ-đồ-luồng-dữ-liệu-tranh-giấy--giáo-viên)
 6. [Sơ đồ Chuyển đổi Parent Mode ⇄ Kid Mode (Parental Gate)](#-6-sơ-đồ-chuyển-đổi-parent-mode--kid-mode-parental-gate)
 7. [Cấu hình Đa môi trường (Dev / Staging / Prod) & Flavors](#-7-cấu-hình-đa-môi-trường-dev--staging--prod--flavors)
 8. [Hướng dẫn Chạy trên Android Emulator & Cấu hình khuyến nghị](#-8-hướng-dẫn-chạy-trên-android-emulator--cấu-hình-khuyến-nghị)
@@ -28,9 +28,7 @@
 
 - **Đối tượng người dùng**:
   - **Phụ huynh (Parent Mode)**: Đăng ký/đăng nhập, mua khóa học, đăng ký gói định kỳ (subscription) nhận kit học cụ vật lý gửi tận nhà, theo dõi tiến độ học và lịch sử tác phẩm của con, thiết lập mã PIN bảo vệ.
-  - **Trẻ em (Kid Mode)**: Giao diện trực quan kích thước lớn, màu sắc sinh động, tối giản chữ viết, hỗ trợ đọc giọng nói (TTS), học bài, vẽ trực tiếp trên màn hình cảm ứng hoặc chụp ảnh tranh giấy vẽ thật.
-- **Tính năng đột phá (AI Magic Creature)**:
-  Nét vẽ của trẻ được AI nhận diện loài vật $\rightarrow$ khớp khung chuyển động $\rightarrow$ tạo hình con vật 2D/3D sinh động $\rightarrow$ phát ra tiếng kêu đặc trưng, tạo cảm giác như bức vẽ vừa "bước ra đời thực".
+ - **Trẻ em (Kid Mode)**: Giao diện trực quan kích thước lớn, màu sắc sinh động, tối giản chữ viết, hỗ trợ đọc giọng nói (TTS), học bài và gửi ảnh tranh giấy cho giáo viên.
 
 ---
 
@@ -57,7 +55,7 @@ Dự án áp dụng **Feature-First Clean Architecture** (Tổ chức theo tính
 ```
 
 ### Tại sao chọn Feature-First kết hợp Clean Architecture?
-1. **Module hóa theo nghiệp vụ (High Cohesion)**: Toàn bộ code của `ai_creature`, `drawing_canvas`, hay `parent_dashboard` gom gọn trong một thư mục. Khi cần sửa tính năng vẽ, lập trình viên không phải nhảy qua lại giữa hàng chục folder tầng khác nhau.
+1. **Module hóa theo nghiệp vụ (High Cohesion)**: Toàn bộ code của `hand_drawn_submission`, `matching_game`, hay `parent_dashboard` gom gọn trong một thư mục. Khi cần sửa tính năng vẽ, lập trình viên không phải nhảy qua lại giữa hàng chục folder tầng khác nhau.
 2. **Khả năng mở rộng (Scalability)**: Dễ dàng chia task cho nhiều dev/squad làm song song mà không bị merge conflict.
 3. **Độc lập và Testability**: Tầng Domain là thuần Dart (không phụ thuộc Flutter UI hay Dio/Hive). Dễ dàng viết Unit Test cho Use Case mà chỉ cần mock Repository interface.
 
@@ -67,13 +65,14 @@ Dự án áp dụng **Feature-First Clean Architecture** (Tổ chức theo tính
 
 ### 3.1. State Management: Riverpod
 - **Lý do lựa chọn**:
-  - **Quản lý bất đồng bộ mạnh mẽ (`AsyncNotifier`, `FutureProvider.family`, `StreamProvider`)**: AI generation là quy trình bất đồng bộ kéo dài (Job ID $\rightarrow$ Polling / WebSocket $\rightarrow$ Done). Riverpod xử lý trạng thái Loading/Data/Error vô cùng gọn gàng qua `.when()`.
+  - **Quản lý bất đồng bộ mạnh mẽ (`AsyncNotifier`, `FutureProvider.family`, `StreamProvider`)**: Riverpod xử lý tải bài học, tiến độ và các trạng thái mạng qua `.when()`.
   - **Dependency Injection (DI) tích hợp sẵn**: Không cần setup `get_it` phức tạp.
   - **An toàn Compile-time & Không phụ thuộc BuildContext**: Cho phép đọc hoặc mutate state bên ngoài Widget tree (ví dụ: trong background message handler của Firebase FCM).
 
-### 3.2. Canvas Vẽ tay: Vector/Raster & Export
-- Sử dụng CustomPainter tối ưu hiệu năng và `flutter_painter` cho vector strokes, hỗ trợ undo/redo, chọn màu, chỉnh nét cọ.
-- Cơ chế export ảnh PNG độ phân giải chuẩn (ví dụ 1024x1024) thông qua `RenderRepaintBoundary.toImage()` để chuẩn hóa kích thước đầu vào cho AI Model.
+### 3.2. Chụp và nộp bài vẽ tay
+- Trẻ thực hiện bài học bằng giấy và dụng cụ vẽ thật, không phải trên canvas của ứng dụng.
+- `image_picker` mở camera để chụp tác phẩm; trẻ có thể xem lại, chụp lại hoặc xác nhận.
+- Ứng dụng hiển thị trạng thái chờ giáo viên xem. API teacher/submission sẽ được nối ở giai đoạn sau.
 
 ### 3.3. Đồ họa 2D Animation (Rive) vs 3D Model: Phân tích & Đánh đổi
 
@@ -122,12 +121,12 @@ apps/artkids_app/
 │   │   ├── constants/                   # api_constants.dart, kid_ui_constants.dart
 │   │   ├── error/                       # app_exception.dart, failure.dart
 │   │   ├── firebase/                    # fcm_service.dart (Push notification)
-│   │   ├── network/                     # dio_client.dart, api_interceptor.dart, ai_job_poller.dart
+│   │   ├── network/                     # dio_client.dart, api_interceptor.dart
 │   │   ├── routing/                     # app_router.dart (GoRouter), route_paths.dart
 │   │   ├── storage/                     # hive_boxes.dart, local_storage_service.dart
 │   │   ├── theme/                       # app_theme.dart (Theme riêng cho Parent & Kid)
 │   │   ├── utils/                       # coppa_compliance.dart, device_capability_checker.dart
-│   │   └── widgets/                     # kid_button.dart, ai_loading_widget.dart
+│   │   └── widgets/                     # kid_button.dart
 │   │
 │   └── features/                        # Các module tính năng (Feature-First)
 │       ├── auth/                        # Xác thực Phụ huynh & Quản lý hồ sơ Con
@@ -140,15 +139,8 @@ apps/artkids_app/
 │       │   ├── domain/                  # Course, Lesson, course_repository
 │       │   └── presentation/            # providers (FutureProvider), screens, widgets
 │       │
-│       ├── drawing_canvas/              # Canvas vẽ cảm ứng & Chụp ảnh bài vẽ thật
-│       │   ├── data/                    # drawing_remote_datasource, submission_model
-│       │   ├── domain/                  # DrawingSubmission, export_and_submit_drawing
-│       │   └── presentation/            # drawing_canvas_screen, parental_consent_dialog
-│       │
-│       ├── ai_creature/                 # Xem mô hình con vật AI 2D/3D & Nghe tiếng kêu
-│       │   ├── data/                    # creature_remote_datasource, ai_creature_model
-│       │   ├── domain/                  # AiCreature entity, creature_repository
-│       │   └── presentation/            # creature_viewer_screen, creature_animation_player
+│       ├── hand_drawn_submission/      # Chụp ảnh tranh giấy và chờ giáo viên xem
+│       │   └── presentation/            # hand_drawn_submission_screen
 │       │
 │       ├── kid_mode/                    # Chế độ Trẻ em (UI tối giản, PIN gate, TTS giọng nói)
 │       │   ├── domain/                  # KidReward entity (huy hiệu, cúp)
@@ -169,45 +161,26 @@ apps/artkids_app/
 
 ---
 
-## 🔄 5. Sơ đồ Luồng dữ liệu: Tranh vẽ → AI Pipeline → Con vật hoạt hình
+## 🔄 5. Sơ đồ Luồng dữ liệu: Tranh giấy → Giáo viên
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Kid as Trẻ em (Kid UI)
     actor Parent as Phụ huynh
-    participant Canvas as Drawing Canvas / Camera
+    participant Camera as Camera Capture
     participant Consent as Parental Gate (COPPA)
-    participant SubService as Submission Service
-    participant AiPipeline as AI Generation Pipeline
-    participant FCM as Firebase Notification
     participant App as ArtKids Flutter Client
-    participant Audio as Audio Engine (just_audio)
-    participant View as 2D/3D Viewer (Rive/ModelViewer)
+    participant Teacher as Giáo viên
 
-    Kid->>Canvas: Vẽ tranh trực tiếp hoặc chụp ảnh tranh giấy
-    Kid->>Canvas: Nhấn nút "Gửi bài vẽ" (Touch target > 48dp)
-    Canvas->>Consent: Hiển thị Parental Consent Dialog (Phép tính người lớn)
+    Kid->>Camera: Chụp ảnh tranh giấy
+    Camera-->>App: Hiển thị ảnh xem lại
+    Kid->>App: Xác nhận hoặc chụp lại
+    App->>Consent: Hiển thị Parental Consent Dialog (Phép tính người lớn)
     Parent->>Consent: Xác nhận cho phép upload
-    Consent->>Canvas: Export Canvas sang ảnh PNG (1024x1024)
-    Canvas->>SubService: POST /kid/submissions (Multipart Image + Lesson ID + Child ID)
-    SubService-->>App: Trả về Submission ID & Status: "pending"
-    App->>App: Hiển thị AiLoadingWidget (Lottie animation vui nhộn)
-    
-    SubService->>AiPipeline: Đẩy Job vào hàng đợi (RabbitMQ/Redis Queue)
-    Note over AiPipeline: 1. Classify Animal (Phân loại loài vật)<br/>2. Match Template (Khớp khung xương)<br/>3. Rig & Animation (Gắn chuyển động)<br/>4. Bind Audio (Gắn tiếng kêu)
-    
-    par Async Notification
-        AiPipeline->>FCM: Gửi push notification khi hoàn tất
-        FCM-->>App: Background / Foreground Push: "Con vật của bé đã sẵn sàng!"
-    and Polling Fallback
-        App->>SubService: Poll GET /kid/submissions/{id}/status (mỗi 2s)
-        SubService-->>App: Status: "done" + Creature Metadata URL
-    end
-
-    App->>View: Nạp file Animation 2D (.riv) hoặc Model 3D (.gltf)
-    App->>Audio: Nạp và phát âm thanh tiếng kêu đặc trưng (.mp3)
-    View-->>Kid: Con vật chuyển động, tương tác chạm và phát ra tiếng kêu!
+    Consent-->>App: Cho phép gửi bài
+    App-->>Kid: Hiển thị trạng thái "Đang chờ giáo viên xem"
+    App-->>Teacher: Sẽ kết nối API giáo viên ở giai đoạn sau
 ```
 
 ---
@@ -236,9 +209,8 @@ stateDiagram-v2
     state KidFlow {
         KidPinGate --> KidHome: Nhập đúng PIN Phụ huynh
         KidHome --> LessonList: Chọn bài học vẽ
-        LessonList --> DrawingCanvas: Xem video & Vẽ tranh
-        DrawingCanvas --> AiCreatureViewer: Xem con vật AI sinh ra
-        KidHome --> CreatureZoo: Bộ sưu tập con vật của bé
+        LessonList --> HandDrawnSubmission: Xem video & chụp bài vẽ giấy
+        HandDrawnSubmission --> TeacherReview: Chờ giáo viên xem bài
         KidHome --> SwitchToParent: Muốn thoát về Phụ huynh
     }
 
@@ -297,9 +269,9 @@ flutter build appbundle --flavor prod --dart-define=FLAVOR=prod -t lib/main.dart
    - Hồ sơ trẻ chỉ lưu `nickname` và `tuổi` (để phân cấp độ khó của bài học).
    - Tuyệt đối không yêu cầu họ tên thật, email, số điện thoại hay trường học của trẻ.
 2. **Không lưu trữ dữ liệu nhận dạng khuôn mặt (Biometrics/Face Detection)**:
-   - Khi trẻ chụp ảnh bài vẽ tay bằng Camera, app chỉ gửi vùng tranh vẽ lên AI pipeline, loại bỏ các chi tiết không cần thiết.
+   - Khi trẻ chụp ảnh bài vẽ tay bằng Camera, app chỉ dùng ảnh cho luồng nộp bài giáo viên.
 3. **Cơ chế Xác thực Phụ huynh (Parental Consent Gate)**:
-   - Trước khi upload tranh lên AI hoặc chuyển từ Kid Mode sang Parent Mode, app bắt buộc vượt qua phép tính xác thực hoặc nhập mã PIN của phụ huynh.
+   - Trước khi gửi ảnh bài vẽ hoặc chuyển từ Kid Mode sang Parent Mode, app bắt buộc vượt qua phép tính xác thực hoặc nhập mã PIN của phụ huynh.
 4. **Bảo mật cục bộ**:
    - Token xác thực và mã PIN được mã hóa lưu trong Android Keystore / Flutter Secure Storage.
 

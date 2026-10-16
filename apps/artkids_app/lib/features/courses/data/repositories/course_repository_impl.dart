@@ -63,8 +63,7 @@ class CourseRepositoryImpl implements CourseRepository {
     Course(
       id: 'course_1_basic_lines',
       title: 'Nét Cọ Khởi Đầu - Bé Học Nét & Khối Cơ Bản',
-      description:
-          'Làm quen với các nét vẽ tự nhiên, vòng tròn diệu kỳ và những hình khối vui nhộn xung quanh bé.',
+      description: 'Làm quen với các nét vẽ tự nhiên, vòng tròn diệu kỳ và những hình khối vui nhộn xung quanh bé.',
       ageRange: '4–6 tuổi',
       priceVnd: 199000,
       includesPhysicalKit: true,
@@ -72,8 +71,7 @@ class CourseRepositoryImpl implements CourseRepository {
     Course(
       id: 'course_2_cute_animals',
       title: 'Vương Quốc Động Vật Đáng Yêu',
-      description:
-          'Học cách vẽ các bạn thú cưng quen thuộc: chú mèo lười, cún con trung thành, chim sơn ca và sư tử dũng cảm.',
+      description: 'Học cách vẽ các bạn thú cưng quen thuộc: chú mèo lười, cún con trung thành, chim sơn ca và sư tử dũng cảm.',
       ageRange: '5–8 tuổi',
       priceVnd: 249000,
       includesPhysicalKit: true,
@@ -81,8 +79,7 @@ class CourseRepositoryImpl implements CourseRepository {
     Course(
       id: 'course_3_color_magic',
       title: 'Phù Thủy Sắc Màu & Nghệ Thuật Pha Màu',
-      description:
-          'Cảm thụ màu sắc, bí kíp pha màu tương phản, sắc độ đậm nhạt và tạo ánh sáng lung linh cho bức tranh.',
+      description: 'Cảm thụ màu sắc, bí kíp pha màu tương phản, sắc độ đậm nhạt và tạo ánh sáng lung linh cho bức tranh.',
       ageRange: '6–10 tuổi',
       priceVnd: 299000,
       includesPhysicalKit: true,
@@ -90,19 +87,9 @@ class CourseRepositoryImpl implements CourseRepository {
     Course(
       id: 'course_4_landscape_nature',
       title: 'Họa Sĩ Nhí Khám Phá Thiên Nhiên',
-      description:
-          'Kỹ thuật phối cảnh cơ bản, vẽ cây cối, dòng sông, ngọn núi hùng vĩ và không gian ba chiều sống động.',
+      description: 'Kỹ thuật phối cảnh cơ bản, vẽ cây cối, dòng sông, ngọn núi hùng vĩ và không gian ba chiều sống động.',
       ageRange: '7–12 tuổi',
       priceVnd: 349000,
-      includesPhysicalKit: true,
-    ),
-    Course(
-      id: 'course_5_creature_ai',
-      title: 'Sáng Tạo Nhân Vật & Sinh Vật AI',
-      description:
-          'Tự tay thiết kế nhân vật hoạt hình ngộ nghĩnh và biến nét vẽ thành sinh vật sống động với công nghệ AI ArtKids.',
-      ageRange: '8–12 tuổi',
-      priceVnd: 399000,
       includesPhysicalKit: true,
     ),
   ];
@@ -203,26 +190,6 @@ class CourseRepositoryImpl implements CourseRepository {
         id: 'lesson_4_3',
         courseId: 'course_4_landscape_nature',
         title: 'Bài 3: Khu rừng cổ tích nhiệt đới muôn sắc hoa',
-        orderIndex: 2,
-      ),
-    ],
-    'course_5_creature_ai': const [
-      Lesson(
-        id: 'lesson_5_1',
-        courseId: 'course_5_creature_ai',
-        title: 'Bài 1: Phác thảo biểu cảm gương mặt nhân vật',
-        orderIndex: 0,
-      ),
-      Lesson(
-        id: 'lesson_5_2',
-        courseId: 'course_5_creature_ai',
-        title: 'Bài 2: Thiết kế trang phục siêu anh hùng sắc màu',
-        orderIndex: 1,
-      ),
-      Lesson(
-        id: 'lesson_5_3',
-        courseId: 'course_5_creature_ai',
-        title: 'Bài 3: Hô biến tranh vẽ thành sinh vật AI chuyển động',
         orderIndex: 2,
       ),
     ],

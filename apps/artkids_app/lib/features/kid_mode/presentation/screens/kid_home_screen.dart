@@ -23,7 +23,9 @@ class _KidHomeScreenState extends ConsumerState<KidHomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(voiceGuidanceServiceProvider).speak('Chào bé! Hôm nay chúng mình cùng vẽ tranh nhé!');
+      ref
+          .read(voiceGuidanceServiceProvider)
+          .speak('Chào bé! Hôm nay chúng mình cùng vẽ tranh nhé!');
     });
   }
 
@@ -41,7 +43,11 @@ class _KidHomeScreenState extends ConsumerState<KidHomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.security_rounded, size: 48, color: Colors.blueGrey),
+            const Icon(
+              Icons.security_rounded,
+              size: 48,
+              color: Colors.blueGrey,
+            ),
             const SizedBox(height: 12),
             const Text(
               'Cổng Xác Thực Phụ Huynh',
@@ -132,7 +138,11 @@ class _KidHomeScreenState extends ConsumerState<KidHomeScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.lock_person_rounded, color: Colors.blueGrey, size: 24),
+                      child: const Icon(
+                        Icons.lock_person_rounded,
+                        color: Colors.blueGrey,
+                        size: 24,
+                      ),
                     ),
                     tooltip: 'Thoát ra chế độ phụ huynh',
                     onPressed: () => _showParentalGate(context),
@@ -156,13 +166,13 @@ class _KidHomeScreenState extends ConsumerState<KidHomeScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Card lớn 2: Bảng vẽ ma thuật
+                    // Card lớn 2: Gửi bài vẽ tay
                     _buildFeatureCard(
-                      title: 'Bảng Vẽ Ma Thuật',
-                      subtitle: 'Vẽ tự do & gửi AI sinh thú bông',
-                      icon: Icons.brush_rounded,
+                      title: 'Gửi Bài Vẽ',
+                      subtitle: 'Chụp tranh giấy và gửi cô giáo',
+                      icon: Icons.photo_camera_rounded,
                       color: const Color(0xFF4ECDC4),
-                      onTap: () => context.push('/kid/lesson/free-draw/canvas'),
+                      onTap: () => context.push('/kid/lesson/free-draw/submit'),
                     ),
                     const SizedBox(height: 16),
 
@@ -176,20 +186,11 @@ class _KidHomeScreenState extends ConsumerState<KidHomeScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Card lớn 4: Vườn thú AI của bé
-                    _buildFeatureCard(
-                      title: 'Vườn Thú AI',
-                      subtitle: 'Ngắm các con vật chuyển động & nghe tiếng kêu',
-                      icon: Icons.pets_rounded,
-                      color: const Color(0xFFFFBE0B),
-                      onTap: () => context.push('/kid/creature/demo-creature'),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Card lớn 5: Huy hiệu & Ngôi sao
+                    // Card lớn 4: Huy hiệu & Ngôi sao
                     _buildFeatureCard(
                       title: 'Huy Hiệu & Cúp',
-                      subtitle: 'Bé đã đạt ${badgesState.unlockedCount}/${badgesState.totalCount} huy hiệu (${(badgesState.overallProgressRatio * 100).toInt()}%)',
+                      subtitle:
+                          'Bé đã đạt ${badgesState.unlockedCount}/${badgesState.totalCount} huy hiệu (${(badgesState.overallProgressRatio * 100).toInt()}%)',
                       icon: Icons.military_tech_rounded,
                       color: const Color(0xFF9B5DE5),
                       onTap: () => context.push(RoutePaths.kidBadges),
@@ -265,7 +266,11 @@ class _KidHomeScreenState extends ConsumerState<KidHomeScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 22),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
           ],
         ),
       ),

@@ -16,5 +16,11 @@
     "rxjs": "^7.8.1"
   },
   "author": "ArtKids Team",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "allowScripts": {
+    "@nestjs/core@10.4.22": true
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.9"
+  }
 }

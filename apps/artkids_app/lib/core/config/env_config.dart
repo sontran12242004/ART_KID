@@ -17,18 +17,17 @@ class EnvConfig {
 
   static String get flavor => _get('FLAVOR', 'dev');
 
-  static bool get enableMockAi => _get('ENABLE_MOCK_AI') == 'true';
-
   static bool get enableMockOrders =>
-      _get('ENABLE_MOCK_ORDERS', 'true') != 'false'; // Default to true if not explicitly false
+      _get('ENABLE_MOCK_ORDERS', 'true') !=
+      'false'; // Default to true if not explicitly false
 
   static bool get enableMockShop =>
-      _get('ENABLE_MOCK_SHOP', 'true') != 'false'; // Default to true if not explicitly false
+      _get('ENABLE_MOCK_SHOP', 'true') !=
+      'false'; // Default to true if not explicitly false
 
   static bool get enableMockCoursesProgress =>
-      _get('ENABLE_MOCK_COURSES_PROGRESS', 'true') != 'false'; // Bật mock tiến độ theo khóa học
-
-  static String get geminiApiKey => _get('GEMINI_API_KEY');
+      _get('ENABLE_MOCK_COURSES_PROGRESS', 'true') !=
+      'false'; // Bật mock tiến độ theo khóa học
 
   static void validate() {
     assert(apiBaseUrl.isNotEmpty, 'API_BASE_URL is required');

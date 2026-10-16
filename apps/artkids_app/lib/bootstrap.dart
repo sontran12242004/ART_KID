@@ -19,14 +19,19 @@ Future<void> bootstrap() async {
 
   await Hive.openBox(HiveBoxes.settings);
   await Hive.openBox(HiveBoxes.lessonCache);
-  await Hive.openBox(HiveBoxes.creatureCache);
   await Hive.openBox<MatchingGameProgress>(HiveBoxes.matchingProgress);
   await Hive.openBox<CompletedPicture>(HiveBoxes.completedPictures);
 
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint('[bootstrap] Firebase chưa cấu hình — bỏ qua FCM: $e');
+  final enableFirebase =
+      dotenv.env['ENABLE_FIREBASE']?.toLowerCase() != 'false';
+  if (enableFirebase) {
+    try {
+      await Firebase.initializeApp().timeout(const Duration(seconds: 3));
+    } catch (e) {
+      debugPrint('[bootstrap] Firebase chưa cấu hình — bỏ qua FCM: $e');
+    }
+  } else {
+    debugPrint('[bootstrap] ENABLE_FIREBASE=false — bỏ qua Firebase.');
   }
 
   EnvConfig.validate();

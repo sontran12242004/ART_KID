@@ -26,10 +26,9 @@ class ApiConstants {
   static const vouchersAvailable = '/vouchers/available';
   static const vouchersValidate = '/vouchers/validate';
 
-  // Submissions & AI (Kid API — tối giản)
+  // Future teacher-reviewed submissions
   static const kidSubmitDrawing = '/kid/submissions';
   static const kidSubmissionStatus = '/kid/submissions/{id}/status';
-  static const kidCreatures = '/kid/creatures';
 
   // Media
   static const mediaUpload = '/media/upload';

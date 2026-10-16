@@ -9,10 +9,12 @@ class SubscriptionPlansScreen extends ConsumerStatefulWidget {
   const SubscriptionPlansScreen({super.key});
 
   @override
-  ConsumerState<SubscriptionPlansScreen> createState() => _SubscriptionPlansScreenState();
+  ConsumerState<SubscriptionPlansScreen> createState() =>
+      _SubscriptionPlansScreenState();
 }
 
-class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScreen> {
+class _SubscriptionPlansScreenState
+    extends ConsumerState<SubscriptionPlansScreen> {
   String? _selectedPlanId;
 
   @override
@@ -33,7 +35,10 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F3B46)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0F3B46),
+          ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
@@ -48,10 +53,9 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
             }
 
             // Mặc định chọn gói Pro đầu tiên nếu chưa chọn
-            _selectedPlanId ??= plans.firstWhere(
-              (p) => p.includesKit,
-              orElse: () => plans.first,
-            ).id;
+            _selectedPlanId ??= plans
+                .firstWhere((p) => p.includesKit, orElse: () => plans.first)
+                .id;
 
             return ListView(
               padding: const EdgeInsets.all(16),
@@ -70,7 +74,11 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 36),
+                      Icon(
+                        Icons.stars_rounded,
+                        color: Color(0xFFFFD700),
+                        size: 36,
+                      ),
                       SizedBox(width: 14),
                       Expanded(
                         child: Column(
@@ -86,8 +94,11 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Mở khóa toàn bộ bài giảng, không giới hạn AI sinh vật và nhận hộp học cụ định kỳ tại nhà.',
-                              style: TextStyle(color: Colors.white70, fontSize: 12),
+                              'Mở khóa toàn bộ bài giảng, gửi bài vẽ cho giáo viên và nhận hộp học cụ định kỳ tại nhà.',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -119,22 +130,31 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1A52A8),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       elevation: 4,
                     ),
                     onPressed: () {
-                      final selectedPlan = plans.firstWhere((p) => p.id == _selectedPlanId);
+                      final selectedPlan = plans.firstWhere(
+                        (p) => p.id == _selectedPlanId,
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           backgroundColor: const Color(0xFF2E7D32),
-                          content: Text('Đã chọn ${selectedPlan.name}. Tính năng thanh toán đã sẵn sàng!'),
+                          content: Text(
+                            'Đã chọn ${selectedPlan.name}. Tính năng thanh toán đã sẵn sàng!',
+                          ),
                         ),
                       );
                     },
                     child: const Text(
                       'Đăng Ký Ngay 🚀',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -157,12 +177,20 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                       color: Color(0xFFFFEBEE),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.wifi_off_rounded, size: 48, color: Color(0xFFE53935)),
+                    child: const Icon(
+                      Icons.wifi_off_rounded,
+                      size: 48,
+                      color: Color(0xFFE53935),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
                     'Không thể kết nối máy chủ',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF0F3B46)),
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F3B46),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -175,12 +203,20 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1687A7),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
                     onPressed: () => ref.invalidate(subscriptionPlansProvider),
                     icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('Thử lại', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'Thử lại',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),

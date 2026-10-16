@@ -19,7 +19,8 @@ class RoutePaths {
   static const parentOrders = '/parent/orders';
   static const parentOrderDetail = '/parent/orders/:orderId';
   static const parentProgress = '/parent/progress';
-  static const parentChildCoursesProgress = '/parent/child-progress/:childId/courses';
+  static const parentChildCoursesProgress =
+      '/parent/child-progress/:childId/courses';
   static const parentSettings = '/parent/settings';
   static const parentKidPinSetup = '/parent/kid-pin';
 
@@ -27,8 +28,7 @@ class RoutePaths {
   static const kidPinGate = '/kid/pin';
   static const kidHome = '/kid';
   static const kidLesson = '/kid/course/:courseId/lessons';
-  static const kidCanvas = '/kid/lesson/:lessonId/canvas';
-  static const kidCreature = '/kid/creature/:creatureId';
+  static const kidDrawingSubmission = '/kid/lesson/:lessonId/submit';
   static const kidBadges = '/kid/badges';
 
   // Matching Game (Kid Mode)
@@ -37,4 +37,3 @@ class RoutePaths {
   static const matchingGameMatch = '/matching-game/match/:pictureSetId';
   static const matchingGameGallery = '/matching-game/gallery';
 }
-

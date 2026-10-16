@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../domain/entities/lesson.dart';
 import '../providers/course_provider.dart';
 
-/// Danh sách bài học trong khóa học — Chọn bài học để vào canvas vẽ tranh
+/// Danh sách bài học trong khóa học — Chọn bài học để nộp tranh vẽ tay
 class LessonListScreen extends ConsumerWidget {
   const LessonListScreen({super.key, required this.courseId});
 
@@ -29,7 +29,10 @@ class LessonListScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F3B46)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0F3B46),
+          ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
@@ -39,11 +42,18 @@ class LessonListScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.palette_outlined, size: 64, color: Colors.grey.shade300),
+                    Icon(
+                      Icons.palette_outlined,
+                      size: 64,
+                      color: Colors.grey.shade300,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'Khóa học này đang được chuẩn bị bài giảng!',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -51,10 +61,8 @@ class LessonListScreen extends ConsumerWidget {
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: lessons.length,
-                itemBuilder: (context, index) => _LessonTile(
-                  lesson: lessons[index],
-                  index: index,
-                ),
+                itemBuilder: (context, index) =>
+                    _LessonTile(lesson: lessons[index], index: index),
               ),
         loading: () => const Center(
           child: CircularProgressIndicator(color: Color(0xFF1687A7)),
@@ -63,7 +71,11 @@ class LessonListScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFE53935)),
+              const Icon(
+                Icons.error_outline_rounded,
+                size: 48,
+                color: Color(0xFFE53935),
+              ),
               const SizedBox(height: 12),
               const Text(
                 'Không thể tải bài học',
@@ -74,9 +86,12 @@ class LessonListScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1687A7),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
-                onPressed: () => ref.invalidate(lessonsFamilyProvider(courseId)),
+                onPressed: () =>
+                    ref.invalidate(lessonsFamilyProvider(courseId)),
                 child: const Text('Thử lại'),
               ),
             ],
@@ -146,13 +161,17 @@ class _LessonTile extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                lesson.videoUrl != null ? Icons.videocam_rounded : Icons.brush_rounded,
+                lesson.videoUrl != null
+                    ? Icons.videocam_rounded
+                    : Icons.brush_rounded,
                 size: 14,
                 color: const Color(0xFF4C6E76),
               ),
               const SizedBox(width: 4),
               Text(
-                lesson.videoUrl != null ? 'Có video hướng dẫn' : 'Thực hành vẽ trên Canvas',
+                lesson.videoUrl != null
+                    ? 'Có video hướng dẫn'
+                    : 'Vẽ trên giấy và gửi bài',
                 style: const TextStyle(fontSize: 12, color: Color(0xFF4C6E76)),
               ),
             ],
@@ -168,7 +187,7 @@ class _LessonTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Vào Vẽ',
+                'Nộp bài',
                 style: TextStyle(
                   color: Color(0xFF2E7D32),
                   fontWeight: FontWeight.w800,
@@ -176,11 +195,15 @@ class _LessonTile extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 4),
-              Icon(Icons.arrow_forward_rounded, size: 14, color: Color(0xFF2E7D32)),
+              Icon(
+                Icons.arrow_forward_rounded,
+                size: 14,
+                color: Color(0xFF2E7D32),
+              ),
             ],
           ),
         ),
-        onTap: () => context.push('/kid/lesson/${lesson.id}/canvas'),
+        onTap: () => context.push('/kid/lesson/${lesson.id}/submit'),
       ),
     );
   }

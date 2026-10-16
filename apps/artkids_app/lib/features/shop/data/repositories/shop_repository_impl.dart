@@ -17,7 +17,9 @@ class ShopRepositoryImpl implements ShopRepository {
         return plans;
       }
     } catch (e) {
-      debugPrint('[ShopRepository] Lỗi kết nối gói đăng ký ($e). Dùng danh sách gói mặc định offline.');
+      debugPrint(
+        '[ShopRepository] Lỗi kết nối gói đăng ký ($e). Dùng danh sách gói mặc định offline.',
+      );
     }
     return _defaultPlans;
   }
@@ -40,7 +42,7 @@ class ShopRepositoryImpl implements ShopRepository {
       durationMonths: 1,
       features: [
         'Toàn bộ bài giảng vẽ cơ bản theo độ tuổi',
-        '3 lượt biến hình sinh vật AI mỗi ngày',
+        '3 lượt gửi bài vẽ cho giáo viên mỗi ngày',
         'Phòng trưng bày tranh cá nhân của bé',
       ],
       includesKit: false,
@@ -54,7 +56,7 @@ class ShopRepositoryImpl implements ShopRepository {
       durationMonths: 3,
       features: [
         'Không giới hạn toàn bộ khóa học hội họa',
-        'Không giới hạn AI sinh mô hình 3D chuyển động',
+        'Không giới hạn lượt nộp bài vẽ và nhận xét',
         'Tặng 01 Hộp Học Cụ Vật Lý gửi tận nhà',
         'Báo cáo sư phạm hàng tuần cho phụ huynh',
       ],

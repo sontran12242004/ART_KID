@@ -21,7 +21,9 @@ class ParentDashboardRepositoryImpl implements ParentDashboardRepository {
         return deliveries;
       }
     } catch (e) {
-      debugPrint('[ParentDashboardRepository] Lỗi kết nối đơn hàng học cụ ($e). Dùng dữ liệu mẫu offline.');
+      debugPrint(
+        '[ParentDashboardRepository] Lỗi kết nối đơn hàng học cụ ($e). Dùng dữ liệu mẫu offline.',
+      );
     }
     return _defaultKitDeliveries;
   }
@@ -32,7 +34,9 @@ class ParentDashboardRepositoryImpl implements ParentDashboardRepository {
       final report = await _dataSource.getChildProgress(childId);
       return report;
     } catch (e) {
-      debugPrint('[ParentDashboardRepository] Lỗi kết nối báo cáo tiến độ ($e). Dùng dữ liệu mẫu offline.');
+      debugPrint(
+        '[ParentDashboardRepository] Lỗi kết nối báo cáo tiến độ ($e). Dùng dữ liệu mẫu offline.',
+      );
     }
     return _defaultChildProgressReport(childId);
   }
@@ -41,7 +45,9 @@ class ParentDashboardRepositoryImpl implements ParentDashboardRepository {
   Future<List<CourseProgress>> getChildCoursesProgress(String childId) async {
     // Kiểm tra cờ mock data của project
     if (EnvConfig.enableMockCoursesProgress) {
-      debugPrint('[ParentDashboardRepository] Sử dụng mock tiến độ khóa học cho bé $childId');
+      debugPrint(
+        '[ParentDashboardRepository] Sử dụng mock tiến độ khóa học cho bé $childId',
+      );
       return _getMockChildCoursesProgress(childId);
     }
 
@@ -51,17 +57,24 @@ class ParentDashboardRepositoryImpl implements ParentDashboardRepository {
         return list;
       }
     } catch (e) {
-      debugPrint('[ParentDashboardRepository] Lỗi kết nối tiến độ khóa học ($e). Dùng dữ liệu mẫu offline.');
+      debugPrint(
+        '[ParentDashboardRepository] Lỗi kết nối tiến độ khóa học ($e). Dùng dữ liệu mẫu offline.',
+      );
     }
     return _getMockChildCoursesProgress(childId);
   }
 
   @override
-  Future<void> updateKidPin({required String parentId, required String newPin}) async {
+  Future<void> updateKidPin({
+    required String parentId,
+    required String newPin,
+  }) async {
     try {
       await _dataSource.updateKidPin(parentId: parentId, newPin: newPin);
     } catch (e) {
-      debugPrint('[ParentDashboardRepository] updateKidPin offline fallback: $e');
+      debugPrint(
+        '[ParentDashboardRepository] updateKidPin offline fallback: $e',
+      );
     }
   }
 
@@ -93,7 +106,6 @@ class ParentDashboardRepositoryImpl implements ParentDashboardRepository {
       totalArtworksCount: 24,
       totalBadgesCount: 8,
       learningMinutesThisWeek: 185,
-      latestCreatures: const ['creature_cat', 'creature_dragon', 'creature_rocket'],
     );
   }
 
@@ -124,17 +136,17 @@ class ParentDashboardRepositoryImpl implements ParentDashboardRepository {
           ),
         ),
         CourseProgress(
-          courseId: 'course_5_creature_ai',
-          courseTitle: 'Sáng Tạo Sinh Vật Huyền Bí Với AI',
+          courseId: 'course_3_color_magic',
+          courseTitle: 'Phù Thủy Sắc Màu & Nghệ Thuật Pha Màu',
           courseThumbnail: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=400',
           totalLessons: 6,
           completedLessons: 1,
           lastLearnedAt: now.subtract(const Duration(days: 2)),
           status: CourseProgressStatus.inProgress,
           course: const Course(
-            id: 'course_5_creature_ai',
-            title: 'Sáng Tạo Sinh Vật Huyền Bí Với AI',
-            description: 'Vẽ nét tranh và hô biến thành sinh vật 3D sống động cùng AI',
+            id: 'course_3_color_magic',
+            title: 'Phù Thủy Sắc Màu & Nghệ Thuật Pha Màu',
+            description: 'Cảm thụ màu sắc, bí kíp pha màu tương phản',
           ),
         ),
       ];
@@ -154,7 +166,8 @@ class ParentDashboardRepositoryImpl implements ParentDashboardRepository {
         course: const Course(
           id: 'course_2_cute_animals',
           title: 'Vương Quốc Động Vật Đáng Yêu',
-          description: 'Học cách vẽ các bạn thú cưng quen thuộc: mèo lười, cún con...',
+          description:
+              'Học cách vẽ các bạn thú cưng quen thuộc: mèo lười, cún con...',
         ),
       ),
       CourseProgress(
@@ -175,7 +188,8 @@ class ParentDashboardRepositoryImpl implements ParentDashboardRepository {
       CourseProgress(
         courseId: 'course_3_color_magic',
         courseTitle: 'Phù Thủy Sắc Màu & Nghệ Thuật Pha Màu',
-        courseThumbnail: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400',
+        courseThumbnail:
+            'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400',
         totalLessons: 14,
         completedLessons: 3,
         // Học gần nhất 3 ngày trước

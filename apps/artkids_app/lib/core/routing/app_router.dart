@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/network/gemini_service.dart';
-import '../../features/ai_creature/presentation/screens/creature_viewer_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/mode_selector_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/courses/presentation/screens/course_list_screen.dart';
 import '../../features/courses/presentation/screens/lesson_list_screen.dart';
-import '../../features/drawing_canvas/presentation/screens/drawing_canvas_screen.dart';
+import '../../features/hand_drawn_submission/presentation/screens/hand_drawn_submission_screen.dart';
 import '../../features/kid_mode/presentation/screens/kid_badges_screen.dart';
 import '../../features/kid_mode/presentation/screens/kid_home_screen.dart';
 import '../../features/kid_mode/presentation/screens/kid_pin_gate_screen.dart';
@@ -44,10 +42,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       // Shared Routes
-      GoRoute(
-        path: RoutePaths.splash,
-        builder: (_, _) => const SplashScreen(),
-      ),
+      GoRoute(path: RoutePaths.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(
         path: RoutePaths.modeSelector,
         builder: (_, _) => const ModeSelectorScreen(),
@@ -98,9 +93,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.parentOrderDetail,
-        builder: (_, state) => OrderDetailScreen(
-          orderId: state.pathParameters['orderId'] ?? '',
-        ),
+        builder: (_, state) =>
+            OrderDetailScreen(orderId: state.pathParameters['orderId'] ?? ''),
       ),
       GoRoute(
         path: RoutePaths.parentProgress,
@@ -139,20 +133,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
-        path: RoutePaths.kidCanvas,
-        builder: (_, state) => DrawingCanvasScreen(
+        path: RoutePaths.kidDrawingSubmission,
+        builder: (_, state) => HandDrawnSubmissionScreen(
           lessonId: state.pathParameters['lessonId'] ?? 'default-lesson',
         ),
-      ),
-      GoRoute(
-        path: RoutePaths.kidCreature,
-        builder: (_, state) {
-          final analysisResult = state.extra as GeminiAnalysisResult?;
-          return CreatureViewerScreen(
-            creatureId: state.pathParameters['creatureId'] ?? 'default-creature',
-            analysisResult: analysisResult,
-          );
-        },
       ),
       GoRoute(
         path: RoutePaths.kidBadges,

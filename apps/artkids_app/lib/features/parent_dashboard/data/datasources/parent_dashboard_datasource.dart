@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../models/kit_delivery_model.dart';
 import '../../domain/entities/child_progress_report.dart';
 import '../../domain/entities/course_progress.dart';
@@ -38,10 +39,6 @@ class ParentDashboardDataSourceImpl implements ParentDashboardDataSource {
       totalArtworksCount: data['total_artworks_count'] as int? ?? 0,
       totalBadgesCount: data['total_badges_count'] as int? ?? 0,
       learningMinutesThisWeek: data['learning_minutes_this_week'] as int? ?? 0,
-      latestCreatures: (data['latest_creatures'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
     );
   }
 
@@ -57,10 +54,13 @@ class ParentDashboardDataSourceImpl implements ParentDashboardDataSource {
   }
 
   @override
-  Future<void> updateKidPin({required String parentId, required String newPin}) async {
-    await _dio.put('/auth/kid-pin', data: {
-      'parent_id': parentId,
-      'new_pin': newPin,
-    });
+  Future<void> updateKidPin({
+    required String parentId,
+    required String newPin,
+  }) async {
+    await _dio.put(
+      '/auth/kid-pin',
+      data: {'parent_id': parentId, 'new_pin': newPin},
+    );
   }
 }
