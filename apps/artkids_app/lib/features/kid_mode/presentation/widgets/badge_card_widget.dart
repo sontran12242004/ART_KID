@@ -8,11 +8,7 @@ class BadgeCardWidget extends StatelessWidget {
   final AchievementBadge badge;
   final VoidCallback onTap;
 
-  const BadgeCardWidget({
-    super.key,
-    required this.badge,
-    required this.onTap,
-  });
+  const BadgeCardWidget({super.key, required this.badge, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +45,10 @@ class BadgeCardWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: badge.isUnlocked
                         ? badge.primaryColor.withValues(alpha: 0.14)
@@ -70,8 +68,10 @@ class BadgeCardWidget extends StatelessWidget {
                 ),
                 if (badge.isUnlocked)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE8F5E9),
                       borderRadius: BorderRadius.circular(8),
@@ -79,8 +79,11 @@ class BadgeCardWidget extends StatelessWidget {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.check_circle_rounded,
-                            color: Color(0xFF2E7D32), size: 12),
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: Color(0xFF2E7D32),
+                          size: 12,
+                        ),
                         SizedBox(width: 3),
                         Text(
                           'Đã Đạt',
@@ -150,16 +153,14 @@ class BadgeCardWidget extends StatelessWidget {
                                 const Color(0xFFCFD8DC),
                               ],
                       ),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 3,
-                      ),
+                      border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: (badge.isUnlocked
-                                  ? badge.primaryColor
-                                  : Colors.black)
-                              .withValues(alpha: 0.2),
+                          color:
+                              (badge.isUnlocked
+                                      ? badge.primaryColor
+                                      : Colors.black)
+                                  .withValues(alpha: 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),

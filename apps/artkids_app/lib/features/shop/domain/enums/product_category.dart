@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Enum phân loại danh mục sản phẩm học cụ trong Shop
 enum ProductCategory {
-  all(
-    value: 'all',
-    label: 'Tất cả',
-    icon: Icons.apps_rounded,
-  ),
+  all(value: 'all', label: 'Tất cả', icon: Icons.apps_rounded),
   courseKit(
     value: 'course_kit',
     label: 'Kit theo khóa học',

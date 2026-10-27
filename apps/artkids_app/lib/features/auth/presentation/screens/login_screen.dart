@@ -33,10 +33,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await ref.read(authProvider.notifier).login(
-            _emailController.text.trim(),
-            _passwordController.text.trim(),
-          );
+      await ref
+          .read(authProvider.notifier)
+          .login(_emailController.text.trim(), _passwordController.text.trim());
       if (mounted) {
         context.go(RoutePaths.parentHome);
       }
@@ -57,8 +56,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _showForgotPasswordDialog() {
-    final resetEmailController =
-        TextEditingController(text: _emailController.text);
+    final resetEmailController = TextEditingController(
+      text: _emailController.text,
+    );
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -101,7 +101,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Navigator.of(dialogContext).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Đã gửi email khôi phục mật khẩu!'),
+                  content: Text(
+                    'Chưa cấu hình dịch vụ khôi phục mật khẩu. Vui lòng liên hệ quản trị viên.',
+                  ),
                   backgroundColor: Color(0xFF06D6A0),
                 ),
               );
@@ -123,11 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFE2F3F5),
-              Color(0xFFF7FDFD),
-              Colors.white,
-            ],
+            colors: [Color(0xFFE2F3F5), Color(0xFFF7FDFD), Colors.white],
             stops: [0.0, 0.45, 1.0],
           ),
         ),
@@ -169,8 +167,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1687A7)
-                                .withValues(alpha: 0.22),
+                            color: const Color(
+                              0xFF1687A7,
+                            ).withValues(alpha: 0.22),
                             blurRadius: 24,
                             offset: const Offset(0, 10),
                           ),
@@ -304,8 +303,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           borderRadius: BorderRadius.circular(27),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF1A52A8)
-                                  .withValues(alpha: 0.38),
+                              color: const Color(
+                                0xFF1A52A8,
+                              ).withValues(alpha: 0.38),
                               blurRadius: 18,
                               offset: const Offset(0, 7),
                             ),
@@ -318,7 +318,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : const Text(

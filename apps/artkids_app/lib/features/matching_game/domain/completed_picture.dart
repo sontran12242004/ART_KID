@@ -46,7 +46,8 @@ class CompletedPicture {
       id: map['id'] as String? ?? '',
       pictureSetId: map['pictureSetId'] as String? ?? '',
       pictureTitle: map['pictureTitle'] as String? ?? 'Bức tranh hoàn thành',
-      completedAt: DateTime.tryParse(map['completedAt'] as String? ?? '') ??
+      completedAt:
+          DateTime.tryParse(map['completedAt'] as String? ?? '') ??
           DateTime.now(),
       thumbnailAsset: map['thumbnailAsset'] as String? ?? '',
     );

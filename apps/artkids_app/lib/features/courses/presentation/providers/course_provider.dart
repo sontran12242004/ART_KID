@@ -21,8 +21,10 @@ final coursesFutureProvider = FutureProvider<List<Course>>((ref) async {
   return repo.getCourses();
 });
 
-final lessonsFamilyProvider =
-    FutureProvider.family<List<Lesson>, String>((ref, courseId) async {
+final lessonsFamilyProvider = FutureProvider.family<List<Lesson>, String>((
+  ref,
+  courseId,
+) async {
   final repo = ref.watch(courseRepositoryProvider);
   return repo.getLessons(courseId);
 });

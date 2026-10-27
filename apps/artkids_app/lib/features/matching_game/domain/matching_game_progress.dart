@@ -84,18 +84,23 @@ class MatchingGameProgress {
           : GamePhase.drawing,
       currentAnimalIndex: map['currentAnimalIndex'] as int? ?? 0,
       unlockedStickers: ((map['unlockedStickers'] as List?) ?? [])
-          .map((e) => Animal.values.firstWhere(
-                (a) => a.name == e.toString(),
-                orElse: () => Animal.cat,
-              ))
+          .map(
+            (e) => Animal.values.firstWhere(
+              (a) => a.name == e.toString(),
+              orElse: () => Animal.cat,
+            ),
+          )
           .toList(),
       matchedAnimals: ((map['matchedAnimals'] as List?) ?? [])
-          .map((e) => Animal.values.firstWhere(
-                (a) => a.name == e.toString(),
-                orElse: () => Animal.cat,
-              ))
+          .map(
+            (e) => Animal.values.firstWhere(
+              (a) => a.name == e.toString(),
+              orElse: () => Animal.cat,
+            ),
+          )
           .toList(),
-      lastUpdatedAt: DateTime.tryParse(map['lastUpdatedAt'] as String? ?? '') ??
+      lastUpdatedAt:
+          DateTime.tryParse(map['lastUpdatedAt'] as String? ?? '') ??
           DateTime.now(),
     );
   }

@@ -26,13 +26,13 @@ class ChildProfile extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        parentId,
-        nickname,
-        age,
-        birthYear,
-        avatarUrl,
-        totalPoints,
-        badgeCount,
-      ];
+    id,
+    parentId,
+    nickname,
+    age,
+    birthYear,
+    avatarUrl,
+    totalPoints,
+    badgeCount,
+  ];
 }

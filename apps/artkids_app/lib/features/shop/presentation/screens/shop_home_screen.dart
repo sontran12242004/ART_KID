@@ -36,8 +36,11 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
         elevation: 0.5,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF0F3B46), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0F3B46),
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: const Text(
@@ -48,10 +51,7 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
             color: Color(0xFF0F3B46),
           ),
         ),
-        actions: const [
-          CartBadgeIcon(),
-          SizedBox(width: 4),
-        ],
+        actions: const [CartBadgeIcon(), SizedBox(width: 4)],
       ),
       body: Column(
         children: [
@@ -86,14 +86,19 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
                               onPressed: () {
                                 _searchController.clear();
                                 ref
-                                    .read(productSearchQueryProvider.notifier)
-                                    .state = '';
+                                        .read(
+                                          productSearchQueryProvider.notifier,
+                                        )
+                                        .state =
+                                    '';
                               },
                             )
                           : null,
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                     ),
                     onChanged: (val) {
                       ref.read(productSearchQueryProvider.notifier).state = val;
@@ -131,11 +136,11 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
                     padding: const EdgeInsets.all(16),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.65,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                    ),
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.65,
+                          crossAxisSpacing: 14,
+                          mainAxisSpacing: 14,
+                        ),
                     itemCount: products.length,
                     itemBuilder: (context, index) {
                       final product = products[index];
@@ -143,8 +148,10 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
                         product: product,
                         onTap: () {
                           context.push(
-                            RoutePaths.parentShopProductDetail
-                                .replaceFirst(':productId', product.id),
+                            RoutePaths.parentShopProductDetail.replaceFirst(
+                              ':productId',
+                              product.id,
+                            ),
                           );
                         },
                       );
@@ -241,8 +248,7 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
               child: Container(
                 decoration: const BoxDecoration(
                   color: Color(0xFFECEFF1),
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(15)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                 ),
               ),
             ),
@@ -284,8 +290,11 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 48, color: Color(0xFFE53935)),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Color(0xFFE53935),
+            ),
             const SizedBox(height: 14),
             const Text(
               'Không thể tải danh mục sản phẩm',
@@ -307,7 +316,8 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
                 backgroundColor: const Color(0xFF1687A7),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () => ref.invalidate(shopCatalogProvider),
               icon: const Icon(Icons.refresh_rounded, size: 18),

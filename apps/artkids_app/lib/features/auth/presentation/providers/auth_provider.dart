@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/child_profile.dart';
@@ -7,10 +8,11 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_parent.dart';
 import '../../domain/usecases/verify_kid_pin.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/session_store.dart';
 
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   final dio = ref.watch(dioProvider);
-  return AuthRemoteDataSourceImpl(dio);
+  return AuthRemoteDataSourceImpl(dio, ref.read(sessionStoreProvider.notifier));
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -61,7 +63,26 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._loginUseCase, this._repository) : super(const AuthState());
+  AuthNotifier(this._loginUseCase, this._repository, [this._session])
+    : super(const AuthState());
+  final SessionStore? _session;
+
+  Future<void> restore(Dio dio) async {
+    if (_session?.state.accessToken == null) return;
+    final user = parentFromApi((await dio.get('/auth/me')).data);
+    final children = user.role == 'parent'
+        ? await _repository.getChildren()
+        : <ChildProfile>[];
+    final selected =
+        children.where((c) => c.id == _session?.selectedChildId).firstOrNull ??
+        children.firstOrNull;
+    state = AuthState(
+      currentUser: user,
+      children: children,
+      selectedChild: selected,
+    );
+    _session?.selectChild(selected?.id);
+  }
 
   final LoginParentUseCase _loginUseCase;
   final AuthRepository _repository;
@@ -70,32 +91,55 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final user = await _loginUseCase(email: email, password: password);
-      final children = await _repository.getChildren();
+      final children = user.role == 'parent'
+          ? await _repository.getChildren()
+          : <ChildProfile>[];
       state = state.copyWith(
         currentUser: user,
         children: children,
         selectedChild: children.isNotEmpty ? children.first : null,
         isLoading: false,
       );
+      _session?.selectChild(state.selectedChild?.id);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      rethrow;
     }
   }
 
   void selectChild(ChildProfile child) {
     state = state.copyWith(selectedChild: child);
+    _session?.selectChild(child.id);
   }
 
   void logout() {
     state = const AuthState();
   }
+
+  Future<void> reloadChildren() async {
+    final children = await _repository.getChildren();
+    state = AuthState(
+      currentUser: state.currentUser,
+      children: children,
+      selectedChild:
+          children.where((c) => c.id == state.selectedChild?.id).firstOrNull ??
+          children.firstOrNull,
+    );
+  }
+
+  void updateUser(ParentUser user) => state = state.copyWith(currentUser: user);
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final loginUseCase = ref.watch(loginParentUseCaseProvider);
   final repo = ref.watch(authRepositoryProvider);
-  return AuthNotifier(loginUseCase, repo);
+  final notifier = AuthNotifier(
+    loginUseCase,
+    repo,
+    ref.read(sessionStoreProvider.notifier),
+  );
+  ref.listen(sessionStoreProvider.select((s) => s.userId), (previous, next) {
+    if (previous != null && next == null) notifier.logout();
+  });
+  return notifier;
 });

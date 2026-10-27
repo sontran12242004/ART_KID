@@ -36,10 +36,15 @@ class ParentHomeScreen extends ConsumerWidget {
           TextButton.icon(
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xFFFF6B6B).withValues(alpha: 0.12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
-            icon: const Icon(Icons.child_care_rounded, color: Color(0xFFFF6B6B)),
+            icon: const Icon(
+              Icons.child_care_rounded,
+              color: Color(0xFFFF6B6B),
+            ),
             label: const Text(
               'Bé Học',
               style: TextStyle(
@@ -101,7 +106,10 @@ class ParentHomeScreen extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(
                             '${profile.childNickname} (${profile.childAge} tuổi) • Đang học ${profile.currentCourseTitle}',
-                            style: const TextStyle(color: Colors.white70, fontSize: 12.5),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12.5,
+                            ),
                           ),
                         ],
                       ),
@@ -171,7 +179,10 @@ class ParentHomeScreen extends ConsumerWidget {
               onTap: () => context.push(RoutePaths.parentKidPinSetup),
               borderRadius: BorderRadius.circular(16),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -185,8 +196,11 @@ class ParentHomeScreen extends ConsumerWidget {
                         color: const Color(0xFF0984E3).withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.pin_outlined,
-                          color: Color(0xFF0984E3), size: 20),
+                      child: const Icon(
+                        Icons.pin_outlined,
+                        color: Color(0xFF0984E3),
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -196,18 +210,25 @@ class ParentHomeScreen extends ConsumerWidget {
                           const Text(
                             'Mã PIN Trẻ Em',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 14),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
                           ),
                           Text(
                             'Cài đặt bảo vệ chế độ Kid Mode và phân quyền thao tác',
                             style: TextStyle(
-                                color: Colors.grey[600], fontSize: 11),
+                              color: Colors.grey[600],
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded,
-                        color: Colors.grey, size: 20),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Colors.grey,
+                      size: 20,
+                    ),
                   ],
                 ),
               ),

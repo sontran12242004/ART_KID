@@ -13,8 +13,11 @@ class KidRewardModel extends KidReward {
     return KidRewardModel(
       id: json['id'] as String,
       title: json['title'] as String,
-      iconName: json['icon_name'] as String? ?? json['iconName'] as String? ?? 'star',
-      unlockedAt: DateTime.tryParse(json['unlocked_at'] as String? ?? '') ?? DateTime.now(),
+      iconName:
+          json['icon_name'] as String? ?? json['iconName'] as String? ?? 'star',
+      unlockedAt:
+          DateTime.tryParse(json['unlocked_at'] as String? ?? '') ??
+          DateTime.now(),
       description: json['description'] as String? ?? '',
     );
   }

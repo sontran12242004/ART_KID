@@ -14,12 +14,15 @@ class ChildProfileModel extends ChildProfile {
   factory ChildProfileModel.fromJson(Map<String, dynamic> json) {
     return ChildProfileModel(
       id: json['id'] as String,
-      parentId: json['parent_id'] as String? ?? json['parentId'] as String? ?? '',
+      parentId:
+          json['parent_id'] as String? ?? json['parentId'] as String? ?? '',
       nickname: json['nickname'] as String,
       age: json['age'] as int,
       avatarUrl: json['avatar_url'] as String? ?? json['avatarUrl'] as String?,
-      totalPoints: json['total_points'] as int? ?? json['totalPoints'] as int? ?? 0,
-      badgeCount: json['badge_count'] as int? ?? json['badgeCount'] as int? ?? 0,
+      totalPoints:
+          json['total_points'] as int? ?? json['totalPoints'] as int? ?? 0,
+      badgeCount:
+          json['badge_count'] as int? ?? json['badgeCount'] as int? ?? 0,
     );
   }
 

@@ -67,10 +67,7 @@ class OrderActionButtons extends StatelessWidget {
                 const SizedBox(width: 10),
 
                 // Nút chính thay đổi theo trạng thái
-                Expanded(
-                  flex: 3,
-                  child: _buildPrimaryAction(context),
-                ),
+                Expanded(flex: 3, child: _buildPrimaryAction(context)),
               ],
             ),
           ],
@@ -97,10 +94,7 @@ class OrderActionButtons extends StatelessWidget {
           icon: const Icon(Icons.cancel_outlined, size: 18),
           label: const Text(
             'Hủy đơn',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
           ),
         );
 
@@ -118,7 +112,9 @@ class OrderActionButtons extends StatelessWidget {
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Học cụ đang được đóng gói cẩn thận tại kho ArtKids.'),
+                content: Text(
+                  'Học cụ đang được đóng gói cẩn thận tại kho ArtKids.',
+                ),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -126,10 +122,7 @@ class OrderActionButtons extends StatelessWidget {
           icon: const Icon(Icons.inventory_2_outlined, size: 18),
           label: const Text(
             'Đang đóng gói',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
           ),
         );
 
@@ -148,10 +141,7 @@ class OrderActionButtons extends StatelessWidget {
           icon: const Icon(Icons.open_in_new_rounded, size: 18),
           label: const Text(
             'Theo dõi vận đơn',
-            style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
           ),
         );
 
@@ -172,10 +162,7 @@ class OrderActionButtons extends StatelessWidget {
                 icon: const Icon(Icons.star_rate_rounded, size: 18),
                 label: const Text(
                   'Đánh giá',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
                 ),
               ),
             ),
@@ -195,10 +182,7 @@ class OrderActionButtons extends StatelessWidget {
                 icon: const Icon(Icons.replay_rounded, size: 18),
                 label: const Text(
                   'Mua lại',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),
                 ),
               ),
             ),
@@ -220,10 +204,7 @@ class OrderActionButtons extends StatelessWidget {
           icon: const Icon(Icons.shopping_bag_outlined, size: 18),
           label: const Text(
             'Mua lại kit',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
           ),
         );
     }
@@ -264,7 +245,9 @@ class OrderActionButtons extends StatelessWidget {
       context: context,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (context, setModalState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.warning_amber_rounded, color: Color(0xFFE74C3C)),
@@ -286,7 +269,11 @@ class OrderActionButtons extends StatelessWidget {
               children: [
                 const Text(
                   'Bạn có chắc chắn muốn hủy đơn hàng này không? Sau khi hủy, học cụ sẽ không được vận chuyển tới bé.',
-                  style: TextStyle(fontSize: 13.5, color: Color(0xFF57606F), height: 1.4),
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    color: Color(0xFF57606F),
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -302,8 +289,13 @@ class OrderActionButtons extends StatelessWidget {
                   initialValue: selectedReason,
                   isExpanded: true,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   items: const [
                     DropdownMenuItem(
@@ -342,7 +334,9 @@ class OrderActionButtons extends StatelessWidget {
                       hintText: 'Nhập lý do chi tiết...',
                       hintStyle: const TextStyle(fontSize: 13),
                       contentPadding: const EdgeInsets.all(12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ],
@@ -358,11 +352,14 @@ class OrderActionButtons extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE74C3C),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () async {
                 Navigator.of(dialogCtx).pop();
-                final finalReason = selectedReason == 'Lý do khác' &&
+                final finalReason =
+                    selectedReason == 'Lý do khác' &&
                         customReasonController.text.trim().isNotEmpty
                     ? customReasonController.text.trim()
                     : selectedReason;
@@ -386,7 +383,9 @@ class OrderActionButtons extends StatelessWidget {
       context: context,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (context, setModalState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.rate_review_outlined, color: Color(0xFF1687A7)),
@@ -432,10 +431,13 @@ class OrderActionButtons extends StatelessWidget {
                 controller: reviewController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: 'Nhập cảm nhận của bạn và bé về chất lượng màu, giấy vẽ, cọ...',
+                  hintText:
+                      'Nhập cảm nhận của bạn và bé về chất lượng màu, giấy vẽ, cọ...',
                   hintStyle: const TextStyle(fontSize: 12.5),
                   contentPadding: const EdgeInsets.all(12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ],
@@ -449,7 +451,9 @@ class OrderActionButtons extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1687A7),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
                 Navigator.of(dialogCtx).pop();
@@ -533,10 +537,15 @@ class OrderActionButtons extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 leading: const CircleAvatar(
                   backgroundColor: Color(0xFFEBF5FB),
-                  child: Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF2980B9)),
+                  child: Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    color: Color(0xFF2980B9),
+                  ),
                 ),
                 title: const Text('Hỗ Trợ Qua Zalo Official'),
-                subtitle: const Text('ArtKids Việt Nam — Phản hồi trong 5 phút'),
+                subtitle: const Text(
+                  'ArtKids Việt Nam — Phản hồi trong 5 phút',
+                ),
                 onTap: () {
                   Navigator.pop(sheetCtx);
                   launchUrl(
@@ -550,7 +559,10 @@ class OrderActionButtons extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 leading: const CircleAvatar(
                   backgroundColor: Color(0xFFFDF2E9),
-                  child: Icon(Icons.mail_outline_rounded, color: Color(0xFFE67E22)),
+                  child: Icon(
+                    Icons.mail_outline_rounded,
+                    color: Color(0xFFE67E22),
+                  ),
                 ),
                 title: const Text('Email Hỗ Trợ'),
                 subtitle: const Text('hotro@artkids.vn'),

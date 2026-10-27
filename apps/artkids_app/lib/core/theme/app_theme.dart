@@ -15,7 +15,10 @@ class AppTheme {
       appBarTheme: const AppBarTheme(centerTitle: true),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          minimumSize: const Size(KidUiConstants.minTouchTarget, KidUiConstants.minTouchTarget),
+          minimumSize: const Size(
+            KidUiConstants.minTouchTarget,
+            KidUiConstants.minTouchTarget,
+          ),
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -53,7 +56,10 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          minimumSize: const Size(KidUiConstants.largeTouchTarget, KidUiConstants.largeTouchTarget),
+          minimumSize: const Size(
+            KidUiConstants.largeTouchTarget,
+            KidUiConstants.largeTouchTarget,
+          ),
           textStyle: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,

@@ -56,7 +56,7 @@ class OrdersListState extends Equatable {
 /// Notifier quản lý danh sách đơn hàng, phân trang và tải thêm
 class OrdersListNotifier extends StateNotifier<AsyncValue<OrdersListState>> {
   OrdersListNotifier(this._repository, this._filter)
-      : super(const AsyncValue.loading()) {
+    : super(const AsyncValue.loading()) {
     loadInitial();
   }
 
@@ -110,7 +110,9 @@ class OrdersListNotifier extends StateNotifier<AsyncValue<OrdersListState>> {
   /// Tải trang tiếp theo (Infinite Scroll)
   Future<void> loadMore() async {
     final currentState = state.valueOrNull;
-    if (currentState == null || !currentState.hasMore || currentState.isLoadingMore) {
+    if (currentState == null ||
+        !currentState.hasMore ||
+        currentState.isLoadingMore) {
       return;
     }
 
@@ -124,7 +126,8 @@ class OrdersListNotifier extends StateNotifier<AsyncValue<OrdersListState>> {
         limit: _pageSize,
       );
 
-      final mergedOrders = List<OrderEntity>.from(currentState.orders)..addAll(newOrders);
+      final mergedOrders = List<OrderEntity>.from(currentState.orders)
+        ..addAll(newOrders);
 
       state = AsyncValue.data(
         OrdersListState(
@@ -142,9 +145,12 @@ class OrdersListNotifier extends StateNotifier<AsyncValue<OrdersListState>> {
 }
 
 /// Provider danh sách đơn hàng phụ thuộc vào filter đang chọn
-final ordersListProvider = StateNotifierProvider.autoDispose<OrdersListNotifier,
-    AsyncValue<OrdersListState>>((ref) {
-  final repository = ref.watch(orderRepositoryProvider);
-  final filter = ref.watch(selectedOrderFilterProvider);
-  return OrdersListNotifier(repository, filter);
-});
+final ordersListProvider =
+    StateNotifierProvider.autoDispose<
+      OrdersListNotifier,
+      AsyncValue<OrdersListState>
+    >((ref) {
+      final repository = ref.watch(orderRepositoryProvider);
+      final filter = ref.watch(selectedOrderFilterProvider);
+      return OrdersListNotifier(repository, filter);
+    });

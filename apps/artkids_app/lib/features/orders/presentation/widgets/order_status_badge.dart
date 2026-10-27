@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/enums/order_status.dart';
 
-enum BadgeSize {
-  compact,
-  large,
-}
+enum BadgeSize { compact, large }
 
 /// Badge trạng thái đơn hàng hiển thị nhãn và màu sắc tương ứng
 class OrderStatusBadge extends StatelessWidget {
@@ -47,11 +44,7 @@ class OrderStatusBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            status.icon,
-            color: status.color,
-            size: isLarge ? 18 : 13.5,
-          ),
+          Icon(status.icon, color: status.color, size: isLarge ? 18 : 13.5),
           SizedBox(width: isLarge ? 7 : 4.5),
           Text(
             status.label,

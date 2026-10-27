@@ -18,10 +18,7 @@ import '../widgets/drop_target_slot.dart';
 class MatchingScreen extends ConsumerStatefulWidget {
   final String pictureSetId;
 
-  const MatchingScreen({
-    super.key,
-    this.pictureSetId = 'living_room',
-  });
+  const MatchingScreen({super.key, this.pictureSetId = 'living_room'});
 
   @override
   ConsumerState<MatchingScreen> createState() => _MatchingScreenState();
@@ -38,7 +35,9 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
         final progress = ref
             .read(matchingGameProgressProvider)
             .getProgress(widget.pictureSetId);
-        ref.read(matchingProvider.notifier).initialize(
+        ref
+            .read(matchingProvider.notifier)
+            .initialize(
               widget.pictureSetId,
               restoredMatches: progress?.matchedAnimals,
             );
@@ -54,7 +53,9 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
     final pictureSet = MatchingGameConfig.getPictureSet(widget.pictureSetId);
 
     // Lưu ngay tiến trình kéo thả dở dang vào Hive sau mỗi lần thả đúng
-    ref.read(matchingGameProgressProvider.notifier).saveProgress(
+    ref
+        .read(matchingGameProgressProvider.notifier)
+        .saveProgress(
           MatchingGameProgress(
             pictureSetId: widget.pictureSetId,
             currentStep: GamePhase.matching,
@@ -68,7 +69,9 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
     // Khi ghép đúng toàn bộ các con vật trong bộ tranh
     if (matchingState.isAllMatched) {
       // Ghi nhận vào Gallery lịch sử tranh hoàn thiện và tự động xoá tiến trình dở dang
-      ref.read(matchingGameProgressProvider.notifier).recordCompletion(
+      ref
+          .read(matchingGameProgressProvider.notifier)
+          .recordCompletion(
             pictureSetId: widget.pictureSetId,
             pictureTitle: pictureSet.title,
             thumbnailAsset: pictureSet.thumbnailAsset,
@@ -106,8 +109,10 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
               children: [
                 // Thanh Header: Nút quay về + Tiêu đề
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       IconButton(
@@ -115,8 +120,10 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
                           backgroundColor: Colors.white,
                           elevation: 2,
                         ),
-                        icon: const Icon(Icons.arrow_back_rounded,
-                            color: Color(0xFF264653)),
+                        icon: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: Color(0xFF264653),
+                        ),
                         onPressed: () {
                           if (context.canPop()) {
                             context.pop();
@@ -152,7 +159,9 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
                       // Điểm số đã ghép
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFBE0B),
                           borderRadius: BorderRadius.circular(16),
@@ -173,8 +182,10 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
                 // Vùng tranh nền phòng khách với LayoutBuilder tính kích thước thực tế
                 Expanded(
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final targetRatio = pictureSet.bgAspectRatio;
@@ -219,8 +230,9 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
                                       config: slot,
                                       bgWidth: bgWidth,
                                       bgHeight: bgHeight,
-                                      isMatched: matchingState
-                                          .isMatched(slot.animal),
+                                      isMatched: matchingState.isMatched(
+                                        slot.animal,
+                                      ),
                                       onMatched: _onAnimalMatched,
                                     );
                                   }),
@@ -239,8 +251,9 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(32)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(32),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.08),
@@ -283,10 +296,7 @@ class _MatchingScreenState extends ConsumerState<MatchingScreen> {
 
             // Khi ghép đúng cả 3 con: Kích hoạt hiệu ứng ăn mừng lớn toàn màn hình
             if (matchingState.isAllMatched)
-              CelebrationOverlay(
-                isGrandCelebration: true,
-                onReplay: _onReplay,
-              ),
+              CelebrationOverlay(isGrandCelebration: true, onReplay: _onReplay),
           ],
         ),
       ),

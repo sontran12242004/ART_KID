@@ -6,10 +6,7 @@ class LoginParentUseCase {
 
   final AuthRepository _repository;
 
-  Future<ParentUser> call({
-    required String email,
-    required String password,
-  }) {
+  Future<ParentUser> call({required String email, required String password}) {
     return _repository.login(email: email, password: password);
   }
 }

@@ -3,6 +3,7 @@ ArtKids AI Inference Worker (GPU-bound)
 Consumes drawing processing jobs from Redis/Queue, runs Gemini Multimodal Vision,
 and synthesizes 2D/3D animated creatures.
 """
+
 import os
 import json
 import logging

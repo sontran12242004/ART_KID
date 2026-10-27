@@ -15,10 +15,7 @@ import '../widgets/order_tracking_timeline.dart';
 
 /// Màn hình Chi tiết Đơn hàng — Phục vụ phụ huynh quản lý & theo dõi học cụ
 class OrderDetailScreen extends ConsumerWidget {
-  const OrderDetailScreen({
-    super.key,
-    required this.orderId,
-  });
+  const OrderDetailScreen({super.key, required this.orderId});
 
   final String orderId;
 
@@ -36,7 +33,11 @@ class OrderDetailScreen extends ConsumerWidget {
         elevation: 0.5,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F3B46), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0F3B46),
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: const Text(
@@ -123,7 +124,9 @@ class OrderDetailScreen extends ConsumerWidget {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Không thể hủy đơn hàng lúc này. Vui lòng thử lại.'),
+                    content: Text(
+                      'Không thể hủy đơn hàng lúc này. Vui lòng thử lại.',
+                    ),
                     backgroundColor: Color(0xFFE74C3C),
                     behavior: SnackBarBehavior.floating,
                   ),
@@ -165,10 +168,7 @@ class OrderDetailScreen extends ConsumerWidget {
                 spacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  OrderStatusBadge(
-                    status: order.status,
-                    size: BadgeSize.large,
-                  ),
+                  OrderStatusBadge(status: order.status, size: BadgeSize.large),
                   _buildOrderTypeBadge(order.orderType),
                 ],
               ),
@@ -298,7 +298,11 @@ class OrderDetailScreen extends ConsumerWidget {
           // Tên người nhận & SĐT
           Row(
             children: [
-              const Icon(Icons.person_outline_rounded, size: 16, color: Color(0xFF7F8C8D)),
+              const Icon(
+                Icons.person_outline_rounded,
+                size: 16,
+                color: Color(0xFF7F8C8D),
+              ),
               const SizedBox(width: 8),
               Text(
                 shipping.recipientName,
@@ -309,11 +313,7 @@ class OrderDetailScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Container(
-                width: 3,
-                height: 12,
-                color: const Color(0xFFBDC3C7),
-              ),
+              Container(width: 3, height: 12, color: const Color(0xFFBDC3C7)),
               const SizedBox(width: 10),
               Text(
                 shipping.phoneNumber,
@@ -333,7 +333,11 @@ class OrderDetailScreen extends ConsumerWidget {
             children: [
               const Padding(
                 padding: EdgeInsets.only(top: 2),
-                child: Icon(Icons.home_outlined, size: 16, color: Color(0xFF7F8C8D)),
+                child: Icon(
+                  Icons.home_outlined,
+                  size: 16,
+                  color: Color(0xFF7F8C8D),
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -350,7 +354,8 @@ class OrderDetailScreen extends ConsumerWidget {
           ),
 
           // Đơn vị vận chuyển & Mã vận đơn (nếu có)
-          if (shipping.trackingNumber != null && shipping.trackingNumber!.isNotEmpty) ...[
+          if (shipping.trackingNumber != null &&
+              shipping.trackingNumber!.isNotEmpty) ...[
             const SizedBox(height: 14),
             const Divider(height: 1, color: Color(0xFFF1F2F6)),
             const SizedBox(height: 14),
@@ -397,12 +402,18 @@ class OrderDetailScreen extends ConsumerWidget {
                   // Nút sao chép mã vận đơn
                   InkWell(
                     onTap: () {
-                      Clipboard.setData(ClipboardData(text: shipping.trackingNumber!));
+                      Clipboard.setData(
+                        ClipboardData(text: shipping.trackingNumber!),
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Row(
                             children: [
-                              Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                               SizedBox(width: 8),
                               Text('Đã sao chép mã vận đơn vào bộ nhớ tạm'),
                             ],
@@ -414,7 +425,10 @@ class OrderDetailScreen extends ConsumerWidget {
                     },
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
@@ -422,7 +436,11 @@ class OrderDetailScreen extends ConsumerWidget {
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.copy_rounded, size: 14, color: Color(0xFF1687A7)),
+                          Icon(
+                            Icons.copy_rounded,
+                            size: 14,
+                            color: Color(0xFF1687A7),
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Sao chép',
@@ -454,7 +472,11 @@ class OrderDetailScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFE53935)),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Color(0xFFE53935),
+            ),
             const SizedBox(height: 14),
             const Text(
               'Không thể tải thông tin đơn hàng',
@@ -475,7 +497,9 @@ class OrderDetailScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1687A7),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () => ref.invalidate(orderDetailProvider(orderId)),
               icon: const Icon(Icons.refresh_rounded, size: 18),
@@ -493,7 +517,10 @@ class OrderDetailScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: type.backgroundColor,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: type.color.withValues(alpha: 0.35), width: 1.2),
+        border: Border.all(
+          color: type.color.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

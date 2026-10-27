@@ -21,12 +21,12 @@ class Course extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        thumbnailUrl,
-        ageRange,
-        priceVnd,
-        includesPhysicalKit,
-      ];
+    id,
+    title,
+    description,
+    thumbnailUrl,
+    ageRange,
+    priceVnd,
+    includesPhysicalKit,
+  ];
 }

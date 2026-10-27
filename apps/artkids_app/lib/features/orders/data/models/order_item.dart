@@ -17,21 +17,24 @@ class OrderItemModel extends OrderItemEntity {
     return OrderItemModel(
       id: json['id'] as String? ?? '',
       kitName: json['kit_name'] as String? ?? json['kitName'] as String? ?? '',
-      thumbnailUrl: json['thumbnail_url'] as String? ??
+      thumbnailUrl:
+          json['thumbnail_url'] as String? ??
           json['thumbnailUrl'] as String? ??
           '',
       quantity: (json['quantity'] as num?)?.toInt() ?? 1,
-      unitPriceVnd: (json['unit_price_vnd'] as num?)?.toInt() ??
+      unitPriceVnd:
+          (json['unit_price_vnd'] as num?)?.toInt() ??
           (json['price'] as num?)?.toInt() ??
           0,
       courseId: json['course_id'] as String? ?? json['courseId'] as String?,
       courseTitle:
           json['course_title'] as String? ?? json['courseTitle'] as String?,
-      kitItems: (json['kit_items'] as List<dynamic>? ??
-              json['kitItems'] as List<dynamic>? ??
-              [])
-          .map((e) => e.toString())
-          .toList(),
+      kitItems:
+          (json['kit_items'] as List<dynamic>? ??
+                  json['kitItems'] as List<dynamic>? ??
+                  [])
+              .map((e) => e.toString())
+              .toList(),
     );
   }
 

@@ -54,10 +54,8 @@ class ParentProfileState {
       childInterests: childInterests ?? this.childInterests,
       childAvatarId: childAvatarId ?? this.childAvatarId,
       currentCourseTitle: currentCourseTitle ?? this.currentCourseTitle,
-      notificationsEnabled:
-          notificationsEnabled ?? this.notificationsEnabled,
-      dailyDrawingReminder:
-          dailyDrawingReminder ?? this.dailyDrawingReminder,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      dailyDrawingReminder: dailyDrawingReminder ?? this.dailyDrawingReminder,
     );
   }
 }
@@ -138,5 +136,5 @@ class ParentProfileNotifier extends StateNotifier<ParentProfileState> {
 
 final parentProfileProvider =
     StateNotifierProvider<ParentProfileNotifier, ParentProfileState>((ref) {
-  return ParentProfileNotifier();
-});
+      return ParentProfileNotifier();
+    });

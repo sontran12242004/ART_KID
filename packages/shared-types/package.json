@@ -7,7 +7,12 @@
   "scripts": {
     "build": "tsc"
   },
-  "keywords": ["artkids", "shared", "types", "dto"],
+  "keywords": [
+    "artkids",
+    "shared",
+    "types",
+    "dto"
+  ],
   "author": "ArtKids Team",
   "license": "ISC"
 }

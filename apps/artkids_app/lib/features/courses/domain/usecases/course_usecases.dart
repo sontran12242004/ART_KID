@@ -15,7 +15,8 @@ class GetLessonsUseCase {
 
   final CourseRepository _repository;
 
-  Future<List<Lesson>> call(String courseId) => _repository.getLessons(courseId);
+  Future<List<Lesson>> call(String courseId) =>
+      _repository.getLessons(courseId);
 }
 
 class UpdateProgressUseCase {
@@ -27,10 +28,9 @@ class UpdateProgressUseCase {
     required String childId,
     required String lessonId,
     required int percent,
-  }) =>
-      _repository.updateProgress(
-        childId: childId,
-        lessonId: lessonId,
-        percent: percent,
-      );
+  }) => _repository.updateProgress(
+    childId: childId,
+    lessonId: lessonId,
+    percent: percent,
+  );
 }

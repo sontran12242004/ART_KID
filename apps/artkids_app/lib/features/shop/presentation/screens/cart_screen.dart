@@ -11,8 +11,11 @@ import '../widgets/cart_item_tile.dart';
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
-  static final _currencyFormat =
-      NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  );
 
   static const int _freeShippingThreshold = 300000;
 
@@ -21,6 +24,13 @@ class CartScreen extends ConsumerWidget {
     final cartItems = ref.watch(cartProvider);
     final totalCount = ref.watch(cartTotalCountProvider);
     final subtotal = ref.watch(cartSubtotalVndProvider);
+    ref.listen(cartSyncErrorProvider, (_, error) {
+      if (error != null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
+      }
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFB),
@@ -30,8 +40,11 @@ class CartScreen extends ConsumerWidget {
         scrolledUnderElevation: 1,
         titleSpacing: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF2C3E50), size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF2C3E50),
+            size: 18,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -46,8 +59,11 @@ class CartScreen extends ConsumerWidget {
           if (cartItems.isNotEmpty)
             TextButton.icon(
               onPressed: () => _confirmClearCart(context, ref),
-              icon: const Icon(Icons.delete_sweep_outlined,
-                  size: 18, color: Color(0xFFE74C3C)),
+              icon: const Icon(
+                Icons.delete_sweep_outlined,
+                size: 18,
+                color: Color(0xFFE74C3C),
+              ),
               label: const Text(
                 'Xóa tất cả',
                 style: TextStyle(
@@ -70,7 +86,9 @@ class CartScreen extends ConsumerWidget {
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                     itemCount: cartItems.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
@@ -95,9 +113,7 @@ class CartScreen extends ConsumerWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      color: isFreeShipping
-          ? const Color(0xFFE8F5E9)
-          : const Color(0xFFFFF8E1),
+      color: isFreeShipping ? const Color(0xFFE8F5E9) : const Color(0xFFFFF8E1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -208,7 +224,9 @@ class CartScreen extends ConsumerWidget {
                 backgroundColor: const Color(0xFF0F3B46),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 12),
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -223,14 +241,15 @@ class CartScreen extends ConsumerWidget {
 
   /// Footer cố định: Tạm tính & Nút Tiến hành thanh toán
   Widget _buildCheckoutFooter(
-      BuildContext context, int totalCount, int subtotal) {
+    BuildContext context,
+    int totalCount,
+    int subtotal,
+  ) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: const Border(
-          top: BorderSide(color: Color(0xFFE8ECEF)),
-        ),
+        border: const Border(top: BorderSide(color: Color(0xFFE8ECEF))),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -318,12 +337,15 @@ class CartScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy', style: TextStyle(color: Color(0xFF7F8C8D))),
+            child: const Text(
+              'Hủy',
+              style: TextStyle(color: Color(0xFF7F8C8D)),
+            ),
           ),
           ElevatedButton(
-            onPressed: () {
-              ref.read(cartProvider.notifier).clearCart();
-              Navigator.of(ctx).pop();
+            onPressed: () async {
+              await ref.read(cartProvider.notifier).clearRemote();
+              if (ctx.mounted) Navigator.of(ctx).pop();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE74C3C),

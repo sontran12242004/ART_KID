@@ -34,8 +34,10 @@ class CompletedGalleryScreen extends ConsumerWidget {
                       backgroundColor: Colors.white,
                       elevation: 2,
                     ),
-                    icon: const Icon(Icons.arrow_back_rounded,
-                        color: Color(0xFF264653)),
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Color(0xFF264653),
+                    ),
                     onPressed: () {
                       if (context.canPop()) {
                         context.pop();
@@ -56,8 +58,10 @@ class CompletedGalleryScreen extends ConsumerWidget {
                     ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFBE0B),
                       borderRadius: BorderRadius.circular(16),
@@ -131,8 +135,10 @@ class CompletedGalleryScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF06D6A0),
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -247,8 +253,10 @@ class CompletedGalleryScreen extends ConsumerWidget {
 
                 // Thông tin ngày hoàn thành
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -266,8 +274,11 @@ class CompletedGalleryScreen extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.access_time_rounded,
-                                  size: 14, color: Colors.grey),
+                              const Icon(
+                                Icons.access_time_rounded,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 dateStr,
@@ -283,9 +294,13 @@ class CompletedGalleryScreen extends ConsumerWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF06D6A0).withValues(alpha: 0.15),
+                          color: const Color(
+                            0xFF06D6A0,
+                          ).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Text(

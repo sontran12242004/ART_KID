@@ -42,7 +42,10 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F3B46)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0F3B46),
+          ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
@@ -54,10 +57,7 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFE2F3F5),
-                  const Color(0xFFF7FDFD),
-                ],
+                colors: [const Color(0xFFE2F3F5), const Color(0xFFF7FDFD)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -126,11 +126,17 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
                     selectedColor: const Color(0xFF1687A7),
                     backgroundColor: Colors.white,
                     side: BorderSide(
-                      color: isSelected ? const Color(0xFF1687A7) : const Color(0xFFE0E0E0),
+                      color: isSelected
+                          ? const Color(0xFF1687A7)
+                          : const Color(0xFFE0E0E0),
                     ),
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : const Color(0xFF4C6E76),
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF4C6E76),
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       fontSize: 13,
                     ),
                     shape: RoundedRectangleBorder(
@@ -154,20 +160,30 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
                 final filteredCourses = _selectedAgeFilter == 'Tất cả'
                     ? courses
                     : courses
-                        .where((c) =>
-                            c.ageRange.toLowerCase().contains(_selectedAgeFilter.toLowerCase()))
-                        .toList();
+                          .where(
+                            (c) => c.ageRange.toLowerCase().contains(
+                              _selectedAgeFilter.toLowerCase(),
+                            ),
+                          )
+                          .toList();
 
                 if (filteredCourses.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.menu_book_rounded, size: 64, color: Colors.grey.shade300),
+                        Icon(
+                          Icons.menu_book_rounded,
+                          size: 64,
+                          color: Colors.grey.shade300,
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           'Chưa có khóa học cho độ tuổi $_selectedAgeFilter',
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -240,7 +256,10 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
                       const Text(
                         'Vui lòng kiểm tra kết nối mạng hoặc thử lại.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Color(0xFF757575), fontSize: 13),
+                        style: TextStyle(
+                          color: Color(0xFF757575),
+                          fontSize: 13,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton.icon(
@@ -250,7 +269,10 @@ class _CourseListScreenState extends ConsumerState<CourseListScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
                         ),
                         onPressed: () => ref.invalidate(coursesFutureProvider),
                         icon: const Icon(Icons.refresh_rounded, size: 18),

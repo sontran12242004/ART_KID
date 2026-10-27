@@ -4,11 +4,7 @@ import '../../../courses/domain/entities/course.dart';
 
 /// Card khóa học hiển thị trong Kid Mode — nút to, ít chữ, icon vui nhộn
 class KidCourseCard extends StatelessWidget {
-  const KidCourseCard({
-    super.key,
-    required this.course,
-    required this.onTap,
-  });
+  const KidCourseCard({super.key, required this.course, required this.onTap});
 
   final Course course;
   final VoidCallback onTap;

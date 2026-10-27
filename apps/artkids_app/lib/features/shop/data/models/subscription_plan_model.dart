@@ -16,23 +16,24 @@ class SubscriptionPlanModel extends SubscriptionPlan {
   final String? description;
 
   factory SubscriptionPlanModel.fromJson(Map<String, dynamic> json) {
-    final price = (json['price_monthly'] as num?)?.toDouble() ??
+    final price =
+        (json['price_monthly'] as num?)?.toDouble() ??
         (json['priceMonthly'] as num?)?.toDouble() ??
         199000.0;
-    final kit = json['includes_kit'] as bool? ??
-        json['includesKit'] as bool? ??
-        false;
+    final kit =
+        json['includes_kit'] as bool? ?? json['includesKit'] as bool? ?? false;
 
     return SubscriptionPlanModel(
       id: json['id'] as String,
       name: json['name'] as String,
       priceMonthly: price,
-      priceVnd: price.toInt(),
+      priceVnd: (json['price_vnd'] as num?)?.toInt() ?? price.toInt(),
       durationMonths: json['duration_months'] as int? ?? 1,
       includesKit: kit,
       kitDeliveryIncluded: kit,
       description: json['description'] as String?,
-      features: (json['features'] as List<dynamic>?)
+      features:
+          (json['features'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const [],

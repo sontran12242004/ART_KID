@@ -6,33 +6,21 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "args": [
-        "--flavor",
-        "dev",
-        "--dart-define=FLAVOR=dev"
-      ]
+      "args": ["--flavor", "dev", "--dart-define=FLAVOR=dev"]
     },
     {
       "name": "ArtKids App (Staging)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "args": [
-        "--flavor",
-        "staging",
-        "--dart-define=FLAVOR=staging"
-      ]
+      "args": ["--flavor", "staging", "--dart-define=FLAVOR=staging"]
     },
     {
       "name": "ArtKids App (Prod)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "args": [
-        "--flavor",
-        "prod",
-        "--dart-define=FLAVOR=prod"
-      ]
+      "args": ["--flavor", "prod", "--dart-define=FLAVOR=prod"]
     }
   ]
 }

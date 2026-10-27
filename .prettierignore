@@ -1,0 +1,9 @@
+**/node_modules/
+**/build/
+**/bin/
+**/obj/
+**/.dart_tool/
+**/.test-data/
+**/App_Data/
+backend/tests/artifacts/
+.git/

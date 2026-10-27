@@ -41,11 +41,14 @@ class KidBadgesState {
         badges.where((b) => b.category == BadgeCategory.habit).toList(),
       BadgeFilterTab.skill =>
         badges.where((b) => b.category == BadgeCategory.skill).toList(),
-      BadgeFilterTab.achievement => badges
-          .where((b) =>
-              b.category == BadgeCategory.achievement ||
-              b.category == BadgeCategory.special)
-          .toList(),
+      BadgeFilterTab.achievement =>
+        badges
+            .where(
+              (b) =>
+                  b.category == BadgeCategory.achievement ||
+                  b.category == BadgeCategory.special,
+            )
+            .toList(),
     };
   }
 
@@ -69,7 +72,7 @@ class KidBadgesState {
 
 class KidBadgesNotifier extends StateNotifier<KidBadgesState> {
   KidBadgesNotifier()
-      : super(const KidBadgesState(badges: AchievementBadge.all20Badges));
+    : super(const KidBadgesState(badges: AchievementBadge.all20Badges));
 
   void setFilterTab(BadgeFilterTab tab) {
     state = state.copyWith(currentTab: tab);
@@ -119,8 +122,7 @@ class KidBadgesNotifier extends StateNotifier<KidBadgesState> {
   void updateProgress(String id, int delta) {
     final updatedList = state.badges.map((b) {
       if (b.id == id && !b.isUnlocked) {
-        final newProgress =
-            (b.currentProgress + delta).clamp(0, b.maxProgress);
+        final newProgress = (b.currentProgress + delta).clamp(0, b.maxProgress);
         final isNowUnlocked = newProgress >= b.maxProgress;
         return b.copyWith(
           currentProgress: newProgress,
@@ -141,5 +143,5 @@ class KidBadgesNotifier extends StateNotifier<KidBadgesState> {
 
 final kidBadgesNotifierProvider =
     StateNotifierProvider<KidBadgesNotifier, KidBadgesState>((ref) {
-  return KidBadgesNotifier();
-});
+      return KidBadgesNotifier();
+    });

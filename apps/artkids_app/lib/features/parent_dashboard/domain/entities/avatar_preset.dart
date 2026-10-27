@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum AvatarType {
-  asset,
-  icon,
-}
+enum AvatarType { asset, icon }
 
 class AvatarPreset {
   final String id;

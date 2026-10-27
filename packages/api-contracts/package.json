@@ -8,7 +8,12 @@
     "dist",
     "openapi.yaml"
   ],
-  "keywords": ["artkids", "openapi", "swagger", "api-contracts"],
+  "keywords": [
+    "artkids",
+    "openapi",
+    "swagger",
+    "api-contracts"
+  ],
   "author": "ArtKids Team",
   "license": "ISC"
 }

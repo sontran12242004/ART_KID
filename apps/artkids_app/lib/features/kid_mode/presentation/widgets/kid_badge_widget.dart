@@ -33,7 +33,9 @@ class KidBadgeWidget extends StatelessWidget {
           height: KidUiConstants.largeTouchTarget,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: unlocked ? KidUiConstants.secondaryKid : Colors.grey.shade300,
+            color: unlocked
+                ? KidUiConstants.secondaryKid
+                : Colors.grey.shade300,
             boxShadow: unlocked
                 ? [
                     BoxShadow(

@@ -14,10 +14,13 @@ class ParentUserModel extends ParentUser {
     return ParentUserModel(
       id: json['id'] as String,
       email: json['email'] as String,
-      fullName: json['full_name'] as String? ?? json['fullName'] as String? ?? '',
-      phoneNumber: json['phone_number'] as String? ?? json['phoneNumber'] as String?,
+      fullName:
+          json['full_name'] as String? ?? json['fullName'] as String? ?? '',
+      phoneNumber:
+          json['phone_number'] as String? ?? json['phoneNumber'] as String?,
       hasActiveSubscription: json['has_active_subscription'] as bool? ?? false,
-      hasCompletedCoppaConsent: json['has_completed_coppa_consent'] as bool? ?? false,
+      hasCompletedCoppaConsent:
+          json['has_completed_coppa_consent'] as bool? ?? false,
     );
   }
 

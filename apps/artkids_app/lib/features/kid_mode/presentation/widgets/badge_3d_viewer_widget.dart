@@ -96,8 +96,10 @@ class _Badge3DViewerWidgetState extends State<Badge3DViewerWidget>
               bottom: 0,
               right: 0,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 4.5, vertical: 1.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 4.5,
+                  vertical: 1.5,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFFFB800), Color(0xFFFF8C00)],

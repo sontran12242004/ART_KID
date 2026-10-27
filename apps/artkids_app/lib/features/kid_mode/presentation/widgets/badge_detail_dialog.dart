@@ -8,11 +8,7 @@ class BadgeDetailDialog extends StatelessWidget {
   final AchievementBadge badge;
   final VoidCallback? onUnlockDemo;
 
-  const BadgeDetailDialog({
-    super.key,
-    required this.badge,
-    this.onUnlockDemo,
-  });
+  const BadgeDetailDialog({super.key, required this.badge, this.onUnlockDemo});
 
   static void show(
     BuildContext context, {
@@ -21,10 +17,8 @@ class BadgeDetailDialog extends StatelessWidget {
   }) {
     showDialog(
       context: context,
-      builder: (ctx) => BadgeDetailDialog(
-        badge: badge,
-        onUnlockDemo: onUnlockDemo,
-      ),
+      builder: (ctx) =>
+          BadgeDetailDialog(badge: badge, onUnlockDemo: onUnlockDemo),
     );
   }
 
@@ -70,7 +64,9 @@ class BadgeDetailDialog extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: badge.primaryColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
@@ -87,7 +83,9 @@ class BadgeDetailDialog extends StatelessWidget {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: badge.category.color.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
@@ -122,7 +120,9 @@ class BadgeDetailDialog extends StatelessWidget {
                   Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFFB800), Color(0xFFFF8C00)],
@@ -130,8 +130,9 @@ class BadgeDetailDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFF8C00)
-                                .withValues(alpha: 0.35),
+                            color: const Color(
+                              0xFFFF8C00,
+                            ).withValues(alpha: 0.35),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -140,8 +141,11 @@ class BadgeDetailDialog extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.threed_rotation_rounded,
-                              color: Colors.white, size: 16),
+                          const Icon(
+                            Icons.threed_rotation_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             'Model 3D ${badge.title} (Xoay 360°)',
@@ -162,7 +166,9 @@ class BadgeDetailDialog extends StatelessWidget {
                 Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: badge.isUnlocked
                           ? const Color(0xFFE8F5E9)
@@ -339,18 +345,19 @@ class BadgeDetailDialog extends StatelessWidget {
                         end: Alignment.bottomRight,
                         colors: badge.isUnlocked
                             ? [badge.primaryColor, badge.secondaryColor]
-                            : [const Color(0xFF90A4AE), const Color(0xFFCFD8DC)],
+                            : [
+                                const Color(0xFF90A4AE),
+                                const Color(0xFFCFD8DC),
+                              ],
                       ),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 4.5,
-                      ),
+                      border: Border.all(color: Colors.white, width: 4.5),
                       boxShadow: [
                         BoxShadow(
-                          color: (badge.isUnlocked
-                                  ? badge.primaryColor
-                                  : Colors.black)
-                              .withValues(alpha: 0.35),
+                          color:
+                              (badge.isUnlocked
+                                      ? badge.primaryColor
+                                      : Colors.black)
+                                  .withValues(alpha: 0.35),
                           blurRadius: 18,
                           offset: const Offset(0, 8),
                         ),

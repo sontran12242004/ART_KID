@@ -43,10 +43,7 @@ class AppAvatarWidget extends StatelessWidget {
             ],
           ),
         ),
-        child: Image.asset(
-          preset.assetPath!,
-          fit: BoxFit.contain,
-        ),
+        child: Image.asset(preset.assetPath!, fit: BoxFit.contain),
       );
     } else {
       avatarContent = Container(
@@ -57,10 +54,7 @@ class AppAvatarWidget extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              preset.primaryColor,
-              preset.secondaryColor,
-            ],
+            colors: [preset.primaryColor, preset.secondaryColor],
           ),
         ),
         child: Center(
@@ -78,10 +72,7 @@ class AppAvatarWidget extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white,
-          width: radius > 30 ? 3.5 : 2.5,
-        ),
+        border: Border.all(color: Colors.white, width: radius > 30 ? 3.5 : 2.5),
         boxShadow: [
           BoxShadow(
             color: preset.primaryColor.withValues(alpha: 0.28),

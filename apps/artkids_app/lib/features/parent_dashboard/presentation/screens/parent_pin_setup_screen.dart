@@ -8,7 +8,8 @@ class ParentPinSetupScreen extends ConsumerStatefulWidget {
   const ParentPinSetupScreen({super.key});
 
   @override
-  ConsumerState<ParentPinSetupScreen> createState() => _ParentPinSetupScreenState();
+  ConsumerState<ParentPinSetupScreen> createState() =>
+      _ParentPinSetupScreenState();
 }
 
 class _ParentPinSetupScreenState extends ConsumerState<ParentPinSetupScreen> {
@@ -84,8 +85,9 @@ class _ParentPinSetupScreenState extends ConsumerState<ParentPinSetupScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
-                validator: (val) =>
-                    (val == null || val.length != 4) ? 'Nhập đúng 4 chữ số' : null,
+                validator: (val) => (val == null || val.length != 4)
+                    ? 'Nhập đúng 4 chữ số'
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -98,8 +100,9 @@ class _ParentPinSetupScreenState extends ConsumerState<ParentPinSetupScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock_reset),
                 ),
-                validator: (val) =>
-                    (val == null || val.length != 4) ? 'Nhập đúng 4 chữ số' : null,
+                validator: (val) => (val == null || val.length != 4)
+                    ? 'Nhập đúng 4 chữ số'
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -123,7 +126,9 @@ class _ParentPinSetupScreenState extends ConsumerState<ParentPinSetupScreen> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: _isLoading ? null : _submitPinChange,
                 child: _isLoading
@@ -132,7 +137,10 @@ class _ParentPinSetupScreenState extends ConsumerState<ParentPinSetupScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Lưu Mã PIN Mới', style: TextStyle(fontSize: 16)),
+                    : const Text(
+                        'Lưu Mã PIN Mới',
+                        style: TextStyle(fontSize: 16),
+                      ),
               ),
             ],
           ),

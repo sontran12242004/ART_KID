@@ -8,24 +8,25 @@ import '../providers/parent_dashboard_provider.dart';
 
 /// Màn hình xem toàn bộ danh sách tiến độ theo khóa học của bé — Parent Mode
 class AllCoursesProgressScreen extends ConsumerStatefulWidget {
-  const AllCoursesProgressScreen({
-    super.key,
-    this.childId = 'child-1',
-  });
+  const AllCoursesProgressScreen({super.key, this.childId = 'child-1'});
 
   final String childId;
 
   @override
-  ConsumerState<AllCoursesProgressScreen> createState() => _AllCoursesProgressScreenState();
+  ConsumerState<AllCoursesProgressScreen> createState() =>
+      _AllCoursesProgressScreenState();
 }
 
-class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScreen> {
+class _AllCoursesProgressScreenState
+    extends ConsumerState<AllCoursesProgressScreen> {
   // Bộ lọc trạng thái: 'all' | 'inProgress' | 'completed' | 'notStarted'
   String _selectedFilter = 'all';
 
   @override
   Widget build(BuildContext context) {
-    final coursesAsync = ref.watch(childCoursesProgressProvider(widget.childId));
+    final coursesAsync = ref.watch(
+      childCoursesProgressProvider(widget.childId),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FBFB),
@@ -41,7 +42,10 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F3B46)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0F3B46),
+          ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
@@ -58,7 +62,9 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
             // Sắp xếp các khóa học theo thời điểm học gần nhất giảm dần (mới nhất lên đầu)
             final sortedCourses = List<CourseProgress>.from(courses)
               ..sort((a, b) {
-                if (a.lastLearnedAt == null && b.lastLearnedAt == null) return 0;
+                if (a.lastLearnedAt == null && b.lastLearnedAt == null) {
+                  return 0;
+                }
                 if (a.lastLearnedAt == null) return 1;
                 if (b.lastLearnedAt == null) return -1;
                 return b.lastLearnedAt!.compareTo(a.lastLearnedAt!);
@@ -92,7 +98,10 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
               children: [
                 // Thanh tab bộ lọc trạng thái
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   color: Colors.white,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -100,12 +109,21 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
                       children: [
                         _buildFilterChip('all', 'Tất cả ($totalCount)'),
                         const SizedBox(width: 8),
-                        _buildFilterChip('inProgress', 'Đang học ($inProgressCount)'),
+                        _buildFilterChip(
+                          'inProgress',
+                          'Đang học ($inProgressCount)',
+                        ),
                         const SizedBox(width: 8),
-                        _buildFilterChip('completed', 'Hoàn thành ($completedCount)'),
+                        _buildFilterChip(
+                          'completed',
+                          'Hoàn thành ($completedCount)',
+                        ),
                         if (notStartedCount > 0) ...[
                           const SizedBox(width: 8),
-                          _buildFilterChip('notStarted', 'Chưa bắt đầu ($notStartedCount)'),
+                          _buildFilterChip(
+                            'notStarted',
+                            'Chưa bắt đầu ($notStartedCount)',
+                          ),
                         ],
                       ],
                     ),
@@ -119,7 +137,10 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
                       ? Center(
                           child: Text(
                             'Không có khóa học nào trong mục này',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                            ),
                           ),
                         )
                       : ListView.builder(
@@ -146,7 +167,11 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.wifi_off_rounded, size: 48, color: Color(0xFFE53935)),
+                  const Icon(
+                    Icons.wifi_off_rounded,
+                    size: 48,
+                    color: Color(0xFFE53935),
+                  ),
                   const SizedBox(height: 12),
                   const Text(
                     'Không thể tải dữ liệu tiến độ',
@@ -154,8 +179,9 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () =>
-                        ref.invalidate(childCoursesProgressProvider(widget.childId)),
+                    onPressed: () => ref.invalidate(
+                      childCoursesProgressProvider(widget.childId),
+                    ),
                     child: const Text('Thử lại'),
                   ),
                 ],
@@ -222,7 +248,9 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
                     child: SizedBox(
                       width: 60,
                       height: 60,
-                      child: item.courseThumbnail != null && item.courseThumbnail!.isNotEmpty
+                      child:
+                          item.courseThumbnail != null &&
+                              item.courseThumbnail!.isNotEmpty
                           ? Image.network(
                               item.courseThumbnail!,
                               fit: BoxFit.cover,
@@ -280,7 +308,9 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
                   value: progress,
                   minHeight: 8,
                   backgroundColor: const Color(0xFFEEF2F5),
-                  valueColor: AlwaysStoppedAnimation<Color>(_getColor(item.status)),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    _getColor(item.status),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -296,7 +326,9 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
                     style: TextStyle(
                       fontSize: 11.5,
                       color: Colors.grey.shade500,
-                      fontStyle: item.lastLearnedAt == null ? FontStyle.italic : FontStyle.normal,
+                      fontStyle: item.lastLearnedAt == null
+                          ? FontStyle.italic
+                          : FontStyle.normal,
                     ),
                   ),
                   Text(
@@ -320,7 +352,11 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
     return Container(
       color: const Color(0xFFE2F3F5),
       alignment: Alignment.center,
-      child: const Icon(Icons.palette_rounded, color: Color(0xFF1687A7), size: 28),
+      child: const Icon(
+        Icons.palette_rounded,
+        color: Color(0xFF1687A7),
+        size: 28,
+      ),
     );
   }
 
@@ -364,7 +400,10 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -374,7 +413,11 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
           ],
           Text(
             label,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: text),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: text,
+            ),
           ),
         ],
       ),
@@ -418,12 +461,20 @@ class _AllCoursesProgressScreenState extends ConsumerState<AllCoursesProgressScr
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1687A7),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
               onPressed: () => context.push(RoutePaths.parentCourses),
               icon: const Icon(Icons.search_rounded, size: 18),
-              label: const Text('Khám phá khóa học', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text(
+                'Khám phá khóa học',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),

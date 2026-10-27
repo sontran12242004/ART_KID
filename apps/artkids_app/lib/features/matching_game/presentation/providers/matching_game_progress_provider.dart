@@ -1,10 +1,13 @@
-import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-
-import '../../../../core/storage/hive_boxes.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/api_interceptor.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/completed_picture.dart';
 import '../../domain/matching_game_progress.dart';
+import '../../data/matching_game_config.dart';
+
+final gameSyncErrorProvider = StateProvider<String?>((ref) => null);
 
 /// State quản lý danh sách tiến trình dở dang và lịch sử hoàn thành tranh
 class MatchingStorageState {
@@ -46,99 +49,104 @@ class MatchingStorageState {
   }
 }
 
-/// Notifier quản lý đọc, ghi và xóa dữ liệu Hive cho Matching Game
-class MatchingGameProgressNotifier
-    extends StateNotifier<MatchingStorageState> {
-  MatchingGameProgressNotifier() : super(const MatchingStorageState()) {
+class MatchingGameProgressNotifier extends StateNotifier<MatchingStorageState> {
+  MatchingGameProgressNotifier(this.dio, this.childId, this.report)
+    : super(const MatchingStorageState()) {
     loadAll();
   }
-
-  Box<MatchingGameProgress> get _progressBox =>
-      Hive.box<MatchingGameProgress>(HiveBoxes.matchingProgress);
-
-  Box<CompletedPicture> get _completedBox =>
-      Hive.box<CompletedPicture>(HiveBoxes.completedPictures);
-
-  /// Đọc toàn bộ dữ liệu từ Hive khi khởi tạo
-  void loadAll() {
-    try {
-      final progressMap = <String, MatchingGameProgress>{};
-      for (final key in _progressBox.keys) {
-        final item = _progressBox.get(key);
-        if (item != null) {
-          progressMap[item.pictureSetId] = item;
-        }
+  final Dio dio;
+  final String? childId;
+  final void Function(String?) report;
+  Future<void> _pending = Future.value();
+  Future<void> _queue(Future<void> Function() work) {
+    final task = _pending.then((_) async {
+      if (!mounted || childId == null) return;
+      try {
+        await work();
+        if (mounted) report(null);
+      } catch (e) {
+        if (mounted) report(apiError(e));
       }
+    });
+    _pending = task;
+    return task;
+  }
 
-      final completedList = _completedBox.values.toList()
-        ..sort((a, b) => b.completedAt.compareTo(a.completedAt));
-
+  Future<void> loadAll() => _queue(() async {
+    final data = await dio.get('/children/$childId/gallery?pageSize=100');
+    final progress = <String, MatchingGameProgress>{};
+    for (final set in MatchingGameConfig.pictureSets) {
+      final value = (await dio.get('/children/$childId/game/${set.id}')).data;
+      if (value != null) progress[set.id] = MatchingGameProgress.fromMap(value);
+    }
+    if (mounted) {
       state = MatchingStorageState(
-        inProgressMap: progressMap,
-        completedPictures: completedList,
+        inProgressMap: progress,
+        completedPictures: [
+          for (final p in data.data) CompletedPicture.fromMap(p),
+        ],
       );
-    } catch (e) {
-      debugPrint('MatchingGameProgressNotifier loadAll error: $e');
     }
-  }
-
-  /// Lưu hoặc cập nhật tiến trình dở dang vào Hive
-  Future<void> saveProgress(MatchingGameProgress progress) async {
-    try {
-      await _progressBox.put(progress.pictureSetId, progress);
-      final updated = Map<String, MatchingGameProgress>.from(state.inProgressMap)
-        ..[progress.pictureSetId] = progress;
+  });
+  Future<void> saveProgress(MatchingGameProgress progress) => _queue(() async {
+    final value = (await dio.put(
+      '/children/$childId/game/${progress.pictureSetId}',
+      data: progress.toMap(),
+    )).data;
+    if (mounted) {
+      state = state.copyWith(
+        inProgressMap: {
+          ...state.inProgressMap,
+          progress.pictureSetId: MatchingGameProgress.fromMap(value),
+        },
+      );
+    }
+  });
+  Future<void> clearProgress(String id) => _queue(() async {
+    await dio.put(
+      '/children/$childId/game/$id',
+      data: {
+        'currentStep': 'drawing',
+        'currentAnimalIndex': 0,
+        'unlockedStickers': [],
+        'matchedAnimals': [],
+      },
+    );
+    if (mounted) {
+      final updated = {...state.inProgressMap}..remove(id);
       state = state.copyWith(inProgressMap: updated);
-    } catch (e) {
-      debugPrint('saveProgress error: $e');
     }
-  }
-
-  /// Xóa tiến trình dở dang khỏi Hive (khi bé bấm bắt đầu lại từ đầu hoặc hoàn thành xong)
-  Future<void> clearProgress(String pictureSetId) async {
-    try {
-      await _progressBox.delete(pictureSetId);
-      final updated = Map<String, MatchingGameProgress>.from(state.inProgressMap)
-        ..remove(pictureSetId);
-      state = state.copyWith(inProgressMap: updated);
-    } catch (e) {
-      debugPrint('clearProgress error: $e');
-    }
-  }
-
-  /// Ghi nhận 1 lần hoàn thành tranh vào Gallery thành tích
+  });
   Future<void> recordCompletion({
     required String pictureSetId,
     required String pictureTitle,
     required String thumbnailAsset,
-  }) async {
-    try {
-      final id = '${pictureSetId}_${DateTime.now().millisecondsSinceEpoch}';
-      final completed = CompletedPicture(
-        id: id,
-        pictureSetId: pictureSetId,
-        pictureTitle: pictureTitle,
-        completedAt: DateTime.now(),
-        thumbnailAsset: thumbnailAsset,
+  }) => _queue(() async {
+    final value = (await dio.post(
+      '/children/$childId/game/$pictureSetId/complete',
+    )).data;
+    final completed = CompletedPicture.fromMap(value);
+    if (mounted) {
+      final updated = {...state.inProgressMap}..remove(pictureSetId);
+      state = MatchingStorageState(
+        inProgressMap: updated,
+        completedPictures: [
+          completed,
+          ...state.completedPictures.where((p) => p.id != completed.id),
+        ],
       );
-
-      // Lưu vào Hive box (không ghi đè mà lưu thành từng bản ghi thành tích)
-      await _completedBox.put(id, completed);
-
-      // Đồng thời xoá tiến trình dở dang vì đã hoàn thiện
-      await clearProgress(pictureSetId);
-
-      final updatedList = [completed, ...state.completedPictures];
-      state = state.copyWith(completedPictures: updatedList);
-    } catch (e) {
-      debugPrint('recordCompletion error: $e');
     }
-  }
+  });
 }
 
-/// Provider cung cấp trạng thái tiến trình và thành tích tranh ghép
 final matchingGameProgressProvider =
-    StateNotifierProvider<MatchingGameProgressNotifier, MatchingStorageState>(
-        (ref) {
-  return MatchingGameProgressNotifier();
-});
+    StateNotifierProvider<MatchingGameProgressNotifier, MatchingStorageState>((
+      ref,
+    ) {
+      final id = ref.watch(authProvider.select((s) => s.selectedChild?.id));
+      return MatchingGameProgressNotifier(
+        ref.watch(dioProvider),
+        id,
+        (error) => ref.read(gameSyncErrorProvider.notifier).state = error,
+      );
+    });

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/network/api_json.dart';
 
 import '../../../../core/constants/api_constants.dart';
 import '../models/order.dart';
@@ -23,6 +24,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   OrderRemoteDataSourceImpl(this._dio);
 
   final Dio _dio;
+  Dio get dio => _dio;
 
   @override
   Future<List<OrderModel>> getOrders({
@@ -33,7 +35,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     // TODO: Xác nhận endpoint thật và cấu trúc response (phân trang meta) với backend commerce-service
     final queryParams = <String, dynamic>{
       'page': page,
-      'limit': limit,
+      'pageSize': limit,
       if (status != null && status.isNotEmpty) 'status': status,
     };
 
@@ -49,13 +51,24 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       listData = data;
     } else if (data is Map<String, dynamic>) {
       // Một số backend bọc trong { "data": [...], "meta": {...} }
-      listData = (data['data'] as List<dynamic>?) ??
+      listData =
+          (data['data'] as List<dynamic>?) ??
           (data['orders'] as List<dynamic>?) ??
           [];
     }
 
-    return listData
-        .map((item) => OrderModel.fromJson(item as Map<String, dynamic>))
+    final details = await Future.wait(
+      listData.map((item) => getOrderById(item['id'] as String)),
+    );
+    return details
+        .where(
+          (o) =>
+              status == null ||
+              status == 'all' ||
+              (status == 'processing'
+                  ? o.status.isProcessing
+                  : o.status.value == status),
+        )
         .toList();
   }
 
@@ -68,7 +81,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     final data = response.data;
     if (data is Map<String, dynamic>) {
       final orderJson = (data['data'] as Map<String, dynamic>?) ?? data;
-      return OrderModel.fromJson(orderJson);
+      return OrderModel.fromJson(apiOrder(orderJson));
     }
     throw DioException(
       requestOptions: response.requestOptions,
@@ -84,7 +97,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       endpoint,
       data: {
         'order_id': orderId,
-        'reason': ?reason,
+        'reason': reason ?? 'Phụ huynh yêu cầu hủy đơn',
       },
     );
   }

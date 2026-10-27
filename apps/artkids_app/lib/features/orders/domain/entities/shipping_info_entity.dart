@@ -35,12 +35,12 @@ class ShippingInfoEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        recipientName,
-        phoneNumber,
-        fullAddress,
-        carrierName,
-        trackingNumber,
-        trackingUrl,
-        estimatedDeliveryDate,
-      ];
+    recipientName,
+    phoneNumber,
+    fullAddress,
+    carrierName,
+    trackingNumber,
+    trackingUrl,
+    estimatedDeliveryDate,
+  ];
 }

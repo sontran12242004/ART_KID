@@ -18,8 +18,8 @@ class Product extends Equatable {
     this.recommendedSubscriptionPlanId,
     this.recommendedSubscriptionPlanName,
     this.kitItems = const [],
-    this.rating = 4.9,
-    this.soldCount = 85,
+    this.rating = 0,
+    this.soldCount = 0,
     this.inStock = true,
   });
 
@@ -72,13 +72,13 @@ class Product extends Equatable {
   final bool inStock;
 
   /// Danh sách ảnh đầy đủ (ưu tiên mảng images, nếu rỗng thì dùng thumbnail)
-  List<String> get allImages =>
-      images.isNotEmpty ? images : [thumbnailUrl];
+  List<String> get allImages => images.isNotEmpty ? images : [thumbnailUrl];
 
   /// Phần trăm giảm giá (nếu có giá gốc lớn hơn giá bán)
   int? get discountPercent {
     if (originalPriceVnd != null && originalPriceVnd! > priceVnd) {
-      return (((originalPriceVnd! - priceVnd) / originalPriceVnd!) * 100).round();
+      return (((originalPriceVnd! - priceVnd) / originalPriceVnd!) * 100)
+          .round();
     }
     return null;
   }
@@ -87,12 +87,15 @@ class Product extends Equatable {
     return Product(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
-      priceVnd: (json['price_vnd'] as num?)?.toInt() ??
+      priceVnd:
+          (json['price_vnd'] as num?)?.toInt() ??
           (json['price'] as num?)?.toInt() ??
           0,
-      originalPriceVnd: (json['original_price_vnd'] as num?)?.toInt() ??
+      originalPriceVnd:
+          (json['original_price_vnd'] as num?)?.toInt() ??
           (json['originalPrice'] as num?)?.toInt(),
-      thumbnailUrl: json['thumbnail_url'] as String? ??
+      thumbnailUrl:
+          json['thumbnail_url'] as String? ??
           json['thumbnailUrl'] as String? ??
           '',
       images: (json['images'] as List<dynamic>? ?? [])
@@ -105,17 +108,18 @@ class Product extends Equatable {
           json['course_title'] as String? ?? json['courseTitle'] as String?,
       recommendedSubscriptionPlanId:
           json['recommended_subscription_plan_id'] as String? ??
-              json['recommendedSubscriptionPlanId'] as String?,
+          json['recommendedSubscriptionPlanId'] as String?,
       recommendedSubscriptionPlanName:
           json['recommended_subscription_plan_name'] as String? ??
-              json['recommendedSubscriptionPlanName'] as String?,
-      kitItems: (json['kit_items'] as List<dynamic>? ??
-              json['kitItems'] as List<dynamic>? ??
-              [])
-          .map((e) => e.toString())
-          .toList(),
-      rating: (json['rating'] as num?)?.toDouble() ?? 4.9,
-      soldCount: (json['sold_count'] as num?)?.toInt() ?? 50,
+          json['recommendedSubscriptionPlanName'] as String?,
+      kitItems:
+          (json['kit_items'] as List<dynamic>? ??
+                  json['kitItems'] as List<dynamic>? ??
+                  [])
+              .map((e) => e.toString())
+              .toList(),
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      soldCount: (json['sold_count'] as num?)?.toInt() ?? 0,
       inStock: json['in_stock'] as bool? ?? json['inStock'] as bool? ?? true,
     );
   }
@@ -145,21 +149,21 @@ class Product extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        priceVnd,
-        originalPriceVnd,
-        thumbnailUrl,
-        images,
-        description,
-        category,
-        courseId,
-        courseTitle,
-        recommendedSubscriptionPlanId,
-        recommendedSubscriptionPlanName,
-        kitItems,
-        rating,
-        soldCount,
-        inStock,
-      ];
+    id,
+    name,
+    priceVnd,
+    originalPriceVnd,
+    thumbnailUrl,
+    images,
+    description,
+    category,
+    courseId,
+    courseTitle,
+    recommendedSubscriptionPlanId,
+    recommendedSubscriptionPlanName,
+    kitItems,
+    rating,
+    soldCount,
+    inStock,
+  ];
 }

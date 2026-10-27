@@ -79,10 +79,7 @@ class DraggableSticker extends StatelessWidget {
                 ),
               ],
             ),
-            child: Image.asset(
-              animal.stickerAssetPath,
-              fit: BoxFit.contain,
-            ),
+            child: Image.asset(animal.stickerAssetPath, fit: BoxFit.contain),
           ),
         ),
       ),
@@ -136,10 +133,7 @@ class DraggableSticker extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Image.asset(
-                animal.stickerAssetPath,
-                fit: BoxFit.contain,
-              ),
+              child: Image.asset(animal.stickerAssetPath, fit: BoxFit.contain),
             ),
             const SizedBox(height: 4),
             Text(

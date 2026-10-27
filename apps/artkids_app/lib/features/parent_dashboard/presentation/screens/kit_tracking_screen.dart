@@ -6,10 +6,7 @@ import '../widgets/kit_delivery_tracker.dart';
 
 /// Màn hình Theo dõi Đơn hàng & Giao nhận Học cụ vật lý — Parent Mode
 class KitTrackingScreen extends ConsumerWidget {
-  const KitTrackingScreen({
-    super.key,
-    this.parentId = 'current-parent',
-  });
+  const KitTrackingScreen({super.key, this.parentId = 'current-parent'});
 
   final String parentId;
 
@@ -31,7 +28,10 @@ class KitTrackingScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F3B46)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0F3B46),
+          ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
@@ -46,7 +46,11 @@ class KitTrackingScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade300),
+                    Icon(
+                      Icons.inventory_2_outlined,
+                      size: 64,
+                      color: Colors.grey.shade300,
+                    ),
                     const SizedBox(height: 12),
                     const Text(
                       'Chưa có gói học cụ nào đang vận chuyển.',
@@ -80,12 +84,20 @@ class KitTrackingScreen extends ConsumerWidget {
                       color: Color(0xFFFFEBEE),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.wifi_off_rounded, size: 48, color: Color(0xFFE53935)),
+                    child: const Icon(
+                      Icons.wifi_off_rounded,
+                      size: 48,
+                      color: Color(0xFFE53935),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
                     'Không thể kết nối máy chủ',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF0F3B46)),
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F3B46),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -98,12 +110,21 @@ class KitTrackingScreen extends ConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1687A7),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
-                    onPressed: () => ref.invalidate(kitDeliveriesProvider(parentId)),
+                    onPressed: () =>
+                        ref.invalidate(kitDeliveriesProvider(parentId)),
                     icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('Thử lại', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'Thử lại',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),

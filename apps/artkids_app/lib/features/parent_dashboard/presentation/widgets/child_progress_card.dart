@@ -105,7 +105,10 @@ class _StatRow extends StatelessWidget {
           Icon(icon, size: 22, color: Colors.deepPurple),
           const SizedBox(width: 12),
           Expanded(child: Text(label, style: const TextStyle(fontSize: 15))),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );

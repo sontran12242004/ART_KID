@@ -46,10 +46,16 @@ class PictureSelectionScreen extends ConsumerWidget {
             : 'đã vẽ xong ${progress.unlockedStickers.length}/${pictureSet.totalAnimals} con vật';
 
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
           title: Row(
             children: const [
-              Icon(Icons.auto_stories_rounded, color: Color(0xFFFF9F1C), size: 30),
+              Icon(
+                Icons.auto_stories_rounded,
+                color: Color(0xFFFF9F1C),
+                size: 30,
+              ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -124,21 +130,21 @@ class PictureSelectionScreen extends ConsumerWidget {
                 Navigator.of(dialogContext).pop();
                 if (isMatchingPhase) {
                   // Khôi phục trạng thái vẽ và ghép tranh, nhảy thẳng sang màn hình ghép
-                  ref.read(drawingProvider.notifier).initialize(
-                        pictureSet.id,
-                        resumeProgress: progress,
-                      );
-                  ref.read(matchingProvider.notifier).initialize(
+                  ref
+                      .read(drawingProvider.notifier)
+                      .initialize(pictureSet.id, resumeProgress: progress);
+                  ref
+                      .read(matchingProvider.notifier)
+                      .initialize(
                         pictureSet.id,
                         restoredMatches: progress.matchedAnimals,
                       );
                   context.push('/matching-game/match/${pictureSet.id}');
                 } else {
                   // Khôi phục lượt vẽ tiếp theo
-                  ref.read(drawingProvider.notifier).initialize(
-                        pictureSet.id,
-                        resumeProgress: progress,
-                      );
+                  ref
+                      .read(drawingProvider.notifier)
+                      .initialize(pictureSet.id, resumeProgress: progress);
                   context.push('/matching-game/draw/${pictureSet.id}');
                 }
               },
@@ -170,8 +176,10 @@ class PictureSelectionScreen extends ConsumerWidget {
                       backgroundColor: Colors.white,
                       elevation: 2,
                     ),
-                    icon: const Icon(Icons.arrow_back_rounded,
-                        color: Color(0xFF264653)),
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Color(0xFF264653),
+                    ),
                     onPressed: () {
                       if (context.canPop()) {
                         context.pop();
@@ -198,7 +206,9 @@ class PictureSelectionScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD166),
                         borderRadius: BorderRadius.circular(20),
@@ -213,8 +223,11 @@ class PictureSelectionScreen extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.emoji_events_rounded,
-                              color: Color(0xFFD62828), size: 22),
+                          const Icon(
+                            Icons.emoji_events_rounded,
+                            color: Color(0xFFD62828),
+                            size: 22,
+                          ),
                           const SizedBox(width: 6),
                           const Text(
                             'Bộ Sưu Tập',
@@ -228,7 +241,9 @@ class PictureSelectionScreen extends ConsumerWidget {
                             const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: const BoxDecoration(
                                 color: Color(0xFFE63946),
                                 shape: BoxShape.circle,
@@ -255,8 +270,10 @@ class PictureSelectionScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -292,8 +309,10 @@ class PictureSelectionScreen extends ConsumerWidget {
             // Danh sách các bộ tranh
             Expanded(
               child: ListView.builder(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 itemCount: pictureSets.length,
                 itemBuilder: (context, index) {
                   final set = pictureSets[index];
@@ -383,7 +402,9 @@ class PictureSelectionScreen extends ConsumerWidget {
                         if (hasProgress)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFF9F1C),
                               borderRadius: BorderRadius.circular(16),
@@ -397,8 +418,11 @@ class PictureSelectionScreen extends ConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.history_rounded,
-                                    color: Colors.white, size: 16),
+                                const Icon(
+                                  Icons.history_rounded,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   progress.currentStep == GamePhase.matching
@@ -416,7 +440,9 @@ class PictureSelectionScreen extends ConsumerWidget {
                         if (isDone && !hasProgress)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF06D6A0),
                               borderRadius: BorderRadius.circular(16),
@@ -430,8 +456,11 @@ class PictureSelectionScreen extends ConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.check_circle_rounded,
-                                    color: Colors.white, size: 16),
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   doneCount > 1
@@ -462,8 +491,9 @@ class PictureSelectionScreen extends ConsumerWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF06D6A0)
-                                .withValues(alpha: 0.5),
+                            color: const Color(
+                              0xFF06D6A0,
+                            ).withValues(alpha: 0.5),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),

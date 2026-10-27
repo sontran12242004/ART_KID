@@ -78,8 +78,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
   bool _isValidatingVoucher = false;
   String? _voucherError;
 
-  static final _currencyFormat =
-      NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  );
 
   @override
   void initState() {
@@ -90,8 +93,9 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
       text:
           'Phòng 402, Chung cư Sunrise Riverside, Nguyễn Hữu Thọ, Phước Kiển, Nhà Bè, TP. Hồ Chí Minh',
     );
-    _noteController =
-        TextEditingController(text: 'Giao giờ hành chính, gọi trước khi đến.');
+    _noteController = TextEditingController(
+      text: 'Giao giờ hành chính, gọi trước khi đến.',
+    );
     _voucherCodeController = TextEditingController();
   }
 
@@ -122,8 +126,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
         scrolledUnderElevation: 1,
         titleSpacing: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF2C3E50), size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF2C3E50),
+            size: 18,
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text(
@@ -140,7 +147,10 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 children: [
                   // Thông tin người nhận
                   _buildShippingInfoCard(),
@@ -189,8 +199,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.shopping_cart_outlined,
-              size: 64, color: Color(0xFF7F8C8D)),
+          const Icon(
+            Icons.shopping_cart_outlined,
+            size: 64,
+            color: Color(0xFF7F8C8D),
+          ),
           const SizedBox(height: 16),
           const Text(
             'Giỏ hàng của bạn đang trống',
@@ -223,8 +236,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
         children: [
           Row(
             children: const [
-              Icon(Icons.location_on_outlined,
-                  size: 20, color: Color(0xFF1687A7)),
+              Icon(
+                Icons.location_on_outlined,
+                size: 20,
+                color: Color(0xFF1687A7),
+              ),
               SizedBox(width: 8),
               Text(
                 'Địa chỉ nhận hàng',
@@ -254,8 +270,9 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
               label: 'Số điện thoại',
               icon: Icons.phone_outlined,
             ),
-            validator: (v) =>
-                (v == null || v.trim().length < 9) ? 'Số điện thoại không hợp lệ' : null,
+            validator: (v) => (v == null || v.trim().length < 9)
+                ? 'Số điện thoại không hợp lệ'
+                : null,
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -265,8 +282,9 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
               label: 'Địa chỉ nhận hàng chi tiết',
               icon: Icons.home_outlined,
             ),
-            validator: (v) =>
-                (v == null || v.trim().length < 5) ? 'Vui lòng nhập địa chỉ cụ thể' : null,
+            validator: (v) => (v == null || v.trim().length < 5)
+                ? 'Vui lòng nhập địa chỉ cụ thể'
+                : null,
           ),
           const SizedBox(height: 12),
           TextFormField(
@@ -294,8 +312,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
         children: [
           Row(
             children: const [
-              Icon(Icons.local_shipping_outlined,
-                  size: 20, color: Color(0xFF1687A7)),
+              Icon(
+                Icons.local_shipping_outlined,
+                size: 20,
+                color: Color(0xFF1687A7),
+              ),
               SizedBox(width: 8),
               Text(
                 'Hình thức giao hàng',
@@ -317,8 +338,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.radio_button_checked,
-                    size: 18, color: Color(0xFF1687A7)),
+                const Icon(
+                  Icons.radio_button_checked,
+                  size: 18,
+                  color: Color(0xFF1687A7),
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -376,8 +400,7 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
         children: [
           Row(
             children: const [
-              Icon(Icons.payment_rounded,
-                  size: 20, color: Color(0xFF1687A7)),
+              Icon(Icons.payment_rounded, size: 20, color: Color(0xFF1687A7)),
               SizedBox(width: 8),
               Text(
                 'Phương thức thanh toán',
@@ -423,7 +446,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                             : const Color(0xFFBDC3C7),
                       ),
                       const SizedBox(width: 10),
-                      Icon(option.icon, size: 20, color: const Color(0xFF2C3E50)),
+                      Icon(
+                        option.icon,
+                        size: 20,
+                        color: const Color(0xFF2C3E50),
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -447,7 +474,9 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                                   const SizedBox(width: 6),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFE8F5E9),
                                       borderRadius: BorderRadius.circular(4),
@@ -502,8 +531,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
             children: [
               Row(
                 children: const [
-                  Icon(Icons.inventory_2_outlined,
-                      size: 20, color: Color(0xFF1687A7)),
+                  Icon(
+                    Icons.inventory_2_outlined,
+                    size: 20,
+                    color: Color(0xFF1687A7),
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Kiện hàng học cụ',
@@ -546,9 +578,10 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                         placeholder: (_, _) =>
                             Container(color: const Color(0xFFECEFF1)),
                         errorWidget: (_, _, _) => const Icon(
-                            Icons.inventory_2_outlined,
-                            size: 20,
-                            color: Color(0xFF1687A7)),
+                          Icons.inventory_2_outlined,
+                          size: 20,
+                          color: Color(0xFF1687A7),
+                        ),
                       ),
                     ),
                   ),
@@ -615,8 +648,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
             children: [
               Row(
                 children: const [
-                  Icon(Icons.confirmation_number_outlined,
-                      size: 20, color: Color(0xFF1687A7)),
+                  Icon(
+                    Icons.confirmation_number_outlined,
+                    size: 20,
+                    color: Color(0xFF1687A7),
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Mã ưu đãi / Voucher',
@@ -635,8 +671,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                     padding: EdgeInsets.zero,
                     visualDensity: VisualDensity.compact,
                   ),
-                  icon: const Icon(Icons.loyalty_outlined,
-                      size: 16, color: Color(0xFF1687A7)),
+                  icon: const Icon(
+                    Icons.loyalty_outlined,
+                    size: 16,
+                    color: Color(0xFF1687A7),
+                  ),
                   label: const Text(
                     'Chọn voucher',
                     style: TextStyle(
@@ -682,7 +721,9 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF16A34A),
                                 borderRadius: BorderRadius.circular(4),
@@ -751,15 +792,22 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                     textCapitalization: TextCapitalization.characters,
                     decoration: InputDecoration(
                       hintText: 'Nhập mã voucher (VD: ARTKIDS10)',
-                      hintStyle:
-                          const TextStyle(fontSize: 12.5, color: Color(0xFF95A5A6)),
-                      prefixIcon: const Icon(Icons.confirmation_number_outlined,
-                          size: 18, color: Color(0xFF1687A7)),
+                      hintStyle: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF95A5A6),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.confirmation_number_outlined,
+                        size: 18,
+                        color: Color(0xFF1687A7),
+                      ),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFB),
                       isDense: true,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(color: Color(0xFFE8ECEF)),
@@ -770,8 +818,10 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: Color(0xFF1687A7), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF1687A7),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     onChanged: (_) {
@@ -803,8 +853,9 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Text(
@@ -823,7 +874,10 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
             if (_voucherError != null) ...[
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFDF2E9),
                   borderRadius: BorderRadius.circular(8),
@@ -989,13 +1043,17 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          _buildSummaryRow('Tạm tính tiền hàng', _currencyFormat.format(subtotal)),
+          _buildSummaryRow(
+            'Tạm tính tiền hàng',
+            _currencyFormat.format(subtotal),
+          ),
           const SizedBox(height: 8),
           _buildSummaryRow(
             'Phí vận chuyển (GHN)',
             shippingFee == 0 ? 'Miễn phí' : _currencyFormat.format(shippingFee),
-            valueColor:
-                shippingFee == 0 ? const Color(0xFF27AE60) : const Color(0xFF2C3E50),
+            valueColor: shippingFee == 0
+                ? const Color(0xFF27AE60)
+                : const Color(0xFF2C3E50),
           ),
           if (discountVnd > 0) ...[
             const SizedBox(height: 8),
@@ -1008,8 +1066,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
             ),
           ] else ...[
             const SizedBox(height: 8),
-            _buildSummaryRow('Ưu đãi / Giảm giá', '0 đ',
-                valueColor: const Color(0xFF7F8C8D)),
+            _buildSummaryRow(
+              'Ưu đãi / Giảm giá',
+              '0 đ',
+              valueColor: const Color(0xFF7F8C8D),
+            ),
           ],
           const SizedBox(height: 12),
           const Divider(height: 1, color: Color(0xFFE8ECEF)),
@@ -1046,10 +1107,7 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Color(0xFF5A6B7C),
-          ),
+          style: const TextStyle(fontSize: 13, color: Color(0xFF5A6B7C)),
         ),
         Text(
           value,
@@ -1074,8 +1132,11 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
-          Icon(Icons.verified_user_outlined,
-              size: 20, color: Color(0xFF2E7D32)),
+          Icon(
+            Icons.verified_user_outlined,
+            size: 20,
+            color: Color(0xFF2E7D32),
+          ),
           SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1148,8 +1209,9 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text(
@@ -1259,7 +1321,8 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
         const OrderTrackingEventEntity(
           id: 'evt_3',
           title: 'Bàn giao vận chuyển GHN',
-          description: 'Kiện hàng được dán nhãn niêm phong và gửi đến trung tâm trung chuyển',
+          description:
+              'Kiện hàng được dán nhãn niêm phong và gửi đến trung tâm trung chuyển',
           isPassed: false,
           isCurrent: false,
         ),
@@ -1273,7 +1336,8 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
         const OrderTrackingEventEntity(
           id: 'evt_5',
           title: 'Giao thành công',
-          description: 'Phụ huynh đã nhận đủ bộ dụng cụ và xác nhận kiện hàng nguyên vẹn',
+          description:
+              'Phụ huynh đã nhận đủ bộ dụng cụ và xác nhận kiện hàng nguyên vẹn',
           isPassed: false,
           isCurrent: false,
         ),
@@ -1300,8 +1364,9 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
       );
 
       // Lưu đơn hàng qua OrderRepository
-      final createdOrder =
-          await ref.read(orderRepositoryProvider).createOrder(newOrder);
+      final createdOrder = await ref
+          .read(orderRepositoryProvider)
+          .createOrder(newOrder);
 
       // Xóa giỏ hàng và voucher đã áp dụng
       ref.read(cartProvider.notifier).clearCart();

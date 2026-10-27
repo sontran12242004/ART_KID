@@ -77,7 +77,8 @@ class OrderTrackingTimeline extends StatelessWidget {
             itemBuilder: (context, index) {
               final event = events[index];
               final isLast = index == events.length - 1;
-              final isCancelledNode = orderStatus == OrderStatus.cancelled &&
+              final isCancelledNode =
+                  orderStatus == OrderStatus.cancelled &&
                   (event.cancelReason != null || index == events.length - 1);
 
               return IntrinsicHeight(
@@ -118,16 +119,17 @@ class OrderTrackingTimeline extends StatelessWidget {
                                     event.title,
                                     style: TextStyle(
                                       fontSize: 14.5,
-                                      fontWeight: (event.isCurrent || event.isPassed)
+                                      fontWeight:
+                                          (event.isCurrent || event.isPassed)
                                           ? FontWeight.w800
                                           : FontWeight.w600,
                                       color: isCancelledNode
                                           ? const Color(0xFFE74C3C)
                                           : event.isCurrent
-                                              ? const Color(0xFF1687A7)
-                                              : event.isPassed
-                                                  ? const Color(0xFF2C3E50)
-                                                  : const Color(0xFF95A5A6),
+                                          ? const Color(0xFF1687A7)
+                                          : event.isPassed
+                                          ? const Color(0xFF2C3E50)
+                                          : const Color(0xFF95A5A6),
                                     ),
                                   ),
                                 ),
@@ -155,7 +157,8 @@ class OrderTrackingTimeline extends StatelessWidget {
                             ),
                             // Nếu có lý do hủy
                             if (isCancelledNode &&
-                                (event.cancelReason != null || cancelReason != null)) ...[
+                                (event.cancelReason != null ||
+                                    cancelReason != null)) ...[
                               const SizedBox(height: 8),
                               Container(
                                 width: double.infinity,
@@ -167,7 +170,9 @@ class OrderTrackingTimeline extends StatelessWidget {
                                   color: const Color(0xFFFDEDEC),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: const Color(0xFFE74C3C).withValues(alpha: 0.3),
+                                    color: const Color(
+                                      0xFFE74C3C,
+                                    ).withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Row(
@@ -217,11 +222,7 @@ class OrderTrackingTimeline extends StatelessWidget {
           color: Color(0xFFE74C3C),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          Icons.close_rounded,
-          color: Colors.white,
-          size: 15,
-        ),
+        child: const Icon(Icons.close_rounded, color: Colors.white, size: 15),
       );
     }
 
@@ -233,11 +234,7 @@ class OrderTrackingTimeline extends StatelessWidget {
           color: Color(0xFF27AE60),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          Icons.check_rounded,
-          color: Colors.white,
-          size: 15,
-        ),
+        child: const Icon(Icons.check_rounded, color: Colors.white, size: 15),
       );
     }
 

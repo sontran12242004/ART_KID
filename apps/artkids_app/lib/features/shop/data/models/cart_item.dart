@@ -4,10 +4,7 @@ import 'product.dart';
 
 /// Model 1 dòng sản phẩm trong giỏ hàng (sản phẩm + số lượng mua)
 class CartItem extends Equatable {
-  const CartItem({
-    required this.product,
-    this.quantity = 1,
-  });
+  const CartItem({required this.product, this.quantity = 1});
 
   /// Thông tin sản phẩm
   final Product product;
@@ -18,10 +15,7 @@ class CartItem extends Equatable {
   /// Tổng tiền của dòng này
   int get totalPriceVnd => product.priceVnd * quantity;
 
-  CartItem copyWith({
-    Product? product,
-    int? quantity,
-  }) {
+  CartItem copyWith({Product? product, int? quantity}) {
     return CartItem(
       product: product ?? this.product,
       quantity: quantity ?? this.quantity,

@@ -8,16 +8,15 @@ import '../providers/parent_dashboard_provider.dart';
 
 /// Section hiển thị Tiến Độ Theo Khóa Học của bé trên ChildProgressScreen
 class ChildCoursesProgressSection extends ConsumerWidget {
-  const ChildCoursesProgressSection({
-    super.key,
-    required this.childId,
-  });
+  const ChildCoursesProgressSection({super.key, required this.childId});
 
   final String childId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final coursesProgressAsync = ref.watch(childCoursesProgressProvider(childId));
+    final coursesProgressAsync = ref.watch(
+      childCoursesProgressProvider(childId),
+    );
 
     return Card(
       elevation: 2,
@@ -68,7 +67,9 @@ class ChildCoursesProgressSection extends ConsumerWidget {
                 // Sắp xếp các khóa học theo thời điểm học gần nhất giảm dần (mới nhất lên đầu)
                 final sortedCourses = List<CourseProgress>.from(courses)
                   ..sort((a, b) {
-                    if (a.lastLearnedAt == null && b.lastLearnedAt == null) return 0;
+                    if (a.lastLearnedAt == null && b.lastLearnedAt == null) {
+                      return 0;
+                    }
                     if (a.lastLearnedAt == null) return 1;
                     if (b.lastLearnedAt == null) return -1;
                     return b.lastLearnedAt!.compareTo(a.lastLearnedAt!);
@@ -97,7 +98,9 @@ class ChildCoursesProgressSection extends ConsumerWidget {
                           item: courseProgress,
                           onTap: () {
                             // Chạm để xem danh sách bài học của khóa học
-                            context.push('/kid/course/${courseProgress.courseId}/lessons');
+                            context.push(
+                              '/kid/course/${courseProgress.courseId}/lessons',
+                            );
                           },
                         );
                       },
@@ -111,7 +114,9 @@ class ChildCoursesProgressSection extends ConsumerWidget {
                         child: TextButton.icon(
                           style: TextButton.styleFrom(
                             foregroundColor: const Color(0xFF1687A7),
-                            backgroundColor: const Color(0xFFE2F3F5).withValues(alpha: 0.5),
+                            backgroundColor: const Color(
+                              0xFFE2F3F5,
+                            ).withValues(alpha: 0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -119,13 +124,21 @@ class ChildCoursesProgressSection extends ConsumerWidget {
                           ),
                           onPressed: () {
                             // Điều hướng sang màn hình xem tất cả tiến độ khóa học của đúng bé
-                            context.push('/parent/child-progress/$childId/courses');
+                            context.push(
+                              '/parent/child-progress/$childId/courses',
+                            );
                           },
                           icon: const Text(
                             'Xem tất cả',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13.5,
+                            ),
                           ),
-                          label: const Icon(Icons.arrow_forward_rounded, size: 16),
+                          label: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ],
@@ -135,7 +148,10 @@ class ChildCoursesProgressSection extends ConsumerWidget {
               loading: () => const Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 20),
-                  child: CircularProgressIndicator(color: Color(0xFF1687A7), strokeWidth: 2.5),
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF1687A7),
+                    strokeWidth: 2.5,
+                  ),
                 ),
               ),
               error: (error, _) => Center(
@@ -145,11 +161,19 @@ class ChildCoursesProgressSection extends ConsumerWidget {
                     children: [
                       Text(
                         'Chưa tải được tiến độ khóa học.',
-                        style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                       TextButton(
-                        onPressed: () => ref.invalidate(childCoursesProgressProvider(childId)),
-                        child: const Text('Thử lại', style: TextStyle(color: Color(0xFF1687A7))),
+                        onPressed: () => ref.invalidate(
+                          childCoursesProgressProvider(childId),
+                        ),
+                        child: const Text(
+                          'Thử lại',
+                          style: TextStyle(color: Color(0xFF1687A7)),
+                        ),
                       ),
                     ],
                   ),
@@ -188,7 +212,11 @@ class ChildCoursesProgressSection extends ConsumerWidget {
           Text(
             'Chọn một khóa học thú vị để bé bắt đầu hành trình sáng tạo ngay hôm nay!',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600, height: 1.4),
+            style: TextStyle(
+              fontSize: 12.5,
+              color: Colors.grey.shade600,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 14),
           ElevatedButton.icon(
@@ -196,7 +224,9 @@ class ChildCoursesProgressSection extends ConsumerWidget {
               backgroundColor: const Color(0xFF1687A7),
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
             onPressed: () {
@@ -217,10 +247,7 @@ class ChildCoursesProgressSection extends ConsumerWidget {
 
 /// Widget hiển thị 1 dòng khóa học với thumbnail, tên, thanh tiến độ, text bài và badge
 class _CourseProgressItem extends StatelessWidget {
-  const _CourseProgressItem({
-    required this.item,
-    required this.onTap,
-  });
+  const _CourseProgressItem({required this.item, required this.onTap});
 
   final CourseProgress item;
   final VoidCallback onTap;
@@ -245,7 +272,9 @@ class _CourseProgressItem extends StatelessWidget {
               child: SizedBox(
                 width: 52,
                 height: 52,
-                child: item.courseThumbnail != null && item.courseThumbnail!.isNotEmpty
+                child:
+                    item.courseThumbnail != null &&
+                        item.courseThumbnail!.isNotEmpty
                     ? Image.network(
                         item.courseThumbnail!,
                         fit: BoxFit.cover,
@@ -290,7 +319,9 @@ class _CourseProgressItem extends StatelessWidget {
                       value: progress,
                       minHeight: 7,
                       backgroundColor: const Color(0xFFEEF2F5),
-                      valueColor: AlwaysStoppedAnimation<Color>(_getProgressColor(item.status)),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        _getProgressColor(item.status),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -331,7 +362,11 @@ class _CourseProgressItem extends StatelessWidget {
     return Container(
       color: const Color(0xFFE2F3F5),
       alignment: Alignment.center,
-      child: const Icon(Icons.palette_rounded, color: Color(0xFF1687A7), size: 26),
+      child: const Icon(
+        Icons.palette_rounded,
+        color: Color(0xFF1687A7),
+        size: 26,
+      ),
     );
   }
 

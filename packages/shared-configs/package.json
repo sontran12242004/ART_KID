@@ -7,7 +7,12 @@
     "tsconfig.base.json",
     "eslint.base.json"
   ],
-  "keywords": ["artkids", "config", "eslint", "tsconfig"],
+  "keywords": [
+    "artkids",
+    "config",
+    "eslint",
+    "tsconfig"
+  ],
   "author": "ArtKids Team",
   "license": "ISC"
 }

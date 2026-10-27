@@ -33,12 +33,12 @@ class CategoryFilterChips extends ConsumerWidget {
               borderRadius: BorderRadius.circular(22),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF1687A7)
-                      : Colors.white,
+                  color: isSelected ? const Color(0xFF1687A7) : Colors.white,
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(
                     color: isSelected
@@ -49,7 +49,9 @@ class CategoryFilterChips extends ConsumerWidget {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF1687A7).withValues(alpha: 0.25),
+                            color: const Color(
+                              0xFF1687A7,
+                            ).withValues(alpha: 0.25),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -71,8 +73,9 @@ class CategoryFilterChips extends ConsumerWidget {
                       category.label,
                       style: TextStyle(
                         fontSize: 12.5,
-                        fontWeight:
-                            isSelected ? FontWeight.w800 : FontWeight.w600,
+                        fontWeight: isSelected
+                            ? FontWeight.w800
+                            : FontWeight.w600,
                         color: isSelected
                             ? Colors.white
                             : const Color(0xFF2C3E50),

@@ -49,7 +49,11 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
         elevation: 0.5,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F3B46), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0F3B46),
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: const Text(
@@ -62,7 +66,10 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.storefront_outlined, color: Color(0xFF1687A7)),
+            icon: const Icon(
+              Icons.storefront_outlined,
+              color: Color(0xFF1687A7),
+            ),
             tooltip: 'Cửa hàng học cụ',
             onPressed: () => context.push(RoutePaths.parentShop),
           ),
@@ -84,11 +91,13 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
 
                 return RefreshIndicator(
                   color: const Color(0xFF1687A7),
-                  onRefresh: () => ref.read(ordersListProvider.notifier).refresh(),
+                  onRefresh: () =>
+                      ref.read(ordersListProvider.notifier).refresh(),
                   child: ListView.separated(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                    itemCount: state.orders.length + (state.isLoadingMore ? 1 : 0),
+                    itemCount:
+                        state.orders.length + (state.isLoadingMore ? 1 : 0),
                     separatorBuilder: (_, _) => const SizedBox(height: 14),
                     itemBuilder: (context, index) {
                       if (index == state.orders.length) {
@@ -148,7 +157,10 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                 borderRadius: BorderRadius.circular(20),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFF1687A7)
@@ -165,8 +177,12 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                     filter.label,
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                      color: isSelected ? Colors.white : const Color(0xFF57606F),
+                      fontWeight: isSelected
+                          ? FontWeight.w800
+                          : FontWeight.w600,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF57606F),
                     ),
                   ),
                 ),
@@ -223,7 +239,10 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1687A7),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 13,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -367,11 +386,17 @@ class _OrdersListScreenState extends ConsumerState<OrdersListScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
               ),
               onPressed: () => ref.read(ordersListProvider.notifier).refresh(),
               icon: const Icon(Icons.refresh_rounded, size: 18),
-              label: const Text('Thử lại', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text(
+                'Thử lại',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),

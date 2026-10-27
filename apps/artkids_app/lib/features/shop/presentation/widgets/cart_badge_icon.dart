@@ -7,10 +7,7 @@ import '../providers/cart_provider.dart';
 
 /// Icon giỏ hàng trên AppBar hiển thị số lượng sản phẩm nổi bật
 class CartBadgeIcon extends ConsumerWidget {
-  const CartBadgeIcon({
-    super.key,
-    this.color = const Color(0xFF0F3B46),
-  });
+  const CartBadgeIcon({super.key, this.color = const Color(0xFF0F3B46)});
 
   final Color color;
 
@@ -37,10 +34,7 @@ class CartBadgeIcon extends ConsumerWidget {
                   color: Color(0xFFE74C3C), // Đỏ nổi bật
                   shape: BoxShape.circle,
                 ),
-                constraints: const BoxConstraints(
-                  minWidth: 18,
-                  minHeight: 18,
-                ),
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                 child: Center(
                   child: Text(
                     totalCount > 99 ? '99+' : '$totalCount',

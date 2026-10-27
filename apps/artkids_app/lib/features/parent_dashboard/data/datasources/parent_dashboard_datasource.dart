@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/network/api_json.dart';
 
 import '../models/kit_delivery_model.dart';
 import '../../domain/entities/child_progress_report.dart';
@@ -18,39 +19,36 @@ class ParentDashboardDataSourceImpl implements ParentDashboardDataSource {
 
   @override
   Future<List<KitDeliveryModel>> getKitDeliveries(String parentId) async {
-    final response = await _dio.get<List<dynamic>>(
-      '/parent/fulfillments',
-      queryParameters: {'parent_id': parentId},
-    );
+    final response = await _dio.get<List<dynamic>>('/fulfillment/shipments');
     return (response.data ?? [])
-        .map((item) => KitDeliveryModel.fromJson(item as Map<String, dynamic>))
+        .map((item) => KitDeliveryModel.fromJson(apiMap(item)))
         .toList();
   }
 
   @override
   Future<ChildProgressReport> getChildProgress(String childId) async {
     final response = await _dio.get<Map<String, dynamic>>(
-      '/parent/children/$childId/progress-report',
+      '/children/$childId/dashboard',
     );
-    final data = response.data ?? {};
+    final data = apiMap(response.data ?? {});
     return ChildProgressReport(
       childId: childId,
       completedLessonsCount: data['completed_lessons_count'] as int? ?? 0,
       totalArtworksCount: data['total_artworks_count'] as int? ?? 0,
       totalBadgesCount: data['total_badges_count'] as int? ?? 0,
-      learningMinutesThisWeek: data['learning_minutes_this_week'] as int? ?? 0,
+      learningMinutesThisWeek: ((data['learningSeconds'] as num? ?? 0) / 60)
+          .floor(),
     );
   }
 
   @override
   Future<List<CourseProgress>> getChildCoursesProgress(String childId) async {
     final response = await _dio.get<List<dynamic>>(
-      '/children/$childId/courses-progress',
+      '/courses/progress',
+      queryParameters: {'childId': childId},
     );
     final data = response.data ?? [];
-    return data
-        .map((item) => CourseProgress.fromJson(item as Map<String, dynamic>))
-        .toList();
+    return data.map((item) => CourseProgress.fromJson(apiMap(item))).toList();
   }
 
   @override
@@ -58,9 +56,8 @@ class ParentDashboardDataSourceImpl implements ParentDashboardDataSource {
     required String parentId,
     required String newPin,
   }) async {
-    await _dio.put(
-      '/auth/kid-pin',
-      data: {'parent_id': parentId, 'new_pin': newPin},
+    throw UnsupportedError(
+      'Đổi PIN trong Cài đặt tài khoản và nhập mật khẩu để xác nhận.',
     );
   }
 }

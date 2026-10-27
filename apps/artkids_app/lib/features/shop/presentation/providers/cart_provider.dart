@@ -1,138 +1,156 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../../../../core/network/api_json.dart';
+import '../../../../core/network/api_interceptor.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/session_store.dart';
 import '../../data/models/cart_item.dart';
 import '../../data/models/product.dart';
 import '../../data/models/voucher.dart';
 
-/// StateNotifier quản lý danh sách sản phẩm trong giỏ hàng phiên làm việc
+final cartSyncErrorProvider = StateProvider<String?>((ref) => null);
+
 class CartNotifier extends StateNotifier<List<CartItem>> {
-  CartNotifier() : super(const []);
+  CartNotifier([this.dio, this.report]) : super(const []);
+  final Dio? dio;
+  final void Function(String?)? report;
+  Future<void> _pending = Future.value();
+  void _accept(dynamic json) {
+    if (mounted) {
+      state = apiList((json as Map)['items'])
+          .map(
+            (v) => CartItem(
+              product: Product.fromJson(
+                apiProduct(v['product'], baseUrl: dio?.options.baseUrl),
+              ),
+              quantity: (v['quantity'] as num).toInt(),
+            ),
+          )
+          .toList();
+    }
+  }
 
-  /// Thêm sản phẩm vào giỏ hàng (nếu đã có thì tăng số lượng)
-  void addToCart(Product product, {int quantity = 1}) {
-    if (quantity <= 0) return;
+  Future<bool> _run(Future<void> Function() work) async {
+    var success = false;
+    final operation = _pending.then((_) async {
+      if (!mounted) return;
+      try {
+        report?.call(null);
+        await work();
+        success = true;
+      } catch (e) {
+        report?.call(apiError(e));
+      }
+    });
+    _pending = operation;
+    await operation;
+    return success;
+  }
 
-    final index = state.indexWhere((item) => item.product.id == product.id);
-    if (index != -1) {
-      // Đã có trong giỏ -> tăng số lượng
-      final current = state[index];
-      final updatedList = List<CartItem>.from(state);
-      updatedList[index] = current.copyWith(
-        quantity: current.quantity + quantity,
+  Future<bool> load() => _run(() async {
+    if (dio != null) _accept((await dio!.get('/commerce/cart')).data);
+  });
+  Future<bool> addToCart(Product product, {int quantity = 1}) => _run(() async {
+    final current = state.where((x) => x.product.id == product.id).firstOrNull;
+    final value = (current?.quantity ?? 0) + quantity;
+    if (dio != null) {
+      _accept(
+        (await dio!.put(
+          '/commerce/cart/items',
+          data: {'productId': product.id, 'quantity': value},
+        )).data,
       );
-      state = updatedList;
-    } else {
-      // Chưa có trong giỏ -> thêm mới vào đầu danh sách
+    } else if (mounted) {
       state = [
-        CartItem(product: product, quantity: quantity),
-        ...state,
+        CartItem(product: product, quantity: value),
+        ...state.where((x) => x.product.id != product.id),
       ];
     }
-  }
-
-  /// Cập nhật số lượng của một sản phẩm trong giỏ
-  void updateQuantity(String productId, int newQuantity) {
-    if (newQuantity <= 0) {
-      removeFromCart(productId);
-      return;
+  });
+  Future<bool> updateQuantity(String productId, int quantity) => _run(() async {
+    if (dio != null) {
+      _accept(
+        (await dio!.put(
+          '/commerce/cart/items',
+          data: {'productId': productId, 'quantity': quantity.clamp(0, 99)},
+        )).data,
+      );
+    } else if (mounted) {
+      state = state
+          .where((i) => i.product.id != productId || quantity > 0)
+          .map(
+            (i) =>
+                i.product.id == productId ? i.copyWith(quantity: quantity) : i,
+          )
+          .toList();
     }
-
-    state = state.map((item) {
-      if (item.product.id == productId) {
-        return item.copyWith(quantity: newQuantity);
-      }
-      return item;
-    }).toList();
-  }
-
-  /// Tăng số lượng sản phẩm lên 1
-  void incrementQuantity(String productId) {
-    final item = state.firstWhere(
-      (e) => e.product.id == productId,
-      orElse: () => throw Exception('Không tìm thấy sản phẩm trong giỏ'),
-    );
-    updateQuantity(productId, item.quantity + 1);
-  }
-
-  /// Giảm số lượng sản phẩm đi 1 (nếu về 0 sẽ tự động xóa)
-  void decrementQuantity(String productId) {
-    final item = state.firstWhere(
-      (e) => e.product.id == productId,
-      orElse: () => throw Exception('Không tìm thấy sản phẩm trong giỏ'),
-    );
-    updateQuantity(productId, item.quantity - 1);
-  }
-
-  /// Xóa hẳn 1 sản phẩm ra khỏi giỏ hàng
-  void removeFromCart(String productId) {
-    state = state.where((item) => item.product.id != productId).toList();
-  }
-
-  /// Xóa toàn bộ giỏ hàng (thường gọi sau khi đặt hàng thành công)
+  });
+  Future<bool> _changeQuantity(String id, int delta) => _run(() async {
+    final current = state.where((i) => i.product.id == id).firstOrNull;
+    if (current == null) return;
+    final quantity = (current.quantity + delta).clamp(0, 99);
+    if (dio != null) {
+      _accept(
+        (await dio!.put(
+          '/commerce/cart/items',
+          data: {'productId': id, 'quantity': quantity},
+        )).data,
+      );
+    } else if (mounted) {
+      state = state
+          .where((i) => i.product.id != id || quantity > 0)
+          .map((i) => i.product.id == id ? i.copyWith(quantity: quantity) : i)
+          .toList();
+    }
+  });
+  Future<bool> incrementQuantity(String id) => _changeQuantity(id, 1);
+  Future<bool> decrementQuantity(String id) => _changeQuantity(id, -1);
+  Future<bool> removeFromCart(String id) => updateQuantity(id, 0);
   void clearCart() {
     state = const [];
   }
+
+  Future<bool> clearRemote() async {
+    final ids = state.map((item) => item.product.id).toList();
+    for (final id in ids) {
+      if (!await removeFromCart(id)) return false;
+    }
+    return true;
+  }
 }
 
-/// Provider cung cấp StateNotifier giỏ hàng
-final cartProvider =
-    StateNotifierProvider<CartNotifier, List<CartItem>>((ref) {
-  return CartNotifier();
+final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>((ref) {
+  final id = ref.watch(sessionStoreProvider.select((s) => s.userId));
+  final notifier = CartNotifier(
+    ref.watch(dioProvider),
+    (error) => ref.read(cartSyncErrorProvider.notifier).state = error,
+  );
+  if (id != null) Future.microtask(notifier.load);
+  return notifier;
 });
-
-/// Provider tính tổng số lượng món hàng trong giỏ (dùng cho badge icon trên AppBar)
-final cartTotalCountProvider = Provider<int>((ref) {
-  final items = ref.watch(cartProvider);
-  return items.fold<int>(0, (sum, item) => sum + item.quantity);
+final cartTotalCountProvider = Provider<int>(
+  (ref) => ref.watch(cartProvider).fold(0, (s, i) => s + i.quantity),
+);
+final cartSubtotalVndProvider = Provider<int>(
+  (ref) => ref.watch(cartProvider).fold(0, (s, i) => s + i.totalPriceVnd),
+);
+final appliedVoucherProvider = StateProvider<Voucher?>((ref) {
+  ref.watch(sessionStoreProvider.select((s) => s.userId));
+  return null;
 });
-
-/// Provider tính tổng tiền tạm tính của giỏ hàng (VNĐ)
-final cartSubtotalVndProvider = Provider<int>((ref) {
-  final items = ref.watch(cartProvider);
-  return items.fold<int>(0, (sum, item) => sum + item.totalPriceVnd);
-});
-
-/// Provider lưu trữ voucher đang được áp dụng trong phiên thanh toán hiện tại
-final appliedVoucherProvider = StateProvider<Voucher?>((ref) => null);
-
-/// Provider tính số tiền giảm giá từ voucher (VNĐ)
-/// Tự động cập nhật lại mỗi khi giỏ hàng hoặc voucher thay đổi.
-/// Nếu giá trị giỏ hàng giảm xuống dưới minOrderAmount của voucher, số tiền giảm sẽ tự động về 0.
 final cartDiscountVndProvider = Provider<int>((ref) {
-  final voucher = ref.watch(appliedVoucherProvider);
-  final subtotal = ref.watch(cartSubtotalVndProvider);
-
-  if (voucher == null || subtotal <= 0) {
-    return 0;
-  }
-
-  // Đơn hàng chưa đạt mức tối thiểu của voucher -> Không giảm
-  if (subtotal < voucher.minOrderAmount) {
-    return 0;
-  }
-
-  // Tính số tiền giảm theo loại voucher (percentage hoặc fixedAmount)
-  return voucher.calculateDiscount(subtotal);
+  final v = ref.watch(appliedVoucherProvider);
+  return v?.calculateDiscount(ref.watch(cartSubtotalVndProvider)) ?? 0;
 });
-
-/// Provider tính phí vận chuyển GHN tiêu chuẩn (miễn phí nếu tạm tính >= 300.000 đ hoặc giỏ hàng trống)
 final cartShippingFeeVndProvider = Provider<int>((ref) {
-  final subtotal = ref.watch(cartSubtotalVndProvider);
-  const freeShippingThreshold = 300000;
-  const standardFee = 25000;
-  if (subtotal == 0 || subtotal >= freeShippingThreshold) {
-    return 0;
-  }
-  return standardFee;
+  final s = ref.watch(cartSubtotalVndProvider);
+  return s == 0 || s >= 300000 ? 0 : 30000;
 });
-
-/// Provider tính tổng số tiền thanh toán cuối cùng (VNĐ)
-/// = Tạm tính + Phí vận chuyển - Giảm giá voucher (không thể âm)
-final cartFinalTotalVndProvider = Provider<int>((ref) {
-  final subtotal = ref.watch(cartSubtotalVndProvider);
-  final shippingFee = ref.watch(cartShippingFeeVndProvider);
-  final discount = ref.watch(cartDiscountVndProvider);
-
-  final total = subtotal + shippingFee - discount;
-  return total < 0 ? 0 : total;
-});
+final cartFinalTotalVndProvider = Provider<int>(
+  (ref) =>
+      (ref.watch(cartSubtotalVndProvider) +
+              ref.watch(cartShippingFeeVndProvider) -
+              ref.watch(cartDiscountVndProvider))
+          .clamp(0, 1 << 60)
+          .toInt(),
+);

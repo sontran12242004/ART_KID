@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 enum BadgeCategory {
   habit('Thói Quen Vẽ', Icons.alarm_on_rounded, Color(0xFF4ECDC4)),
-  achievement('Thành Tích Cọ Vẽ', Icons.military_tech_rounded, Color(0xFFFFB800)),
+  achievement(
+    'Thành Tích Cọ Vẽ',
+    Icons.military_tech_rounded,
+    Color(0xFFFFB800),
+  ),
   skill('Kỹ Thuật Vẽ', Icons.brush_rounded, Color(0xFF6C5CE7)),
   special('Đại Sứ Hội Họa', Icons.workspace_premium_rounded, Color(0xFFFF6B6B));
 
@@ -226,8 +230,7 @@ class AchievementBadge {
       title: 'Cú Đêm Hội Họa',
       emoji: '🦉',
       icon: Icons.nights_stay_rounded,
-      condition:
-          'Hoàn thành một bức tranh vào khung giờ tối (19h - 20h30)',
+      condition: 'Hoàn thành một bức tranh vào khung giờ tối (19h - 20h30)',
       meaning: 'Thói quen thư giãn cùng sắc màu và nghệ thuật trước giờ ngủ',
       category: BadgeCategory.habit,
       primaryColor: Color(0xFF3F51B5),
@@ -247,7 +250,8 @@ class AchievementBadge {
       icon: Icons.wb_sunny_rounded,
       condition:
           'Hoàn thành một bức vẽ vào buổi sáng cuối tuần (trước 9h sáng)',
-      meaning: 'Khởi đầu ngày mới tràn đầy năng lượng cùng nguồn cảm hứng vẽ tranh',
+      meaning:
+          'Khởi đầu ngày mới tràn đầy năng lượng cùng nguồn cảm hứng vẽ tranh',
       category: BadgeCategory.habit,
       primaryColor: Color(0xFFFF9800),
       secondaryColor: Color(0xFFFFCC80),
@@ -301,8 +305,7 @@ class AchievementBadge {
       title: 'Khám Phá Thiên Hà Tranh',
       emoji: '🚀',
       icon: Icons.rocket_launch_rounded,
-      condition:
-          'Mở khóa toàn bộ các bài vẽ trong một chương/chủ đề hội họa',
+      condition: 'Mở khóa toàn bộ các bài vẽ trong một chương/chủ đề hội họa',
       meaning: 'Thúc đẩy hoàn thành trọn vẹn lộ trình học vẽ bài bản',
       category: BadgeCategory.skill,
       primaryColor: Color(0xFF8E24AA),
@@ -320,7 +323,8 @@ class AchievementBadge {
       title: 'Không Ngại Thử Thách',
       emoji: '🛡️',
       icon: Icons.shield_rounded,
-      condition: 'Vượt qua bài vẽ thử thách ở cấp độ Khó (nhiều chi tiết & phối cảnh)',
+      condition:
+          'Vượt qua bài vẽ thử thách ở cấp độ Khó (nhiều chi tiết & phối cảnh)',
       meaning: 'Dạy bé tự tin, không sợ các bức tranh phức tạp',
       category: BadgeCategory.skill,
       primaryColor: Color(0xFF455A64),
@@ -359,7 +363,8 @@ class AchievementBadge {
       icon: Icons.change_circle_rounded,
       condition:
           'Vẽ lại hoặc tô màu lại bức tranh chưa ưng ý để đạt điểm tuyệt đối ở lần sau',
-      meaning: 'Tinh thần kiên trì, học hỏi từ nét vẽ cũ và hoàn thiện tác phẩm',
+      meaning:
+          'Tinh thần kiên trì, học hỏi từ nét vẽ cũ và hoàn thiện tác phẩm',
       category: BadgeCategory.habit,
       primaryColor: Color(0xFF00B0FF),
       secondaryColor: Color(0xFF80D8FF),
@@ -377,7 +382,8 @@ class AchievementBadge {
       icon: Icons.explore_rounded,
       condition:
           'Dùng thử ít nhất 5 chất liệu & phong cách vẽ khác nhau trên app (Màu nước, Chì, Sơn dầu, Pixel, AI)',
-      meaning: 'Khuyến khích khám phá đa dạng phong cách hội họa và công nghệ AI',
+      meaning:
+          'Khuyến khích khám phá đa dạng phong cách hội họa và công nghệ AI',
       category: BadgeCategory.skill,
       primaryColor: Color(0xFF8D6E63),
       secondaryColor: Color(0xFFBCAAA4),
@@ -394,8 +400,7 @@ class AchievementBadge {
       title: 'Chuyên Cần Cuối Tuần',
       emoji: '🎈',
       icon: Icons.celebration_rounded,
-      condition:
-          'Hoàn thành tác phẩm tranh vẽ trong cả Thứ 7 và Chủ Nhật',
+      condition: 'Hoàn thành tác phẩm tranh vẽ trong cả Thứ 7 và Chủ Nhật',
       meaning: 'Duy trì niềm say mê sáng tác tranh vẽ vào dịp cuối tuần',
       category: BadgeCategory.habit,
       primaryColor: Color(0xFFFF5252),
@@ -414,7 +419,8 @@ class AchievementBadge {
       icon: Icons.psychology_rounded,
       condition:
           'Hoàn thành bài vẽ ký họa từ trí nhớ đạt điểm tuyệt đối mà không cần nhìn tranh mẫu',
-      meaning: 'Khuyến khích khả năng ghi nhớ hình ảnh và tư duy không gian thị giác',
+      meaning:
+          'Khuyến khích khả năng ghi nhớ hình ảnh và tư duy không gian thị giác',
       category: BadgeCategory.achievement,
       primaryColor: Color(0xFF7C4DFF),
       secondaryColor: Color(0xFFB388FF),
@@ -430,8 +436,7 @@ class AchievementBadge {
       title: 'Đại Sứ Hội Họa Toàn Năng',
       emoji: '👑',
       icon: Icons.workspace_premium_rounded,
-      condition:
-          'Thu thập đủ 15 huy hiệu hội họa bất kỳ khác trong danh sách',
+      condition: 'Thu thập đủ 15 huy hiệu hội họa bất kỳ khác trong danh sách',
       meaning: 'Danh hiệu nghệ thuật danh giá nhất hệ thống ArtKids',
       category: BadgeCategory.special,
       primaryColor: Color(0xFFFFD700),

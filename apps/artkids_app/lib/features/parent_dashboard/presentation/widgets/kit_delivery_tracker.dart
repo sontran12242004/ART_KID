@@ -33,9 +33,7 @@ class KitDeliveryTracker extends ConsumerWidget {
             ),
           );
         }
-        return Column(
-          children: deliveries.map(_buildDeliveryCard).toList(),
-        );
+        return Column(children: deliveries.map(_buildDeliveryCard).toList());
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) => Center(child: Text('Lỗi: $error')),
@@ -65,7 +63,10 @@ class KitDeliveryTracker extends ConsumerWidget {
                 children: [
                   Text(
                     item.kitName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -83,7 +84,10 @@ class KitDeliveryTracker extends ConsumerWidget {
             Chip(
               label: Text(
                 _statusLabel(item.status),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               backgroundColor: _statusColor(item.status),
             ),
@@ -97,7 +101,8 @@ class KitDeliveryTracker extends ConsumerWidget {
     return switch (status.toLowerCase()) {
       'ordered' => const Icon(Icons.receipt_long, color: Colors.blue),
       'packed' => const Icon(Icons.inventory_2, color: Colors.orange),
-      'shipping' || 'intransit' => const Icon(Icons.local_shipping, color: Colors.deepPurple),
+      'shipping' ||
+      'intransit' => const Icon(Icons.local_shipping, color: Colors.deepPurple),
       'delivered' => const Icon(Icons.check_circle, color: Colors.green),
       _ => const Icon(Icons.local_shipping, color: Colors.deepPurple),
     };

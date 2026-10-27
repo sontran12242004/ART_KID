@@ -1,9 +1,5 @@
 /// Enum đại diện cho 3 con vật trong trò chơi vẽ và ghép tranh
-enum Animal {
-  cat,
-  dog,
-  bird,
-}
+enum Animal { cat, dog, bird }
 
 /// Tiện ích bổ sung cho [Animal] hỗ trợ hiển thị UI và đường dẫn tài nguyên
 extension AnimalX on Animal {

@@ -20,5 +20,13 @@ class KitDelivery extends Equatable {
   final String? carrier;
 
   @override
-  List<Object?> get props => [id, orderId, kitName, trackingNumber, status, estimatedDeliveryDate, carrier];
+  List<Object?> get props => [
+    id,
+    orderId,
+    kitName,
+    trackingNumber,
+    status,
+    estimatedDeliveryDate,
+    carrier,
+  ];
 }

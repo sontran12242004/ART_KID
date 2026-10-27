@@ -16,7 +16,10 @@ class DeviceCapabilityChecker {
   static bool get isRunningOnWeb => kIsWeb;
 
   /// Đánh giá xem có nên render 3D nặng hay fallback về 2D Rive animation mượt mà
-  static bool prefer2dOver3d({bool isEmulator = false, int availableRamMb = 4096}) {
+  static bool prefer2dOver3d({
+    bool isEmulator = false,
+    int availableRamMb = 4096,
+  }) {
     if (isEmulator && availableRamMb < 4096) {
       return true; // Fallback về 2D trên emulator RAM thấp
     }

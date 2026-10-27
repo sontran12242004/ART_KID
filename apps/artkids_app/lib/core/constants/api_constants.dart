@@ -12,7 +12,7 @@ class ApiConstants {
   // Courses
   static const courses = '/courses';
   static const lessons = '/lessons';
-  static const progress = '/progress';
+  static const progress = '/courses/progress';
 
   // Commerce & Orders & Shop
   static const cart = '/commerce/cart';

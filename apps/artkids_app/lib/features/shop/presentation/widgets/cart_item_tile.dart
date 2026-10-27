@@ -8,15 +8,15 @@ import '../providers/cart_provider.dart';
 
 /// 1 dòng sản phẩm trong giỏ hàng (ảnh, tên, đơn giá, số lượng, nút xóa)
 class CartItemTile extends ConsumerWidget {
-  const CartItemTile({
-    super.key,
-    required this.cartItem,
-  });
+  const CartItemTile({super.key, required this.cartItem});
 
   final CartItem cartItem;
 
-  static final _currencyFormat =
-      NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -51,12 +51,17 @@ class CartItemTile extends ConsumerWidget {
                 fit: BoxFit.cover,
                 placeholder: (_, _) => Container(
                   color: const Color(0xFFECEFF1),
-                  child: const Icon(Icons.image_outlined, color: Colors.black26),
+                  child: const Icon(
+                    Icons.image_outlined,
+                    color: Colors.black26,
+                  ),
                 ),
                 errorWidget: (_, _, _) => Container(
                   color: const Color(0xFFECEFF1),
-                  child: const Icon(Icons.inventory_2_outlined,
-                      color: Color(0xFF1687A7)),
+                  child: const Icon(
+                    Icons.inventory_2_outlined,
+                    color: Color(0xFF1687A7),
+                  ),
                 ),
               ),
             ),

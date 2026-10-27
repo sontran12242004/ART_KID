@@ -8,17 +8,16 @@ import 'order_status_badge.dart';
 
 /// Card đại diện cho 1 đơn hàng trong màn hình danh sách đơn hàng
 class OrderCard extends StatelessWidget {
-  const OrderCard({
-    super.key,
-    required this.order,
-    required this.onTap,
-  });
+  const OrderCard({super.key, required this.order, required this.onTap});
 
   final OrderEntity order;
   final VoidCallback onTap;
 
-  static final _currencyFormat =
-      NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  );
   static final _dateFormat = DateFormat('dd/MM/yyyy • HH:mm');
 
   @override
@@ -59,7 +58,9 @@ class OrderCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1687A7).withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF1687A7,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(

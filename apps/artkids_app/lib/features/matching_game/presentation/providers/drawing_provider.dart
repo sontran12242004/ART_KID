@@ -1,3 +1,4 @@
+import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/matching_game_config.dart';
 import '../../domain/animal.dart';
@@ -40,18 +41,14 @@ class DrawingNotifier extends StateNotifier<DrawingProgressState> {
       updatedUnlocked.add(animal);
     }
 
-    state = state.copyWith(
-      unlockedStickers: updatedUnlocked,
-    );
+    state = state.copyWith(unlockedStickers: updatedUnlocked);
     return animal;
   }
 
   /// Chuyển sang con vật tiếp theo (nếu còn)
   void advanceToNextAnimal() {
     if (state.currentAnimalIndex < state.totalAnimals - 1) {
-      state = state.copyWith(
-        currentAnimalIndex: state.currentAnimalIndex + 1,
-      );
+      state = state.copyWith(currentAnimalIndex: state.currentAnimalIndex + 1);
     }
   }
 
@@ -69,5 +66,6 @@ class DrawingNotifier extends StateNotifier<DrawingProgressState> {
 /// Provider cung cấp trạng thái tiến trình vẽ của bé
 final drawingProvider =
     StateNotifierProvider<DrawingNotifier, DrawingProgressState>((ref) {
-  return DrawingNotifier();
-});
+      ref.watch(authProvider.select((s) => s.selectedChild?.id));
+      return DrawingNotifier();
+    });

@@ -13,7 +13,9 @@ class VoiceGuidanceService {
     try {
       await _tts.setLanguage('vi-VN');
       await _tts.setSpeechRate(0.45); // Slower, friendlier rate for children
-      await _tts.setPitch(1.2); // Slightly higher pitch for cute friendly kid guide voice
+      await _tts.setPitch(
+        1.2,
+      ); // Slightly higher pitch for cute friendly kid guide voice
       _isReady = true;
     } catch (_) {
       _isReady = false;

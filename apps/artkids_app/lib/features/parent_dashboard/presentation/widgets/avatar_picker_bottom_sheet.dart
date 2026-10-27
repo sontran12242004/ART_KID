@@ -53,8 +53,10 @@ class _AvatarPickerBottomSheetState extends State<AvatarPickerBottomSheet> {
     final presets = widget.isChild
         ? AvatarPreset.childPresets
         : AvatarPreset.parentPresets;
-    final selectedPreset =
-        AvatarPreset.findById(_selectedId, isChild: widget.isChild);
+    final selectedPreset = AvatarPreset.findById(
+      _selectedId,
+      isChild: widget.isChild,
+    );
 
     return Container(
       decoration: const BoxDecoration(
@@ -140,10 +142,7 @@ class _AvatarPickerBottomSheetState extends State<AvatarPickerBottomSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFE2F3F5),
-                  const Color(0xFFF7FDFD),
-                ],
+                colors: [const Color(0xFFE2F3F5), const Color(0xFFF7FDFD)],
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
@@ -183,8 +182,10 @@ class _AvatarPickerBottomSheetState extends State<AvatarPickerBottomSheet> {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1687A7),
                     borderRadius: BorderRadius.circular(12),
@@ -229,7 +230,9 @@ class _AvatarPickerBottomSheetState extends State<AvatarPickerBottomSheet> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 10),
+                      horizontal: 8,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(0xFFE3F2FD)
@@ -244,8 +247,9 @@ class _AvatarPickerBottomSheetState extends State<AvatarPickerBottomSheet> {
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF1A52A8)
-                                    .withValues(alpha: 0.22),
+                                color: const Color(
+                                  0xFF1A52A8,
+                                ).withValues(alpha: 0.22),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -315,8 +319,7 @@ class _AvatarPickerBottomSheetState extends State<AvatarPickerBottomSheet> {
                   borderRadius: BorderRadius.circular(26),
                 ),
                 elevation: 4,
-                shadowColor:
-                    const Color(0xFF1A52A8).withValues(alpha: 0.45),
+                shadowColor: const Color(0xFF1A52A8).withValues(alpha: 0.45),
               ),
               onPressed: () {
                 widget.onAvatarSelected(_selectedId);

@@ -15,10 +15,18 @@ class KitDeliveryModel extends KitDelivery {
     return KitDeliveryModel(
       id: json['id'] as String,
       orderId: json['order_id'] as String? ?? json['orderId'] as String? ?? '',
-      kitName: json['kit_name'] as String? ?? json['kitName'] as String? ?? 'Physical Art Kit',
-      trackingNumber: json['tracking_number'] as String? ?? json['trackingNumber'] as String? ?? '',
+      kitName:
+          json['kit_name'] as String? ??
+          json['kitName'] as String? ??
+          'Physical Art Kit',
+      trackingNumber:
+          json['tracking_number'] as String? ??
+          json['trackingNumber'] as String? ??
+          '',
       status: json['status'] as String? ?? 'ordered',
-      estimatedDeliveryDate: json['estimated_delivery_date'] as String? ?? json['estimatedDeliveryDate'] as String?,
+      estimatedDeliveryDate:
+          json['estimated_delivery_date'] as String? ??
+          json['estimatedDeliveryDate'] as String?,
       carrier: json['carrier'] as String?,
     );
   }

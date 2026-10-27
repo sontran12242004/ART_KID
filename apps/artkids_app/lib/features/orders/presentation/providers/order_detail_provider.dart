@@ -5,22 +5,22 @@ import '../../domain/entities/order_entity.dart';
 import 'orders_list_provider.dart';
 
 /// Provider lấy chi tiết 1 đơn hàng theo ID
-final orderDetailProvider =
-    FutureProvider.autoDispose.family<OrderEntity, String>((ref, orderId) async {
-  final repository = ref.watch(orderRepositoryProvider);
-  return repository.getOrderById(orderId);
-});
+final orderDetailProvider = FutureProvider.autoDispose
+    .family<OrderEntity, String>((ref, orderId) async {
+      final repository = ref.watch(orderRepositoryProvider);
+      return repository.getOrderById(orderId);
+    });
 
 /// Controller xử lý các tác vụ trên đơn hàng (Hủy đơn, Đánh giá, v.v.)
 final orderActionControllerProvider =
     StateNotifierProvider<OrderActionController, AsyncValue<void>>((ref) {
-  final repository = ref.watch(orderRepositoryProvider);
-  return OrderActionController(repository, ref);
-});
+      final repository = ref.watch(orderRepositoryProvider);
+      return OrderActionController(repository, ref);
+    });
 
 class OrderActionController extends StateNotifier<AsyncValue<void>> {
   OrderActionController(this._repository, this._ref)
-      : super(const AsyncValue.data(null));
+    : super(const AsyncValue.data(null));
 
   final OrderRepository _repository;
   final Ref _ref;

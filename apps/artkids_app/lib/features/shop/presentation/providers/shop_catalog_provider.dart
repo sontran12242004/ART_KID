@@ -15,21 +15,19 @@ final productSearchQueryProvider = StateProvider<String>((ref) {
 });
 
 /// Provider danh sách sản phẩm theo bộ lọc category và từ khóa tìm kiếm
-final shopCatalogProvider =
-    FutureProvider.autoDispose<List<Product>>((ref) async {
+final shopCatalogProvider = FutureProvider.autoDispose<List<Product>>((
+  ref,
+) async {
   final repository = ref.watch(productRepositoryProvider);
   final category = ref.watch(selectedProductCategoryProvider);
   final query = ref.watch(productSearchQueryProvider);
 
-  return repository.getProducts(
-    category: category,
-    searchQuery: query,
-  );
+  return repository.getProducts(category: category, searchQuery: query);
 });
 
 /// Provider chi tiết 1 sản phẩm theo ID
-final productDetailProvider =
-    FutureProvider.autoDispose.family<Product, String>((ref, productId) async {
-  final repository = ref.watch(productRepositoryProvider);
-  return repository.getProductById(productId);
-});
+final productDetailProvider = FutureProvider.autoDispose
+    .family<Product, String>((ref, productId) async {
+      final repository = ref.watch(productRepositoryProvider);
+      return repository.getProductById(productId);
+    });

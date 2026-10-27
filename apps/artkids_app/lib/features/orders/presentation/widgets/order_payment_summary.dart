@@ -24,8 +24,11 @@ class OrderPaymentSummary extends StatelessWidget {
   final String paymentMethodName;
   final PaymentStatus paymentStatus;
 
-  static final _currencyFormat =
-      NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +168,10 @@ class OrderPaymentSummary extends StatelessWidget {
               const SizedBox(width: 8),
               // Payment status badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: paymentStatus.backgroundColor,
                   borderRadius: BorderRadius.circular(8),

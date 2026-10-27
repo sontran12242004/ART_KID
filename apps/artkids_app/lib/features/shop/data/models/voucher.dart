@@ -144,17 +144,17 @@ class Voucher extends Equatable {
 
   @override
   List<Object?> get props => [
-        code,
-        title,
-        discountType,
-        discountValue,
-        minOrderAmount,
-        maxDiscountAmount,
-        expiryDate,
-        isUsable,
-        usageLimit,
-        description,
-      ];
+    code,
+    title,
+    discountType,
+    discountValue,
+    minOrderAmount,
+    maxDiscountAmount,
+    expiryDate,
+    isUsable,
+    usageLimit,
+    description,
+  ];
 }
 
 /// Kết quả kiểm tra xác thực mã voucher cho một đơn hàng cụ thể
@@ -210,10 +210,10 @@ class VoucherValidationResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        isValid,
-        voucher,
-        discountAmountVnd,
-        errorMessage,
-        errorCode,
-      ];
+    isValid,
+    voucher,
+    discountAmountVnd,
+    errorMessage,
+    errorCode,
+  ];
 }

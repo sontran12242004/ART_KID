@@ -7,7 +7,9 @@ import '../../domain/repositories/kid_mode_repository.dart';
 import '../../domain/usecases/get_kid_rewards.dart';
 import '../../../../core/network/dio_client.dart';
 
-final kidModeRemoteDataSourceProvider = Provider<KidModeRemoteDataSource>((ref) {
+final kidModeRemoteDataSourceProvider = Provider<KidModeRemoteDataSource>((
+  ref,
+) {
   final dio = ref.watch(dioClientProvider);
   return KidModeRemoteDataSourceImpl(dio);
 });
@@ -23,13 +25,19 @@ final getKidRewardsUseCaseProvider = Provider<GetKidRewardsUseCase>((ref) {
 });
 
 /// Provider nạp danh sách huy hiệu của bé
-final kidRewardsProvider = FutureProvider.family<List<KidReward>, String>((ref, childId) async {
+final kidRewardsProvider = FutureProvider.family<List<KidReward>, String>((
+  ref,
+  childId,
+) async {
   final useCase = ref.watch(getKidRewardsUseCaseProvider);
   return useCase(childId);
 });
 
 /// Provider tính tổng điểm sao của bé
-final kidPointsProvider = FutureProvider.family<int, String>((ref, childId) async {
+final kidPointsProvider = FutureProvider.family<int, String>((
+  ref,
+  childId,
+) async {
   final repository = ref.watch(kidModeRepositoryProvider);
   return repository.getTotalPoints(childId);
 });

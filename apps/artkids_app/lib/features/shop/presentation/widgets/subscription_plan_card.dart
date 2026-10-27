@@ -17,7 +17,10 @@ class SubscriptionPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -87,7 +90,11 @@ class SubscriptionPlanCard extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.check_circle, size: 18, color: Color(0xFF00B894)),
+                        const Icon(
+                          Icons.check_circle,
+                          size: 18,
+                          color: Color(0xFF00B894),
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -102,14 +109,21 @@ class SubscriptionPlanCard extends StatelessWidget {
                 if (plan.kitDeliveryIncluded) ...[
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF7675).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       children: const [
-                        Icon(Icons.inventory_2, size: 18, color: Color(0xFFFF7675)),
+                        Icon(
+                          Icons.inventory_2,
+                          size: 18,
+                          color: Color(0xFFFF7675),
+                        ),
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(

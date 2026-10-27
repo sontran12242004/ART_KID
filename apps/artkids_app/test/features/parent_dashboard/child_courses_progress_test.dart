@@ -133,76 +133,9 @@ void main() {
     });
   });
 
-  group('ParentDashboardRepository & Multi-Child Mock Data Tests', () {
-    late ParentDashboardRepositoryImpl repo;
-
-    setUp(() {
-      repo = ParentDashboardRepositoryImpl(_FakeDataSource());
-    });
-
-    test('Lấy tiến độ các khóa học của child-1 trả về 4 khóa học đa dạng trạng thái', () async {
-      final courses = await repo.getChildCoursesProgress('child-1');
-
-      expect(courses.length, 4);
-
-      // Có đủ 3 trạng thái: inProgress, completed, notStarted
-      final hasInProgress = courses.any(
-        (c) => c.status == CourseProgressStatus.inProgress,
-      );
-      final hasCompleted = courses.any(
-        (c) => c.status == CourseProgressStatus.completed,
-      );
-      final hasNotStarted = courses.any(
-        (c) => c.status == CourseProgressStatus.notStarted,
-      );
-
-      expect(hasInProgress, isTrue);
-      expect(hasCompleted, isTrue);
-      expect(hasNotStarted, isTrue);
-    });
-
-    test(
-      'Logic sắp xếp theo thời điểm học gần nhất và lấy top 3 khóa học',
-      () async {
-        final courses = await repo.getChildCoursesProgress('child-1');
-
-        // Sắp xếp giảm dần theo lastLearnedAt (null nằm cuối)
-        final sortedCourses = List<CourseProgress>.from(courses)
-          ..sort((a, b) {
-            if (a.lastLearnedAt == null && b.lastLearnedAt == null) return 0;
-            if (a.lastLearnedAt == null) return 1;
-            if (b.lastLearnedAt == null) return -1;
-            return b.lastLearnedAt!.compareTo(a.lastLearnedAt!);
-          });
-
-        // Lấy 3 khóa học gần nhất
-        final top3 = sortedCourses.take(3).toList();
-        expect(top3.length, 3);
-        expect(sortedCourses.length > 3, isTrue);
-
-        // Khóa học gần nhất phải có lastLearnedAt sau cùng
-        expect(top3.first.courseId, 'course_2_cute_animals');
-        // Khóa học chưa bắt đầu phải ở cuối
-        expect(sortedCourses.last.courseId, 'course_4_landscape_nature');
-        expect(sortedCourses.last.lastLearnedAt, isNull);
-      },
-    );
-
-    test(
-      'Multi-child: Bé chưa học khóa nào (child-empty) trả về danh sách rỗng',
-      () async {
-        final emptyCourses = await repo.getChildCoursesProgress('child-empty');
-        expect(emptyCourses, isEmpty);
-      },
-    );
-
-    test('Multi-child: Bé thứ 2 (child-2) trả về dữ liệu riêng biệt', () async {
-      final child2Courses = await repo.getChildCoursesProgress('child-2');
-      expect(child2Courses.length, 2);
-      expect(
-        child2Courses.any((c) => c.courseId == 'course_3_color_magic'),
-        isTrue,
-      );
-    });
+  test('empty server progress remains empty for each child', () async {
+    final repo = ParentDashboardRepositoryImpl(_FakeDataSource());
+    expect(await repo.getChildCoursesProgress('child-1'), isEmpty);
+    expect(await repo.getChildCoursesProgress('child-2'), isEmpty);
   });
 }

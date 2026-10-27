@@ -30,10 +30,7 @@ void main() {
       });
 
       test('rejects too long nickname (>20 chars)', () {
-        expect(
-          CoppaCompliance.isValidChildNickname('A' * 21),
-          isFalse,
-        );
+        expect(CoppaCompliance.isValidChildNickname('A' * 21), isFalse);
       });
     });
 

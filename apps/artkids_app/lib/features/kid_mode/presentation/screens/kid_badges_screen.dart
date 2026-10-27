@@ -9,10 +9,7 @@ import '../widgets/badge_detail_dialog.dart';
 
 /// Màn hình Bộ sưu tập 20 Huy Hiệu Thành Tích của bé — Kid Mode
 class KidBadgesScreen extends ConsumerWidget {
-  const KidBadgesScreen({
-    super.key,
-    this.childId = 'current-child',
-  });
+  const KidBadgesScreen({super.key, this.childId = 'current-child'});
 
   final String childId;
 
@@ -29,11 +26,7 @@ class KidBadgesScreen extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFF9E6),
-              Color(0xFFFFFDF5),
-              Color(0xFFF7FDFD),
-            ],
+            colors: [Color(0xFFFFF9E6), Color(0xFFFFFDF5), Color(0xFFF7FDFD)],
             stops: [0.0, 0.4, 1.0],
           ),
         ),
@@ -43,8 +36,10 @@ class KidBadgesScreen extends ConsumerWidget {
             children: [
               // Top Bar
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     IconButton(
@@ -82,8 +77,7 @@ class KidBadgesScreen extends ConsumerWidget {
 
               // Bảng Thống Kê Tổng Quan (Sao + Huy Hiệu)
               Container(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -114,8 +108,11 @@ class KidBadgesScreen extends ConsumerWidget {
                                   color: Colors.white24,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.stars_rounded,
-                                    color: Colors.white, size: 30),
+                                child: const Icon(
+                                  Icons.stars_rounded,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
                               ),
                               const SizedBox(width: 10),
                               Column(
@@ -143,11 +140,7 @@ class KidBadgesScreen extends ConsumerWidget {
                           ),
                         ),
 
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: Colors.white30,
-                        ),
+                        Container(width: 1, height: 40, color: Colors.white30),
 
                         // Cột Huy Hiệu
                         Expanded(
@@ -183,9 +176,10 @@ class KidBadgesScreen extends ConsumerWidget {
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                    Icons.military_tech_rounded,
-                                    color: Colors.white,
-                                    size: 30),
+                                  Icons.military_tech_rounded,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
                               ),
                             ],
                           ),
@@ -203,7 +197,8 @@ class KidBadgesScreen extends ConsumerWidget {
                         minHeight: 8,
                         backgroundColor: Colors.black12,
                         valueColor: const AlwaysStoppedAnimation<Color>(
-                            Colors.white),
+                          Colors.white,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -269,8 +264,11 @@ class KidBadgesScreen extends ConsumerWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.emoji_events_outlined,
-                                size: 64, color: Color(0xFFB0BEC5)),
+                            const Icon(
+                              Icons.emoji_events_outlined,
+                              size: 64,
+                              color: Color(0xFFB0BEC5),
+                            ),
                             const SizedBox(height: 12),
                             Text(
                               'Chưa có huy hiệu nào trong mục "${state.currentTab.label}"',
@@ -288,11 +286,11 @@ class KidBadgesScreen extends ConsumerWidget {
                         physics: const BouncingScrollPhysics(),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 14,
-                          mainAxisSpacing: 14,
-                          childAspectRatio: 0.82,
-                        ),
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 14,
+                              mainAxisSpacing: 14,
+                              childAspectRatio: 0.82,
+                            ),
                         itemCount: state.filteredBadges.length,
                         itemBuilder: (context, index) {
                           final badge = state.filteredBadges[index];
@@ -345,10 +343,7 @@ class KidBadgesScreen extends ConsumerWidget {
                   ),
                   Text(
                     'Bé đã đạt huy hiệu "${badge.title}" (+25 Sao)',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.white70,
-                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.white70),
                   ),
                 ],
               ),
@@ -366,8 +361,11 @@ class KidBadgesScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Row(
           children: [
-            Icon(Icons.workspace_premium_rounded,
-                color: Color(0xFFFFB800), size: 28),
+            Icon(
+              Icons.workspace_premium_rounded,
+              color: Color(0xFFFFB800),
+              size: 28,
+            ),
             SizedBox(width: 8),
             Text('Hệ Thống 20 Huy Hiệu'),
           ],
@@ -381,13 +379,21 @@ class KidBadgesScreen extends ConsumerWidget {
               style: TextStyle(fontSize: 14, color: Color(0xFF33555D)),
             ),
             SizedBox(height: 10),
-            Text('🌱 Thói Quen Vẽ: Rèn luyện tính kiên trì, chuỗi ngày vẽ tranh liên tục.'),
+            Text(
+              '🌱 Thói Quen Vẽ: Rèn luyện tính kiên trì, chuỗi ngày vẽ tranh liên tục.',
+            ),
             SizedBox(height: 6),
-            Text('🌟 Thành Tích Cọ Vẽ: Điểm thưởng sao từ các tác phẩm xuất sắc.'),
+            Text(
+              '🌟 Thành Tích Cọ Vẽ: Điểm thưởng sao từ các tác phẩm xuất sắc.',
+            ),
             SizedBox(height: 6),
-            Text('🎨 Kỹ Thuật Vẽ: Pha màu, dựng hình khối, phác thảo tốc độ, vẽ & ghép tranh.'),
+            Text(
+              '🎨 Kỹ Thuật Vẽ: Pha màu, dựng hình khối, phác thảo tốc độ, vẽ & ghép tranh.',
+            ),
             SizedBox(height: 6),
-            Text('👑 Đại Sứ Hội Họa: Danh hiệu cao quý nhất khi thu thập đủ 15 huy hiệu!'),
+            Text(
+              '👑 Đại Sứ Hội Họa: Danh hiệu cao quý nhất khi thu thập đủ 15 huy hiệu!',
+            ),
           ],
         ),
         actions: [

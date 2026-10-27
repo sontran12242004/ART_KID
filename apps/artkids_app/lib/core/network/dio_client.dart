@@ -13,10 +13,7 @@ final dioProvider = Provider<Dio>((ref) {
       headers: {'Content-Type': 'application/json'},
     ),
   );
-  dio.interceptors.addAll([
-    ApiInterceptor(ref),
-    LogInterceptor(requestBody: true, responseBody: true),
-  ]);
+  dio.interceptors.addAll([ApiInterceptor(ref, dio)]);
   return dio;
 });
 

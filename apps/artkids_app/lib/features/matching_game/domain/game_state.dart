@@ -54,8 +54,12 @@ class DrawingProgressState extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [pictureSetId, sequence, currentAnimalIndex, unlockedStickers];
+  List<Object?> get props => [
+    pictureSetId,
+    sequence,
+    currentAnimalIndex,
+    unlockedStickers,
+  ];
 }
 
 /// Trạng thái của màn hình ghép tranh kéo-thả
@@ -103,6 +107,10 @@ class MatchingGameState extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [pictureSetId, targets, matchedAnimals, lastMatchedAnimal];
+  List<Object?> get props => [
+    pictureSetId,
+    targets,
+    matchedAnimals,
+    lastMatchedAnimal,
+  ];
 }

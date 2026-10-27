@@ -63,8 +63,8 @@ class DropTargetSlot extends StatelessWidget {
           onMatched(details.data);
         },
         builder: (context, candidateData, rejectedData) {
-          final isHoveringValid = candidateData.isNotEmpty &&
-              candidateData.first == config.animal;
+          final isHoveringValid =
+              candidateData.isNotEmpty && candidateData.first == config.animal;
 
           return Center(
             child: Container(
@@ -75,10 +75,7 @@ class DropTargetSlot extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: isHoveringValid
-                    ? Border.all(
-                        color: const Color(0xFFFFD166),
-                        width: 3.5,
-                      )
+                    ? Border.all(color: const Color(0xFFFFD166), width: 3.5)
                     : null,
                 color: isHoveringValid
                     ? const Color(0xFFFFD166).withValues(alpha: 0.25)

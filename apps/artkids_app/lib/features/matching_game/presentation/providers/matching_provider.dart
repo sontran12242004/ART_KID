@@ -1,3 +1,4 @@
+import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/matching_game_config.dart';
 import '../../domain/animal.dart';
@@ -15,7 +16,9 @@ class MatchingNotifier extends StateNotifier<MatchingGameState> {
     state = MatchingGameState(
       pictureSetId: pictureSetId,
       targets: targets,
-      matchedAnimals: restoredMatches != null ? Set.from(restoredMatches) : const {},
+      matchedAnimals: restoredMatches != null
+          ? Set.from(restoredMatches)
+          : const {},
       lastMatchedAnimal: null,
     );
   }
@@ -27,10 +30,7 @@ class MatchingNotifier extends StateNotifier<MatchingGameState> {
     }
 
     final updated = Set<Animal>.from(state.matchedAnimals)..add(animal);
-    state = state.copyWith(
-      matchedAnimals: updated,
-      lastMatchedAnimal: animal,
-    );
+    state = state.copyWith(matchedAnimals: updated, lastMatchedAnimal: animal);
     return true;
   }
 
@@ -48,5 +48,6 @@ class MatchingNotifier extends StateNotifier<MatchingGameState> {
 /// Provider cung cấp trạng thái ghép tranh
 final matchingProvider =
     StateNotifierProvider<MatchingNotifier, MatchingGameState>((ref) {
-  return MatchingNotifier();
-});
+      ref.watch(authProvider.select((s) => s.selectedChild?.id));
+      return MatchingNotifier();
+    });

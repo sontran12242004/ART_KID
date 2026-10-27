@@ -77,8 +77,7 @@ class OrderEntity extends Equatable {
   final String? cancelReason;
 
   /// Tổng số món kit trong đơn
-  int get totalItemsCount =>
-      items.fold(0, (sum, item) => sum + item.quantity);
+  int get totalItemsCount => items.fold(0, (sum, item) => sum + item.quantity);
 
   /// Sao chép đơn hàng với các trường cập nhật (dùng khi hủy đơn hoặc update trạng thái)
   OrderEntity copyWith({
@@ -121,21 +120,21 @@ class OrderEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        orderCode,
-        createdAt,
-        status,
-        orderType,
-        paymentStatus,
-        paymentMethodName,
-        items,
-        shippingInfo,
-        subtotalVnd,
-        shippingFeeVnd,
-        discountVnd,
-        voucherCode,
-        totalAmountVnd,
-        trackingEvents,
-        cancelReason,
-      ];
+    id,
+    orderCode,
+    createdAt,
+    status,
+    orderType,
+    paymentStatus,
+    paymentMethodName,
+    items,
+    shippingInfo,
+    subtotalVnd,
+    shippingFeeVnd,
+    discountVnd,
+    voucherCode,
+    totalAmountVnd,
+    trackingEvents,
+    cancelReason,
+  ];
 }

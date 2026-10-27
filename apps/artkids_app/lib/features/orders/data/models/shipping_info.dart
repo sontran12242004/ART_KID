@@ -14,21 +14,27 @@ class ShippingInfoModel extends ShippingInfoEntity {
 
   factory ShippingInfoModel.fromJson(Map<String, dynamic> json) {
     return ShippingInfoModel(
-      recipientName: json['recipient_name'] as String? ??
+      recipientName:
+          json['recipient_name'] as String? ??
           json['recipientName'] as String? ??
           '',
-      phoneNumber: json['phone_number'] as String? ??
+      phoneNumber:
+          json['phone_number'] as String? ??
           json['phoneNumber'] as String? ??
           '',
-      fullAddress: json['full_address'] as String? ??
+      fullAddress:
+          json['full_address'] as String? ??
           json['fullAddress'] as String? ??
           '',
-      carrierName: json['carrier_name'] as String? ??
+      carrierName:
+          json['carrier_name'] as String? ??
           json['carrierName'] as String? ??
-          'Giao Hàng Nhanh (GHN)',
-      trackingNumber: json['tracking_number'] as String? ??
+          'Chưa phân công',
+      trackingNumber:
+          json['tracking_number'] as String? ??
           json['trackingNumber'] as String?,
-      trackingUrl: json['tracking_url'] as String? ?? json['trackingUrl'] as String?,
+      trackingUrl:
+          json['tracking_url'] as String? ?? json['trackingUrl'] as String?,
       estimatedDeliveryDate: json['estimated_delivery_date'] != null
           ? DateTime.tryParse(json['estimated_delivery_date'] as String)
           : null,

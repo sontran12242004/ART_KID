@@ -1,0 +1,96 @@
+@baseUrl = http://localhost:5080/api/v1
+
+### Login as the Development-only parent
+# @name parentLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{"email":"parent.test@example.invalid","password":"ArtKids-Test-2026!"}
+
+### Paste the accessToken from the response (Swagger Authorize also accepts it)
+@token = REPLACE_WITH_PARENT_ACCESS_TOKEN
+@adminToken = REPLACE_WITH_ADMIN_ACCESS_TOKEN
+@instructorToken = REPLACE_WITH_INSTRUCTOR_ACCESS_TOKEN
+
+### Current account
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### Children
+GET {{baseUrl}}/children
+Authorization: Bearer {{token}}
+
+### Courses (public catalogue)
+GET {{baseUrl}}/courses?page=1&pageSize=20
+
+### Child progress
+GET {{baseUrl}}/courses/progress?childId=child-1
+Authorization: Bearer {{token}}
+
+### Consent before uploading a drawing
+POST {{baseUrl}}/auth/consent
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"childId":"child-1","purpose":"data_processing","policyVersion":"1"}
+
+### Submit after multipart /media/upload returns an asset ID
+POST {{baseUrl}}/kid/submissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"childId":"child-1","lessonId":"lesson_basics_1","imageAssetId":"REPLACE_WITH_ASSET_ID"}
+
+### Teacher's assigned submissions
+GET {{baseUrl}}/kid/submissions?page=1&pageSize=20
+Authorization: Bearer {{instructorToken}}
+
+### Review
+POST {{baseUrl}}/kid/submissions/REPLACE_WITH_SUBMISSION_ID/reviews
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{"score":9.5,"feedback":"Nét vẽ rõ, phối màu đẹp."}
+
+### Checkout: all prices and stock are computed by the server
+POST {{baseUrl}}/commerce/checkout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"idempotencyKey":"manual-test-order-001","items":[{"itemType":"kit","itemId":"prod_kit_animal","quantity":2}],"voucherCode":"ARTKIDS10","shipping":{"recipientName":"Nguyen Test Parent","phoneNumber":"0900000000","fullAddress":"1 Test Street"},"paymentMethod":"manual_transfer"}
+
+### List orders
+GET {{baseUrl}}/commerce/orders
+Authorization: Bearer {{token}}
+
+### Administrator manually verifies payment / confirms COD
+POST {{baseUrl}}/commerce/orders/REPLACE_WITH_ORDER_ID/confirm
+Authorization: Bearer {{adminToken}}
+
+### Create a live class (instructor owns course_basics)
+POST {{baseUrl}}/live/classes
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{"courseId":"course_basics","name":"Lớp vẽ tối thứ Bảy","capacity":30}
+
+### Enroll child in a live class
+POST {{baseUrl}}/live/classes/REPLACE_WITH_CLASS_ID/enrollments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"childId":"child-1"}
+
+### Create a session: replace dates with future UTC times and use your actual meeting provider URL
+POST {{baseUrl}}/live/classes/REPLACE_WITH_CLASS_ID/sessions
+Authorization: Bearer {{instructorToken}}
+Content-Type: application/json
+
+{"title":"Buổi 1","startsAt":"2026-12-05T12:00:00Z","endsAt":"2026-12-05T13:00:00Z","lessonId":"lesson_basics_1","provider":"external","roomUrl":"https://meet.example.invalid/replace-with-real-room"}
+
+### Join is available 15 minutes before a session or while marked live
+POST {{baseUrl}}/live/sessions/REPLACE_WITH_SESSION_ID/join
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"childId":"child-1"}

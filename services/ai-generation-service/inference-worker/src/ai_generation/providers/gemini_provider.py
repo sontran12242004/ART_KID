@@ -4,11 +4,13 @@ import base64
 from typing import Dict, Any, Optional
 import httpx
 
+
 class GeminiAnimalClassifier:
     """
     Sử dụng Google Gemini 1.5 Flash Vision để phân tích và nhận diện loài vật
     từ tranh vẽ của trẻ em, gợi ý chuyển động và lời khen ngợi.
     """
+
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
         self.model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
@@ -17,7 +19,9 @@ class GeminiAnimalClassifier:
             f"?key={self.api_key}"
         )
 
-    async def analyze_drawing(self, image_bytes: bytes, mime_type: str = "image/png") -> Dict[str, Any]:
+    async def analyze_drawing(
+        self, image_bytes: bytes, mime_type: str = "image/png"
+    ) -> Dict[str, Any]:
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY is not set.")
 
@@ -37,26 +41,19 @@ class GeminiAnimalClassifier:
                 {
                     "parts": [
                         {"text": system_instruction},
-                        {
-                            "inline_data": {
-                                "mime_type": mime_type,
-                                "data": base64_image
-                            }
-                        }
+                        {"inline_data": {"mime_type": mime_type, "data": base64_image}},
                     ]
                 }
             ],
             "generationConfig": {
                 "temperature": 0.3,
                 "maxOutputTokens": 500,
-            }
+            },
         }
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
-                self.endpoint,
-                headers={"Content-Type": "application/json"},
-                json=payload
+                self.endpoint, headers={"Content-Type": "application/json"}, json=payload
             )
             response.raise_for_status()
             data = response.json()
@@ -72,7 +69,7 @@ class GeminiAnimalClassifier:
                         "animalType": "creature",
                         "displayName": "Con Vật Sáng Tạo",
                         "cheeringMessage": text,
-                        "suggestedAnimationId": "default_anim"
+                        "suggestedAnimationId": "default_anim",
                     }
 
             raise RuntimeError("Gemini API did not return candidates.")

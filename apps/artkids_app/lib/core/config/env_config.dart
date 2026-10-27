@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
 /// Đọc biến môi trường từ env/{flavor}.env
 class EnvConfig {
@@ -10,7 +11,14 @@ class EnvConfig {
   }
 
   static String get apiBaseUrl =>
-      _get('API_BASE_URL', 'http://10.0.2.2:3000/api');
+      const String.fromEnvironment('API_BASE_URL').isNotEmpty
+      ? const String.fromEnvironment('API_BASE_URL')
+      : _get(
+          'API_BASE_URL',
+          kIsWeb
+              ? 'http://localhost:5080/api/v1'
+              : 'http://10.0.2.2:5080/api/v1',
+        );
 
   static String get cdnBaseUrl =>
       _get('CDN_BASE_URL', 'http://10.0.2.2:9000/artkids-media');
@@ -18,15 +26,15 @@ class EnvConfig {
   static String get flavor => _get('FLAVOR', 'dev');
 
   static bool get enableMockOrders =>
-      _get('ENABLE_MOCK_ORDERS', 'true') !=
+      _get('ENABLE_MOCK_ORDERS', 'false') !=
       'false'; // Default to true if not explicitly false
 
   static bool get enableMockShop =>
-      _get('ENABLE_MOCK_SHOP', 'true') !=
+      _get('ENABLE_MOCK_SHOP', 'false') !=
       'false'; // Default to true if not explicitly false
 
   static bool get enableMockCoursesProgress =>
-      _get('ENABLE_MOCK_COURSES_PROGRESS', 'true') !=
+      _get('ENABLE_MOCK_COURSES_PROGRESS', 'false') !=
       'false'; // Bật mock tiến độ theo khóa học
 
   static void validate() {

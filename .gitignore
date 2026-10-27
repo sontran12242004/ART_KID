@@ -144,4 +144,16 @@ lerna-debug.log*
 logs/
 *.pid
 *.seed
+**/bin/
+**/obj/
+**/TestResults/
+backend/src/ArtKids.API/App_Data/
+backend/.test-data/
+backend/tests/artifacts/
+backend/seed-media/.cache/
+backend/.local/
+backend/backups/
+backend/**/appsettings.Local.json
 *.pid.lock
+__pycache__/
+*.py[cod]

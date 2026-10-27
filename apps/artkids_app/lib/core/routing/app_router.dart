@@ -1,3 +1,11 @@
+import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/connected/presentation/family_screens.dart';
+import '../../features/connected/presentation/learning_screens.dart';
+import '../../features/connected/presentation/grading_screens.dart';
+import '../../features/connected/presentation/family_submission_browser.dart';
+import '../../features/connected/presentation/commerce_screens.dart';
+import '../../features/connected/presentation/workspace_screens.dart';
+import '../../features/connected/presentation/course_product_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,11 +14,6 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/mode_selector_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
-import '../../features/courses/presentation/screens/course_list_screen.dart';
-import '../../features/courses/presentation/screens/lesson_list_screen.dart';
-import '../../features/hand_drawn_submission/presentation/screens/hand_drawn_submission_screen.dart';
-import '../../features/kid_mode/presentation/screens/kid_badges_screen.dart';
-import '../../features/kid_mode/presentation/screens/kid_home_screen.dart';
 import '../../features/kid_mode/presentation/screens/kid_pin_gate_screen.dart';
 import '../../features/matching_game/presentation/screens/completed_gallery_screen.dart';
 import '../../features/matching_game/presentation/screens/drawing_screen.dart';
@@ -20,27 +23,116 @@ import '../../features/orders/presentation/screens/order_detail_screen.dart';
 import '../../features/orders/presentation/screens/orders_list_screen.dart';
 import '../../features/parent_dashboard/presentation/screens/all_courses_progress_screen.dart';
 import '../../features/parent_dashboard/presentation/screens/child_progress_screen.dart';
-import '../../features/parent_dashboard/presentation/screens/parent_home_screen.dart';
-import '../../features/parent_dashboard/presentation/screens/parent_pin_setup_screen.dart';
-import '../../features/parent_dashboard/presentation/screens/parent_settings_screen.dart';
 import '../../features/shop/presentation/screens/cart_screen.dart';
 import '../../features/shop/presentation/screens/product_detail_screen.dart';
-import '../../features/shop/presentation/screens/shop_checkout_screen.dart';
 import '../../features/shop/presentation/screens/shop_home_screen.dart';
-import '../../features/shop/presentation/screens/subscription_plans_screen.dart';
 import 'route_paths.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  return GoRouter(
+  final refresh = ValueNotifier<int>(0);
+  ref.listen(authProvider, (_, next) {
+    refresh.value++;
+  });
+  ref.onDispose(refresh.dispose);
+  final router = GoRouter(
+    refreshListenable: refresh,
     navigatorKey: _rootNavigatorKey,
     initialLocation: RoutePaths.splash,
     redirect: (context, state) {
-      // Dynamic routing / guards can be implemented here
+      final user = ref.read(authProvider).currentUser;
+      final public = [
+        '/',
+        '/mode-selector',
+        '/parent/login',
+        '/parent/register',
+      ].contains(state.uri.path);
+      if (user == null) return public ? null : '/parent/login';
+      if (user.role != 'parent' &&
+          !state.uri.path.startsWith('/staff') &&
+          !state.uri.path.startsWith('/submissions') &&
+          !(user.role == 'admin' &&
+              state.uri.path.startsWith('/parent/orders')) &&
+          !['/parent/submissions', '/parent/live'].contains(state.uri.path)) {
+        return '/staff';
+      }
+      if (user.role == 'parent' && state.uri.path.startsWith('/staff')) {
+        return '/parent';
+      }
+      if (user.role == 'parent' &&
+          state.uri.path.startsWith('/kid') &&
+          ref.read(authProvider).selectedChild == null) {
+        return '/parent/children';
+      }
       return null;
     },
     routes: [
+      GoRoute(path: '/staff', builder: (_, _) => const StaffWorkspace()),
+      GoRoute(
+        path: '/staff/grading',
+        builder: (_, _) => const GradingCoursesScreen(),
+      ),
+      GoRoute(
+        path: '/staff/grading/courses/:id',
+        builder: (_, s) =>
+            GradingLessonsScreen(courseId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/staff/grading/lessons/:id',
+        builder: (_, s) =>
+            GradingSubmissionsScreen(lessonId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/staff/courses/:courseId/products/new',
+        builder: (_, state) => CourseProductPublishScreen(
+          courseId: state.pathParameters['courseId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/parent/courses/:courseId/products',
+        builder: (_, state) =>
+            CourseProductsScreen(courseId: state.pathParameters['courseId']!),
+      ),
+      GoRoute(path: '/staff/orders', builder: (_, _) => const AdminOrders()),
+      GoRoute(
+        path: '/parent/children',
+        builder: (_, _) => const ChildrenScreen(),
+      ),
+      GoRoute(
+        path: '/parent/notifications',
+        builder: (_, _) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/parent/submissions',
+        builder: (_, _) => const SubmissionsScreen(),
+      ),
+      GoRoute(
+        path: '/parent/submissions/courses/:id',
+        builder: (_, s) =>
+            FamilySubmissionBrowser(courseId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/parent/submissions/lessons/:id',
+        builder: (_, s) =>
+            FamilySubmissionBrowser(lessonId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/parent/submissions/unassigned',
+        builder: (_, _) => const FamilySubmissionBrowser(unassigned: true),
+      ),
+      GoRoute(
+        path: '/submissions/:id',
+        builder: (_, s) => SubmissionDetail(id: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/parent/live',
+        builder: (_, _) => const LiveClassesScreen(),
+      ),
+      GoRoute(
+        path: '/kid/lesson/:id',
+        builder: (_, s) => ConnectedLesson(lessonId: s.pathParameters['id']!),
+      ),
       // Shared Routes
       GoRoute(path: RoutePaths.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(
@@ -59,15 +151,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.parentHome,
-        builder: (_, _) => const ParentHomeScreen(),
+        builder: (_, _) => const ParentWorkspace(),
       ),
       GoRoute(
         path: RoutePaths.parentCourses,
-        builder: (_, _) => const CourseListScreen(),
+        builder: (_, _) => const ConnectedCourses(),
       ),
       GoRoute(
         path: RoutePaths.parentSubscriptions,
-        builder: (_, _) => const SubscriptionPlansScreen(),
+        builder: (_, _) => const ConnectedPlans(),
       ),
       GoRoute(
         path: RoutePaths.parentShop,
@@ -85,7 +177,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.parentShopCheckout,
-        builder: (_, _) => const ShopCheckoutScreen(),
+        builder: (_, s) => ConnectedCheckout(
+          type: s.uri.queryParameters['type'],
+          id: s.uri.queryParameters['id'],
+        ),
       ),
       GoRoute(
         path: RoutePaths.parentOrders,
@@ -110,11 +205,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.parentKidPinSetup,
-        builder: (_, _) => const ParentPinSetupScreen(),
+        builder: (_, _) => const ConnectedSettingsScreen(),
       ),
       GoRoute(
         path: RoutePaths.parentSettings,
-        builder: (_, _) => const ParentSettingsScreen(),
+        builder: (_, _) => const ConnectedSettingsScreen(),
       ),
 
       // Kid Mode Routes
@@ -124,23 +219,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RoutePaths.kidHome,
-        builder: (_, _) => const KidHomeScreen(),
+        builder: (_, _) => const ConnectedKidHome(),
       ),
       GoRoute(
         path: RoutePaths.kidLesson,
-        builder: (_, state) => LessonListScreen(
+        builder: (_, state) => ConnectedLessons(
           courseId: state.pathParameters['courseId'] ?? 'default-course',
         ),
       ),
       GoRoute(
         path: RoutePaths.kidDrawingSubmission,
-        builder: (_, state) => HandDrawnSubmissionScreen(
+        builder: (_, state) => SubmissionUpload(
           lessonId: state.pathParameters['lessonId'] ?? 'default-lesson',
         ),
       ),
       GoRoute(
         path: RoutePaths.kidBadges,
-        builder: (_, _) => const KidBadgesScreen(),
+        builder: (_, _) => const ConnectedBadges(),
       ),
       GoRoute(
         path: RoutePaths.matchingGame,
@@ -168,4 +263,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+  ref.onDispose(router.dispose);
+  return router;
 });

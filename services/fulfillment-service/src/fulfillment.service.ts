@@ -38,9 +38,7 @@ export class FulfillmentService {
   ]);
 
   getByParentId(parentId: string): ShipmentOrder[] {
-    return Array.from(this.shipments.values()).filter(
-      (s) => s.parentId === parentId,
-    );
+    return Array.from(this.shipments.values()).filter((s) => s.parentId === parentId);
   }
 
   getByTrackingNumber(trackingNumber: string): ShipmentOrder {
@@ -53,10 +51,7 @@ export class FulfillmentService {
     return shipment;
   }
 
-  updateStatusFromWebhook(
-    trackingNumber: string,
-    status: ShipmentOrder['status'],
-  ): ShipmentOrder {
+  updateStatusFromWebhook(trackingNumber: string, status: ShipmentOrder['status']): ShipmentOrder {
     const shipment = this.getByTrackingNumber(trackingNumber);
     shipment.status = status;
     return shipment;

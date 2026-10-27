@@ -39,7 +39,10 @@ class FakeParentDashboardRepository implements ParentDashboardRepository {
   }
 
   @override
-  Future<void> updateKidPin({required String parentId, required String newPin}) async {}
+  Future<void> updateKidPin({
+    required String parentId,
+    required String newPin,
+  }) async {}
 }
 
 void main() {

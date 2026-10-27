@@ -47,10 +47,12 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
     _parentEmailController = TextEditingController(text: profile.parentEmail);
     _parentPhoneController = TextEditingController(text: profile.parentPhone);
 
-    _childNicknameController =
-        TextEditingController(text: profile.childNickname);
-    _childInterestsController =
-        TextEditingController(text: profile.childInterests);
+    _childNicknameController = TextEditingController(
+      text: profile.childNickname,
+    );
+    _childInterestsController = TextEditingController(
+      text: profile.childInterests,
+    );
 
     _parentAvatarId = profile.parentAvatarId;
     _childAvatarId = profile.childAvatarId;
@@ -103,7 +105,9 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
     setState(() => _isSaving = true);
     await Future.delayed(const Duration(milliseconds: 600));
 
-    ref.read(parentProfileProvider.notifier).saveAll(
+    ref
+        .read(parentProfileProvider.notifier)
+        .saveAll(
           parentName: _parentNameController.text.trim(),
           parentEmail: _parentEmailController.text.trim(),
           parentPhone: _parentPhoneController.text.trim(),
@@ -180,8 +184,7 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final parentPreset =
-        AvatarPreset.findById(_parentAvatarId, isChild: false);
+    final parentPreset = AvatarPreset.findById(_parentAvatarId, isChild: false);
     final childPreset = AvatarPreset.findById(_childAvatarId, isChild: true);
 
     return Scaffold(
@@ -192,11 +195,7 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFE2F3F5),
-              Color(0xFFF7FDFD),
-              Color(0xFFF4F9FA),
-            ],
+            colors: [Color(0xFFE2F3F5), Color(0xFFF7FDFD), Color(0xFFF4F9FA)],
             stops: [0.0, 0.35, 1.0],
           ),
         ),
@@ -205,8 +204,10 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
             children: [
               // Custom Navigation Bar
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     IconButton(
@@ -229,14 +230,17 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                     ),
                     TextButton.icon(
                       style: TextButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF1687A7).withValues(alpha: 0.12),
+                        backgroundColor: const Color(
+                          0xFF1687A7,
+                        ).withValues(alpha: 0.12),
                         foregroundColor: const Color(0xFF1687A7),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                       ),
                       icon: const Icon(Icons.check_rounded, size: 18),
                       label: const Text(
@@ -264,7 +268,8 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                         _buildSectionHeader(
                           icon: Icons.person_pin_rounded,
                           title: 'Hồ Sơ Phụ Huynh',
-                          subtitle: 'Quản lý thông tin tài khoản và người giám hộ',
+                          subtitle:
+                              'Quản lý thông tin tài khoản và người giám hộ',
                         ),
                         const SizedBox(height: 12),
                         _buildCard(
@@ -286,8 +291,10 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                                     style: TextButton.styleFrom(
                                       foregroundColor: const Color(0xFF1687A7),
                                     ),
-                                    icon: const Icon(Icons.palette_outlined,
-                                        size: 16),
+                                    icon: const Icon(
+                                      Icons.palette_outlined,
+                                      size: 16,
+                                    ),
                                     label: Text(
                                       'Đổi Avatar: ${parentPreset.name}',
                                       style: const TextStyle(
@@ -318,8 +325,8 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               prefixIcon: Icons.person_rounded,
                               validator: (val) =>
                                   (val == null || val.trim().isEmpty)
-                                      ? 'Vui lòng nhập họ tên'
-                                      : null,
+                                  ? 'Vui lòng nhập họ tên'
+                                  : null,
                             ),
                             const SizedBox(height: 14),
 
@@ -369,7 +376,9 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                             // Badge trạng thái
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE8F5E9),
                                 borderRadius: BorderRadius.circular(14),
@@ -380,8 +389,11 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               ),
                               child: const Row(
                                 children: [
-                                  Icon(Icons.verified_rounded,
-                                      color: Color(0xFF2E7D32), size: 18),
+                                  Icon(
+                                    Icons.verified_rounded,
+                                    color: Color(0xFF2E7D32),
+                                    size: 18,
+                                  ),
                                   SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -428,8 +440,10 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                                     style: TextButton.styleFrom(
                                       foregroundColor: const Color(0xFF1687A7),
                                     ),
-                                    icon: const Icon(Icons.face_rounded,
-                                        size: 16),
+                                    icon: const Icon(
+                                      Icons.face_rounded,
+                                      size: 16,
+                                    ),
                                     label: Text(
                                       'Đổi Avatar Bé: ${childPreset.name}',
                                       style: const TextStyle(
@@ -459,8 +473,8 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               prefixIcon: Icons.face_rounded,
                               validator: (val) =>
                                   (val == null || val.trim().isEmpty)
-                                      ? 'Vui lòng nhập biệt danh'
-                                      : null,
+                                  ? 'Vui lòng nhập biệt danh'
+                                  : null,
                             ),
                             const SizedBox(height: 16),
 
@@ -498,15 +512,17 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                                     side: BorderSide(
                                       color: isSelected
                                           ? const Color(0xFF1687A7)
-                                          : const Color(0xFF70C1B3)
-                                              .withValues(alpha: 0.5),
+                                          : const Color(
+                                              0xFF70C1B3,
+                                            ).withValues(alpha: 0.5),
                                     ),
                                   ),
                                   onSelected: (selected) {
                                     if (selected) {
                                       setState(() {
                                         _childAge = age;
-                                        _childBirthYear = DateTime.now().year - age;
+                                        _childBirthYear =
+                                            DateTime.now().year - age;
                                       });
                                     }
                                   },
@@ -534,7 +550,9 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                             // COPPA Notice Box
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF1F8F9),
                                 borderRadius: BorderRadius.circular(18),
@@ -546,8 +564,11 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               child: const Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.shield_outlined,
-                                      color: Color(0xFF1687A7), size: 20),
+                                  Icon(
+                                    Icons.shield_outlined,
+                                    color: Color(0xFF1687A7),
+                                    size: 20,
+                                  ),
                                   SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
@@ -582,12 +603,16 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               leading: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE17055)
-                                      .withValues(alpha: 0.12),
+                                  color: const Color(
+                                    0xFFE17055,
+                                  ).withValues(alpha: 0.12),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.receipt_long_rounded,
-                                    color: Color(0xFFE17055), size: 22),
+                                child: const Icon(
+                                  Icons.receipt_long_rounded,
+                                  color: Color(0xFFE17055),
+                                  size: 22,
+                                ),
                               ),
                               title: const Text(
                                 'Đơn Hàng Của Tôi',
@@ -599,7 +624,9 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               subtitle: const Text(
                                 'Theo dõi đơn hàng & hành trình giao Kit học cụ',
                                 style: TextStyle(
-                                    fontSize: 12, color: Color(0xFF636E72)),
+                                  fontSize: 12,
+                                  color: Color(0xFF636E72),
+                                ),
                               ),
                               trailing: const Icon(Icons.chevron_right_rounded),
                               onTap: () =>
@@ -613,12 +640,16 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               leading: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF0984E3)
-                                      .withValues(alpha: 0.12),
+                                  color: const Color(
+                                    0xFF0984E3,
+                                  ).withValues(alpha: 0.12),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.pin_outlined,
-                                    color: Color(0xFF0984E3), size: 22),
+                                child: const Icon(
+                                  Icons.pin_outlined,
+                                  color: Color(0xFF0984E3),
+                                  size: 22,
+                                ),
                               ),
                               title: const Text(
                                 'Mã PIN Trẻ Em (Kid Gate)',
@@ -630,7 +661,9 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               subtitle: const Text(
                                 'Khóa bảo vệ không cho bé thoát ra ngoài Kid Mode',
                                 style: TextStyle(
-                                    fontSize: 12, color: Color(0xFF636E72)),
+                                  fontSize: 12,
+                                  color: Color(0xFF636E72),
+                                ),
                               ),
                               trailing: const Icon(Icons.chevron_right_rounded),
                               onTap: () =>
@@ -652,7 +685,9 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               subtitle: const Text(
                                 'Nhận cập nhật khi bé hoàn thành tranh mới',
                                 style: TextStyle(
-                                    fontSize: 12, color: Color(0xFF636E72)),
+                                  fontSize: 12,
+                                  color: Color(0xFF636E72),
+                                ),
                               ),
                               value: _notificationsEnabled,
                               onChanged: (val) {
@@ -675,7 +710,9 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                               subtitle: const Text(
                                 'Duy trì thói quen sáng tạo vào 19:30 mỗi tối',
                                 style: TextStyle(
-                                    fontSize: 12, color: Color(0xFF636E72)),
+                                  fontSize: 12,
+                                  color: Color(0xFF636E72),
+                                ),
                               ),
                               value: _dailyDrawingReminder,
                               onChanged: (val) {
@@ -708,8 +745,9 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                                 borderRadius: BorderRadius.circular(27),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF1A52A8)
-                                        .withValues(alpha: 0.38),
+                                    color: const Color(
+                                      0xFF1A52A8,
+                                    ).withValues(alpha: 0.38),
                                     blurRadius: 18,
                                     offset: const Offset(0, 7),
                                   ),
@@ -723,7 +761,8 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
                                         strokeWidth: 2.5,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
+                                              Colors.white,
+                                            ),
                                       ),
                                     )
                                   : const Row(
@@ -815,10 +854,7 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
               ),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF556E74),
-                ),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF556E74)),
               ),
             ],
           ),
@@ -833,10 +869,7 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFFE2EFEF),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFE2EFEF), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF1687A7).withValues(alpha: 0.06),

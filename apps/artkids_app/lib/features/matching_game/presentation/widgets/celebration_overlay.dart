@@ -76,12 +76,16 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
       children: [
         // Lớp phủ nền mờ
         Container(
-          color: Colors.black.withValues(alpha: widget.isGrandCelebration ? 0.65 : 0.45),
+          color: Colors.black.withValues(
+            alpha: widget.isGrandCelebration ? 0.65 : 0.45,
+          ),
         ),
 
         // Nguồn pháo giấy
         Align(
-          alignment: widget.isGrandCelebration ? Alignment.topCenter : Alignment.center,
+          alignment: widget.isGrandCelebration
+              ? Alignment.topCenter
+              : Alignment.center,
           child: ConfettiWidget(
             confettiController: _confettiController,
             blastDirection: widget.isGrandCelebration ? pi / 2 : -pi / 2,
@@ -304,10 +308,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay> {
         shape: BoxShape.circle,
         border: Border.all(color: const Color(0xFFFFBE0B), width: 3),
         boxShadow: [
-          BoxShadow(
-            color: Colors.orange.withValues(alpha: 0.2),
-            blurRadius: 8,
-          ),
+          BoxShadow(color: Colors.orange.withValues(alpha: 0.2), blurRadius: 8),
         ],
       ),
       child: Image.asset(animal.stickerAssetPath, fit: BoxFit.contain),

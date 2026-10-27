@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ArtKids.API/ArtKids.API.csproj" />
+    <Project Path="src/ArtKids.BLL/ArtKids.BLL.csproj" />
+    <Project Path="src/ArtKids.DAL/ArtKids.DAL.csproj" />
+  </Folder>
+</Solution>

@@ -12,10 +12,12 @@ class LessonModel extends Lesson {
   factory LessonModel.fromJson(Map<String, dynamic> json) {
     return LessonModel(
       id: json['id'] as String,
-      courseId: json['course_id'] as String? ?? json['courseId'] as String? ?? '',
+      courseId:
+          json['course_id'] as String? ?? json['courseId'] as String? ?? '',
       title: json['title'] as String,
       videoUrl: json['video_url'] as String? ?? json['videoUrl'] as String?,
-      orderIndex: json['order_index'] as int? ?? json['orderIndex'] as int? ?? 0,
+      orderIndex:
+          json['order_index'] as int? ?? json['orderIndex'] as int? ?? 0,
     );
   }
 

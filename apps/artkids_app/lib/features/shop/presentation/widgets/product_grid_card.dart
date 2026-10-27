@@ -17,8 +17,11 @@ class ProductGridCard extends ConsumerWidget {
   final Product product;
   final VoidCallback onTap;
 
-  static final _currencyFormat =
-      NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,8 +53,9 @@ class ProductGridCard extends ConsumerWidget {
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(15)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(15),
+                    ),
                     child: AspectRatio(
                       aspectRatio: 1.15,
                       child: Container(
@@ -61,8 +65,10 @@ class ProductGridCard extends ConsumerWidget {
                           fit: BoxFit.cover,
                           placeholder: (_, _) => Container(
                             color: const Color(0xFFECEFF1),
-                            child: const Icon(Icons.image_outlined,
-                                color: Colors.black26),
+                            child: const Icon(
+                              Icons.image_outlined,
+                              color: Colors.black26,
+                            ),
                           ),
                           errorWidget: (_, _, _) => Container(
                             color: const Color(0xFFECEFF1),
@@ -82,7 +88,9 @@ class ProductGridCard extends ConsumerWidget {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE74C3C),
                           borderRadius: BorderRadius.circular(6),
@@ -166,8 +174,9 @@ class ProductGridCard extends ConsumerWidget {
                               children: [
                                 if (product.originalPriceVnd != null)
                                   Text(
-                                    _currencyFormat
-                                        .format(product.originalPriceVnd),
+                                    _currencyFormat.format(
+                                      product.originalPriceVnd,
+                                    ),
                                     style: const TextStyle(
                                       fontSize: 11,
                                       color: Color(0xFF95A5A6),
@@ -191,10 +200,22 @@ class ProductGridCard extends ConsumerWidget {
                             color: const Color(0xFF1687A7),
                             borderRadius: BorderRadius.circular(10),
                             child: InkWell(
-                              onTap: () {
-                                ref
+                              onTap: () async {
+                                final ok = await ref
                                     .read(cartProvider.notifier)
                                     .addToCart(product, quantity: 1);
+                                if (!context.mounted) return;
+                                if (!ok) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        ref.read(cartSyncErrorProvider) ??
+                                            'Không thêm được vào giỏ hàng.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Row(

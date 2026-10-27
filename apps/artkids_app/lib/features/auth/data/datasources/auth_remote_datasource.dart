@@ -1,26 +1,24 @@
 import 'package:dio/dio.dart';
-
-import '../../../../core/constants/api_constants.dart';
+import '../../../../core/network/api_json.dart';
+import '../../../../core/network/session_store.dart';
 
 class AuthRemoteDataSource {
-  AuthRemoteDataSource(this._dio);
-  final Dio _dio;
-
+  AuthRemoteDataSource(this.dio, this.session);
+  final Dio dio;
+  final SessionStore session;
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final res = await _dio.post<Map<String, dynamic>>(
-      ApiConstants.authLogin,
-      data: {'email': email, 'password': password},
+    final data = apiMap(
+      (await dio.post(
+        '/auth/login',
+        data: {'email': email, 'password': password},
+      )).data,
     );
-    return res.data!;
+    session.accept(data);
+    return apiMap(data['user']);
   }
 
-  Future<Map<String, dynamic>> verifyKidPin(String pin) async {
-    final res = await _dio.post<Map<String, dynamic>>(
-      ApiConstants.authKidPinVerify,
-      data: {'pin': pin},
-    );
-    return res.data!;
-  }
+  Future<Map<String, dynamic>> verifyKidPin(String pin) async =>
+      apiMap((await dio.post('/auth/kid-pin/verify', data: {'pin': pin})).data);
 }
 
 typedef AuthRemoteDataSourceImpl = AuthRemoteDataSource;

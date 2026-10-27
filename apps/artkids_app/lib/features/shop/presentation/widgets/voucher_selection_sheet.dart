@@ -18,8 +18,11 @@ class VoucherSelectionSheet extends ConsumerWidget {
   final Voucher? selectedVoucher;
   final ValueChanged<Voucher> onVoucherSelected;
 
-  static final _currencyFormat =
-      NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  );
   static final _dateFormat = DateFormat('dd/MM/yyyy');
 
   /// Hàm tiện ích mở Bottom Sheet
@@ -92,8 +95,11 @@ class VoucherSelectionSheet extends ConsumerWidget {
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded,
-                      color: Color(0xFF7F8C8D), size: 22),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: Color(0xFF7F8C8D),
+                    size: 22,
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -127,9 +133,7 @@ class VoucherSelectionSheet extends ConsumerWidget {
               loading: () => const Center(
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              error: (err, _) => Center(
-                child: Text('Lỗi tải danh sách: $err'),
-              ),
+              error: (err, _) => Center(child: Text('Lỗi tải danh sách: $err')),
             ),
           ),
         ],
@@ -156,8 +160,8 @@ class VoucherSelectionSheet extends ConsumerWidget {
           color: isSelected
               ? const Color(0xFF27AE60)
               : (isEligible
-                  ? const Color(0xFFE8ECEF)
-                  : const Color(0xFFDCDDE1)),
+                    ? const Color(0xFFE8ECEF)
+                    : const Color(0xFFDCDDE1)),
           width: isSelected ? 1.8 : 1.0,
         ),
         boxShadow: isEligible
@@ -180,8 +184,10 @@ class VoucherSelectionSheet extends ConsumerWidget {
               children: [
                 // Tag mã
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: isEligible
                         ? const Color(0xFFE8F4F8)
@@ -277,40 +283,46 @@ class VoucherSelectionSheet extends ConsumerWidget {
                       ? const Text(
                           'Mã đã hết hạn sử dụng',
                           style: TextStyle(
-                              fontSize: 11.5,
-                              color: Color(0xFFE74C3C),
-                              fontWeight: FontWeight.w600),
+                            fontSize: 11.5,
+                            color: Color(0xFFE74C3C),
+                            fontWeight: FontWeight.w600,
+                          ),
                         )
                       : (isOutOfUsage
-                          ? const Text(
-                              'Mã đã hết lượt sử dụng',
-                              style: TextStyle(
+                            ? const Text(
+                                'Mã đã hết lượt sử dụng',
+                                style: TextStyle(
                                   fontSize: 11.5,
                                   color: Color(0xFFE74C3C),
-                                  fontWeight: FontWeight.w600),
-                            )
-                          : (!isMinOrderMet
-                              ? Text(
-                                  'Mua thêm ${_currencyFormat.format(missingAmount)} để dùng',
-                                  style: const TextStyle(
-                                      fontSize: 11.5,
-                                      color: Color(0xFFE67E22),
-                                      fontWeight: FontWeight.w600),
-                                )
-                              : Text(
-                                  'Tiết kiệm ${_currencyFormat.format(voucher.calculateDiscount(orderSubtotalVnd))}',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF27AE60),
-                                      fontWeight: FontWeight.w700),
-                                ))),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              )
+                            : (!isMinOrderMet
+                                  ? Text(
+                                      'Mua thêm ${_currencyFormat.format(missingAmount)} để dùng',
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        color: Color(0xFFE67E22),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Tiết kiệm ${_currencyFormat.format(voucher.calculateDiscount(orderSubtotalVnd))}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF27AE60),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ))),
                 ),
 
                 // Nút chọn
                 if (isSelected)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE8F8F5),
                       borderRadius: BorderRadius.circular(20),
@@ -319,8 +331,11 @@ class VoucherSelectionSheet extends ConsumerWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(Icons.check_rounded,
-                            size: 14, color: Color(0xFF27AE60)),
+                        Icon(
+                          Icons.check_rounded,
+                          size: 14,
+                          color: Color(0xFF27AE60),
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'Đang dùng',
@@ -348,7 +363,9 @@ class VoucherSelectionSheet extends ConsumerWidget {
                       disabledForegroundColor: const Color(0xFF9E9E9E),
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       minimumSize: const Size(60, 32),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -356,8 +373,10 @@ class VoucherSelectionSheet extends ConsumerWidget {
                     ),
                     child: const Text(
                       'Áp dụng',
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
               ],
@@ -370,7 +389,9 @@ class VoucherSelectionSheet extends ConsumerWidget {
 }
 
 /// Provider nội bộ lấy danh sách voucher khả dụng
-final _availableVouchersProvider = FutureProvider.autoDispose<List<Voucher>>((ref) {
+final _availableVouchersProvider = FutureProvider.autoDispose<List<Voucher>>((
+  ref,
+) {
   final repository = ref.watch(voucherRepositoryProvider);
   return repository.getAvailableVouchers();
 });

@@ -15,7 +15,9 @@ final shopRepositoryProvider = Provider<ShopRepository>((ref) {
   return ShopRepositoryImpl(remote);
 });
 
-final subscriptionPlansProvider = FutureProvider<List<SubscriptionPlan>>((ref) async {
+final subscriptionPlansProvider = FutureProvider<List<SubscriptionPlan>>((
+  ref,
+) async {
   final repo = ref.watch(shopRepositoryProvider);
   return repo.getPlans();
 });

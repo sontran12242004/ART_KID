@@ -35,12 +35,12 @@ class OrderTrackingEventEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        timestamp,
-        isPassed,
-        isCurrent,
-        cancelReason,
-      ];
+    id,
+    title,
+    description,
+    timestamp,
+    isPassed,
+    isCurrent,
+    cancelReason,
+  ];
 }

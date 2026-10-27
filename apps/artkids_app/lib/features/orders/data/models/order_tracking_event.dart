@@ -20,9 +20,12 @@ class OrderTrackingEventModel extends OrderTrackingEventEntity {
       timestamp: json['timestamp'] != null
           ? DateTime.tryParse(json['timestamp'] as String)
           : null,
-      isPassed: json['is_passed'] as bool? ?? json['isPassed'] as bool? ?? false,
-      isCurrent: json['is_current'] as bool? ?? json['isCurrent'] as bool? ?? false,
-      cancelReason: json['cancel_reason'] as String? ?? json['cancelReason'] as String?,
+      isPassed:
+          json['is_passed'] as bool? ?? json['isPassed'] as bool? ?? false,
+      isCurrent:
+          json['is_current'] as bool? ?? json['isCurrent'] as bool? ?? false,
+      cancelReason:
+          json['cancel_reason'] as String? ?? json['cancelReason'] as String?,
     );
   }
 

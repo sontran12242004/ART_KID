@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Widget PIN Pad cho Kid Mode — nút tròn to, dễ bấm cho trẻ em
 class KidPinPad extends StatefulWidget {
-  const KidPinPad({
-    super.key,
-    required this.onPinComplete,
-    this.pinLength = 4,
-  });
+  const KidPinPad({super.key, required this.onPinComplete, this.pinLength = 4});
 
   final void Function(String pin) onPinComplete;
   final int pinLength;
@@ -28,7 +24,9 @@ class _KidPinPadState extends State<KidPinPad> {
 
   void _onBackspace() {
     if (_enteredPin.isEmpty) return;
-    setState(() => _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1));
+    setState(
+      () => _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1),
+    );
   }
 
   void _onClear() {
@@ -86,10 +84,7 @@ class _KidPinPadState extends State<KidPinPad> {
                     color: Colors.red.shade200,
                   );
                 }
-                return _PadButton(
-                  label: key,
-                  onTap: () => _onDigitPress(key),
-                );
+                return _PadButton(label: key, onTap: () => _onDigitPress(key));
               }).toList(),
             ),
           ),
@@ -99,11 +94,7 @@ class _KidPinPadState extends State<KidPinPad> {
 }
 
 class _PadButton extends StatelessWidget {
-  const _PadButton({
-    required this.label,
-    required this.onTap,
-    this.color,
-  });
+  const _PadButton({required this.label, required this.onTap, this.color});
 
   final String label;
   final VoidCallback onTap;

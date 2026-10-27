@@ -8,15 +8,15 @@ import '../../domain/entities/order_item_entity.dart';
 
 /// Section hiển thị danh sách các kit học cụ trong đơn hàng
 class OrderItemsSection extends StatelessWidget {
-  const OrderItemsSection({
-    super.key,
-    required this.items,
-  });
+  const OrderItemsSection({super.key, required this.items});
 
   final List<OrderItemEntity> items;
 
-  static final _currencyFormat =
-      NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
+  static final _currencyFormat = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: 'đ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +103,10 @@ class OrderItemsSection extends StatelessWidget {
                   fit: BoxFit.cover,
                   placeholder: (_, _) => Container(
                     color: const Color(0xFFECEFF1),
-                    child: const Icon(Icons.image_outlined, color: Colors.black26),
+                    child: const Icon(
+                      Icons.image_outlined,
+                      color: Colors.black26,
+                    ),
                   ),
                   errorWidget: (_, _, _) => Container(
                     color: const Color(0xFFECEFF1),

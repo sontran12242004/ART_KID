@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
 
 /// Một nét vẽ gồm danh sách tọa độ điểm, màu sắc và độ dày nét
 class DrawnStroke {
@@ -17,10 +20,14 @@ class DrawnStroke {
 class DrawingCanvas extends StatefulWidget {
   /// Callback khi bé bấm nút "Xong"
   final VoidCallback onFinish;
+  final VoidCallback? onChanged;
+  final bool showActions;
 
   const DrawingCanvas({
     super.key,
     required this.onFinish,
+    this.onChanged,
+    this.showActions = true,
   });
 
   @override
@@ -28,8 +35,32 @@ class DrawingCanvas extends StatefulWidget {
 }
 
 class DrawingCanvasState extends State<DrawingCanvas> {
+  final _captureKey = GlobalKey();
+  Future<Uint8List> exportPng() async {
+    final boundary =
+        _captureKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final image = await boundary.toImage(pixelRatio: 1.5);
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      return data!.buffer.asUint8List();
+    } finally {
+      image.dispose();
+    }
+  }
+
   final List<DrawnStroke> _strokes = [];
   List<Offset> _currentStrokePoints = [];
+  Size? _drawingSize;
+
+  // Keep a stable coordinate space when the window or orientation changes.
+  Offset _drawingPoint(Offset position) {
+    final box = _captureKey.currentContext!.findRenderObject() as RenderBox;
+    _drawingSize ??= box.size;
+    return Offset(
+      position.dx * _drawingSize!.width / box.size.width,
+      position.dy * _drawingSize!.height / box.size.height,
+    );
+  }
 
   // Bảng màu thân thiện, rực rỡ dành cho trẻ em
   static const List<Color> _palette = [
@@ -53,31 +84,41 @@ class DrawingCanvasState extends State<DrawingCanvas> {
       _strokes.clear();
       _currentStrokePoints = [];
     });
+    widget.onChanged?.call();
+  }
+
+  void undo() {
+    if (_strokes.isEmpty) return;
+    setState(() => _strokes.removeLast());
+    widget.onChanged?.call();
   }
 
   void _onPanStart(DragStartDetails details) {
     setState(() {
-      _currentStrokePoints = [details.localPosition];
+      _currentStrokePoints = [_drawingPoint(details.localPosition)];
     });
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
     setState(() {
       _currentStrokePoints = List.from(_currentStrokePoints)
-        ..add(details.localPosition);
+        ..add(_drawingPoint(details.localPosition));
     });
   }
 
   void _onPanEnd(DragEndDetails details) {
     if (_currentStrokePoints.isNotEmpty) {
       setState(() {
-        _strokes.add(DrawnStroke(
-          points: List.from(_currentStrokePoints),
-          color: _selectedColor,
-          strokeWidth: _selectedStrokeWidth,
-        ));
+        _strokes.add(
+          DrawnStroke(
+            points: List.from(_currentStrokePoints),
+            color: _selectedColor,
+            strokeWidth: _selectedStrokeWidth,
+          ),
+        );
         _currentStrokePoints = [];
       });
+      widget.onChanged?.call();
     }
   }
 
@@ -104,17 +145,41 @@ class DrawingCanvasState extends State<DrawingCanvas> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(25),
               child: GestureDetector(
+                onTapUp: (details) {
+                  setState(
+                    () => _strokes.add(
+                      DrawnStroke(
+                        points: [_drawingPoint(details.localPosition)],
+                        color: _selectedColor,
+                        strokeWidth: _selectedStrokeWidth,
+                      ),
+                    ),
+                  );
+                  widget.onChanged?.call();
+                },
                 onPanStart: _onPanStart,
                 onPanUpdate: _onPanUpdate,
                 onPanEnd: _onPanEnd,
-                child: CustomPaint(
-                  painter: _FreehandPainter(
-                    strokes: _strokes,
-                    currentPoints: _currentStrokePoints,
-                    currentColor: _selectedColor,
-                    currentStrokeWidth: _selectedStrokeWidth,
+                onPanCancel: () => _onPanEnd(DragEndDetails()),
+                child: RepaintBoundary(
+                  key: _captureKey,
+                  child: Semantics(
+                    label: 'Giấy vẽ',
+                    image: true,
+                    child: ColoredBox(
+                      color: Colors.white,
+                      child: CustomPaint(
+                        painter: _FreehandPainter(
+                          strokes: _strokes,
+                          currentPoints: _currentStrokePoints,
+                          currentColor: _selectedColor,
+                          currentStrokeWidth: _selectedStrokeWidth,
+                          drawingSize: _drawingSize,
+                        ),
+                        size: Size.infinite,
+                      ),
+                    ),
                   ),
-                  size: Size.infinite,
                 ),
               ),
             ),
@@ -128,30 +193,46 @@ class DrawingCanvasState extends State<DrawingCanvas> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: _palette.map((color) {
               final isSelected = _selectedColor == color;
-              return GestureDetector(
-                onTap: () => setState(() => _selectedColor = color),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: isSelected ? 42 : 34,
-                  height: isSelected ? 42 : 34,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected ? Colors.white : Colors.transparent,
-                      width: 3,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.4),
-                        blurRadius: isSelected ? 8 : 4,
-                        offset: const Offset(0, 3),
+              return Semantics(
+                button: true,
+                selected: isSelected,
+                label: [
+                  'Màu xanh đậm',
+                  'Màu cam',
+                  'Màu vàng',
+                  'Màu xanh ngọc',
+                  'Màu đỏ',
+                  'Màu tím',
+                ][_palette.indexOf(color)],
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedColor = color),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: isSelected ? 42 : 34,
+                    height: isSelected ? 42 : 34,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? Colors.white : Colors.transparent,
+                        width: 3,
                       ),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.4),
+                          blurRadius: isSelected ? 8 : 4,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                        : null,
                   ),
-                  child: isSelected
-                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
-                      : null,
                 ),
               );
             }).toList(),
@@ -159,64 +240,77 @@ class DrawingCanvasState extends State<DrawingCanvas> {
         ),
 
         // Hàng nút hành động: "Xóa vẽ lại" và "Xong"
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-          child: Row(
-            children: [
-              // Nút Xóa vẽ lại
-              Expanded(
-                flex: 1,
-                child: SizedBox(
-                  height: 52,
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFE76F51),
-                      side: const BorderSide(color: Color(0xFFE76F51), width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(26),
+        if (widget.showActions)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+            child: Row(
+              children: [
+                // Nút Xóa vẽ lại
+                Expanded(
+                  flex: 1,
+                  child: SizedBox(
+                    height: 52,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFE76F51),
+                        side: const BorderSide(
+                          color: Color(0xFFE76F51),
+                          width: 2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(26),
+                        ),
                       ),
+                      icon: const Icon(Icons.delete_outline_rounded, size: 22),
+                      label: const Text(
+                        'Xóa vẽ lại',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed:
+                          _strokes.isEmpty && _currentStrokePoints.isEmpty
+                          ? null
+                          : clear,
                     ),
-                    icon: const Icon(Icons.delete_outline_rounded, size: 22),
-                    label: const Text(
-                      'Xóa vẽ lại',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: _strokes.isEmpty && _currentStrokePoints.isEmpty
-                        ? null
-                        : clear,
                   ),
                 ),
-              ),
 
-              const SizedBox(width: 14),
+                const SizedBox(width: 14),
 
-              // Nút Xong to bản, nổi bật kích thích bé bấm
-              Expanded(
-                flex: 2,
-                child: SizedBox(
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF06D6A0),
-                      foregroundColor: Colors.white,
-                      elevation: 4,
-                      shadowColor: const Color(0xFF06D6A0).withValues(alpha: 0.4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(26),
+                // Nút Xong to bản, nổi bật kích thích bé bấm
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF06D6A0),
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        shadowColor: const Color(
+                          0xFF06D6A0,
+                        ).withValues(alpha: 0.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(26),
+                        ),
                       ),
+                      icon: const Icon(Icons.check_circle_rounded, size: 26),
+                      label: const Text(
+                        'Xong Rồi Nè! ⭐',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      onPressed: widget.onFinish,
                     ),
-                    icon: const Icon(Icons.check_circle_rounded, size: 26),
-                    label: const Text(
-                      'Xong Rồi Nè! ⭐',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-                    ),
-                    onPressed: widget.onFinish,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -228,16 +322,25 @@ class _FreehandPainter extends CustomPainter {
   final List<Offset> currentPoints;
   final Color currentColor;
   final double currentStrokeWidth;
+  final Size? drawingSize;
 
   const _FreehandPainter({
     required this.strokes,
     required this.currentPoints,
     required this.currentColor,
     required this.currentStrokeWidth,
+    this.drawingSize,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.save();
+    if (drawingSize != null) {
+      canvas.scale(
+        size.width / drawingSize!.width,
+        size.height / drawingSize!.height,
+      );
+    }
     // Vẽ các nét đã hoàn thành
     for (final stroke in strokes) {
       _drawStroke(canvas, stroke.points, stroke.color, stroke.strokeWidth);
@@ -247,6 +350,7 @@ class _FreehandPainter extends CustomPainter {
     if (currentPoints.isNotEmpty) {
       _drawStroke(canvas, currentPoints, currentColor, currentStrokeWidth);
     }
+    canvas.restore();
   }
 
   void _drawStroke(
@@ -265,7 +369,11 @@ class _FreehandPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     if (points.length == 1) {
-      canvas.drawCircle(points.first, strokeWidth / 2, paint..style = PaintingStyle.fill);
+      canvas.drawCircle(
+        points.first,
+        strokeWidth / 2,
+        paint..style = PaintingStyle.fill,
+      );
       return;
     }
 

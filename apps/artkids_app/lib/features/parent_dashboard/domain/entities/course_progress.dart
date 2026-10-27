@@ -86,12 +86,13 @@ class CourseProgress extends Equatable {
     CourseProgressStatus? status,
   }) {
     // Tự động suy luận trạng thái nếu không truyền vào
-    final computedStatus = status ??
+    final computedStatus =
+        status ??
         (completedLessons >= totalLessons && totalLessons > 0
             ? CourseProgressStatus.completed
             : completedLessons > 0
-                ? CourseProgressStatus.inProgress
-                : CourseProgressStatus.notStarted);
+            ? CourseProgressStatus.inProgress
+            : CourseProgressStatus.notStarted);
 
     return CourseProgress(
       courseId: course.id,
@@ -107,16 +108,26 @@ class CourseProgress extends Equatable {
 
   factory CourseProgress.fromJson(Map<String, dynamic> json) {
     return CourseProgress(
-      courseId: json['course_id'] as String? ?? json['courseId'] as String? ?? '',
-      courseTitle: json['course_title'] as String? ?? json['courseTitle'] as String? ?? '',
-      courseThumbnail: json['course_thumbnail'] as String? ?? json['courseThumbnail'] as String?,
-      totalLessons: json['total_lessons'] as int? ?? json['totalLessons'] as int? ?? 0,
-      completedLessons: json['completed_lessons'] as int? ?? json['completedLessons'] as int? ?? 0,
+      courseId:
+          json['course_id'] as String? ?? json['courseId'] as String? ?? '',
+      courseTitle:
+          json['course_title'] as String? ??
+          json['courseTitle'] as String? ??
+          '',
+      courseThumbnail:
+          json['course_thumbnail'] as String? ??
+          json['courseThumbnail'] as String?,
+      totalLessons:
+          json['total_lessons'] as int? ?? json['totalLessons'] as int? ?? 0,
+      completedLessons:
+          json['completed_lessons'] as int? ??
+          json['completedLessons'] as int? ??
+          0,
       lastLearnedAt: json['last_learned_at'] != null
           ? DateTime.tryParse(json['last_learned_at'].toString())
           : (json['lastLearnedAt'] != null
-              ? DateTime.tryParse(json['lastLearnedAt'].toString())
-              : null),
+                ? DateTime.tryParse(json['lastLearnedAt'].toString())
+                : null),
       status: CourseProgressStatus.fromString(json['status'] as String?),
     );
   }
@@ -157,13 +168,13 @@ class CourseProgress extends Equatable {
 
   @override
   List<Object?> get props => [
-        courseId,
-        courseTitle,
-        courseThumbnail,
-        totalLessons,
-        completedLessons,
-        lastLearnedAt,
-        status,
-        course,
-      ];
+    courseId,
+    courseTitle,
+    courseThumbnail,
+    totalLessons,
+    completedLessons,
+    lastLearnedAt,
+    status,
+    course,
+  ];
 }

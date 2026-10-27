@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: artkids
+      POSTGRES_USER: artkids
+      POSTGRES_PASSWORD: ${ARTKIDS_DB_PASSWORD:?Set ARTKIDS_DB_PASSWORD}
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - artkids_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U artkids -d artkids']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  api:
+    build: .
+    ports:
+      - '127.0.0.1:5080:8080'
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Database__Provider: Postgres
+      Database__MigrateOnStartup: 'true'
+      ConnectionStrings__Postgres: Host=postgres;Database=artkids;Username=artkids;Password=${ARTKIDS_DB_PASSWORD}
+      Jwt__Key: ${ARTKIDS_JWT_KEY:?Set ARTKIDS_JWT_KEY}
+      Bootstrap__AdminEmail: ${ARTKIDS_ADMIN_EMAIL:?Set ARTKIDS_ADMIN_EMAIL}
+      Bootstrap__AdminPassword: ${ARTKIDS_ADMIN_PASSWORD:?Set ARTKIDS_ADMIN_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - artkids_uploads:/app/App_Data
+volumes:
+  artkids_postgres:
+  artkids_uploads:
