@@ -32,3 +32,7 @@ Source: ART_KID_CODEX_TASK.md supplied in Downloads, plus current main. Work onl
 | Private image URLs leak through cache | Authenticated byte previews and private/no-store headers on media responses. |
 
 Each phase has a build/test checkpoint. User explicitly authorized immediate implementation and draft PR; no separate plan approval is needed.
+
+## Verification-driven adjustment
+
+Browser smoke testing exposed relative uploaded-image URLs in order history, which resolved against the Flutter web host instead of the API. Add an optional base URL to the existing `apps/artkids_app/lib/core/network/api_json.dart` order mapper and pass it from `features/orders/data/datasources/order_remote_datasource.dart`. Cover this with a failing regression test before the fix. No order/payment fields or checkout behavior change.
