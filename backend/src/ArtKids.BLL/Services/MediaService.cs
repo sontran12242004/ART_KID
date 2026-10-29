@@ -201,7 +201,14 @@ public sealed class MediaService(
         var url = $"/api/v1/media/products/{id}";
         Require(
             asset.Kind == "product_image"
-                && await Q<Product>().AnyAsync(x => x.IsActive && x.ThumbnailUrl == url),
+                && (
+                    Actor.Role == "admin"
+                    || asset.OwnerId == Actor.Id
+                    || await Q<Product>()
+                        .AnyAsync(x =>
+                            x.IsActive && x.ApprovalStatus == "approved" && x.ThumbnailUrl == url
+                        )
+                ),
             "Product image not found.",
             404
         );

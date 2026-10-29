@@ -71,6 +71,7 @@ builder
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(dataRoot, "DataProtectionKeys")));
 builder.Services.AddScoped<LiveService>();
 builder.Services.AddScoped<CommerceService>();
+builder.Services.AddScoped<MarketplaceService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<MediaService>();
 builder.Services.AddScoped<AiService>();

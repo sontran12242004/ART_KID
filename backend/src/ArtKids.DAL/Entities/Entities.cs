@@ -284,6 +284,15 @@ public sealed class Product : Entity
     public int SoldCount { get; set; }
     public string CreatedBy { get; set; } = "";
     public bool IsActive { get; set; } = true;
+    public string ApprovalStatus { get; set; } = "approved";
+    public string? RejectionReason { get; set; }
+    public bool IsAvailable { get; set; } = true;
+    public string FulfillmentMode { get; set; } = "platform";
+    public string? ReviewedBy { get; set; }
+    public DateTime? ReviewedAt { get; set; }
+
+    [ConcurrencyCheck]
+    public int Revision { get; set; } = 1;
 }
 
 public sealed class Cart : Entity
@@ -334,6 +343,7 @@ public sealed class Order : Entity
 
 public sealed class OrderItem : Entity
 {
+    public string? SellerId { get; set; }
     public string OrderId { get; set; } = "";
     public string ItemType { get; set; } = "kit";
     public string? ProductId { get; set; }
@@ -347,6 +357,17 @@ public sealed class OrderItem : Entity
     public int? DurationMonths { get; set; }
     public string? KitInventorySkuId { get; set; }
     public int KitQuantity { get; set; }
+}
+
+public sealed class SellerFulfillment : Entity
+{
+    public string OrderId { get; set; } = "";
+    public string SellerId { get; set; } = "";
+    public string Carrier { get; set; } = "";
+    public string? TrackingNumber { get; set; }
+    public string Status { get; set; } = "preparing";
+    public DateTime? ShippedAt { get; set; }
+    public DateTime? DeliveredAt { get; set; }
 }
 
 public sealed class OrderShippingInfo : Entity

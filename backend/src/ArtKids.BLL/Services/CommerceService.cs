@@ -6,8 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArtKids.BLL.Services;
 
-public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
-    : ServiceBase(store, actor)
+public sealed class CommerceService(
+    IUnitOfWork store,
+    ICurrentUser actor,
+    MarketplaceService marketplace
+) : ServiceBase(store, actor)
 {
     public async Task<object> Products(
         int page,
@@ -17,7 +20,7 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
         string? courseId = null
     )
     {
-        var q = Q<Product>().Where(x => x.IsActive || Actor.Role == "admin");
+        var q = Q<Product>().Where(x => x.IsActive && x.ApprovalStatus == "approved");
         if (!string.IsNullOrWhiteSpace(search))
             q = q.Where(x => x.Name.Contains(search));
         if (category is not null && category != "all")
@@ -35,8 +38,10 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 .Select(x => new
                 {
                     product = x,
-                    inStock = Q<InventorySku>()
-                        .Any(s => s.ProductId == x.Id && s.QuantityAvailable > 0),
+                    inStock = x.FulfillmentMode == "seller"
+                        ? x.IsAvailable
+                        : Q<InventorySku>()
+                            .Any(s => s.ProductId == x.Id && s.QuantityAvailable > 0),
                 })
                 .ToListAsync(),
         };
@@ -45,57 +50,30 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
     public async Task<object> Product(string id)
     {
         var p = await Get<Product>(id);
-        Require(p.IsActive || Actor.Role == "admin", "Product not found.", 404);
+        Require(p.IsActive && p.ApprovalStatus == "approved", "Product not found.", 404);
         return new
         {
             product = p,
-            inStock = await Q<InventorySku>()
-                .AnyAsync(x => x.ProductId == id && x.QuantityAvailable > 0),
+            inStock = p.FulfillmentMode == "seller"
+                ? p.IsAvailable
+                : await Q<InventorySku>()
+                    .AnyAsync(x => x.ProductId == id && x.QuantityAvailable > 0),
         };
     }
 
     public Task<Product> CreateCourseProduct(string courseId, CourseProductRequest r)
     {
-        return Store.TransactionAsync(async () =>
-        {
-            await TeachCourse(courseId);
-            var image = await Get<MediaAsset>(r.ImageAssetId);
-            Require(
-                image.Kind == "product_image" && image.OwnerId == Actor.Id,
-                "Choose a product image uploaded by your account.",
-                403
-            );
-            var imageUrl = $"/api/v1/media/products/{image.Id}";
-            Require(
-                !await Q<Product>().AnyAsync(x => x.ThumbnailUrl == imageUrl),
-                "This image has already been used to publish a product.",
-                409
-            );
-            var product = new Product
-            {
-                Name = r.Name.Trim(),
-                Description = r.Description.Trim(),
-                PriceVnd = r.PriceVnd,
-                Category = "course_kit",
-                CourseId = courseId,
-                ThumbnailUrl = imageUrl,
-                Images = [imageUrl],
-                CreatedBy = Actor.Id,
-                IsActive = true,
-            };
-            Add(product);
-            Add(
-                new InventorySku
-                {
-                    ProductId = product.Id,
-                    Sku = $"KIT-{product.Id}",
-                    KitName = product.Name,
-                    QuantityAvailable = r.QuantityAvailable,
-                    WarehouseLocation = "Instructor course kit",
-                }
-            );
-            return product;
-        });
+        return marketplace.Save(
+            null,
+            new SellerListingRequest(
+                r.Name,
+                r.PriceVnd,
+                r.Description,
+                r.ImageAssetId,
+                courseId,
+                r.QuantityAvailable > 0
+            )
+        );
     }
 
     public async Task<Product> SaveProduct(string? id, ProductRequest r)
@@ -110,6 +88,11 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
             "Original price must be nonnegative."
         );
         var p = id is null ? new Product { CreatedBy = Actor.Id } : await Get<Product>(id);
+        Require(
+            p.FulfillmentMode == "platform",
+            "Use the marketplace review workflow for seller listings.",
+            409
+        );
         p.Name = r.Name;
         p.PriceVnd = r.PriceVnd;
         p.OriginalPriceVnd = r.OriginalPriceVnd;
@@ -131,87 +114,61 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
     {
         await TeachCourse(courseId);
         return await Q<Product>()
-            .Where(p => p.CourseId == courseId && p.IsActive)
+            .Where(p =>
+                p.CourseId == courseId
+                && p.IsActive
+                && (Actor.Role == "admin" || p.CreatedBy == Actor.Id)
+            )
             .OrderBy(p => p.Name)
             .Select(p => new
             {
                 product = p,
-                quantityAvailable = Q<InventorySku>()
-                    .Where(s => s.ProductId == p.Id)
-                    .Select(s => s.QuantityAvailable)
-                    .FirstOrDefault(),
-                quantityReserved = Q<InventorySku>()
-                    .Where(s => s.ProductId == p.Id)
-                    .Select(s => s.QuantityReserved)
-                    .FirstOrDefault(),
+                quantityAvailable = p.FulfillmentMode == "seller"
+                    ? (p.IsAvailable ? 1 : 0)
+                    : Q<InventorySku>()
+                        .Where(s => s.ProductId == p.Id)
+                        .Select(s => s.QuantityAvailable)
+                        .FirstOrDefault(),
+                quantityReserved = p.FulfillmentMode == "seller"
+                    ? 0
+                    : Q<InventorySku>()
+                        .Where(s => s.ProductId == p.Id)
+                        .Select(s => s.QuantityReserved)
+                        .FirstOrDefault(),
             })
             .ToListAsync();
     }
 
-    public Task<Product> UpdateCourseProduct(
+    public async Task<Product> UpdateCourseProduct(
         string courseId,
         string productId,
         CourseProductUpdateRequest r
     )
     {
-        return Store.TransactionAsync(async () =>
-        {
-            await TeachCourse(courseId);
-            var product = await Get<Product>(productId);
-            Require(product.CourseId == courseId && product.IsActive, "Product not found.", 404);
-            if (r.ImageAssetId is not null)
-            {
-                var image = await Get<MediaAsset>(r.ImageAssetId);
-                Require(
-                    image.Kind == "product_image" && image.OwnerId == Actor.Id,
-                    "Choose a product image uploaded by your account.",
-                    403
-                );
-                var url = $"/api/v1/media/products/{image.Id}";
-                Require(
-                    !await Q<Product>().AnyAsync(p => p.Id != productId && p.ThumbnailUrl == url),
-                    "This image is already used by another product.",
-                    409
-                );
-                product.ThumbnailUrl = url;
-                product.Images = [url];
-            }
-            var stock = await Q<InventorySku>().SingleOrDefaultAsync(s => s.ProductId == productId);
-            Require(
-                r.ExpectedQuantityAvailable is null
-                    || (stock?.QuantityAvailable ?? 0) == r.ExpectedQuantityAvailable,
-                "Stock has changed. Reload the product before editing.",
-                409
-            );
-            product.Name = r.Name.Trim();
-            product.Description = r.Description.Trim();
-            product.PriceVnd = r.PriceVnd;
-            if (stock is null)
-            {
-                stock = new InventorySku
-                {
-                    ProductId = productId,
-                    Sku = $"KIT-{productId}",
-                    WarehouseLocation = "Instructor course kit",
-                };
-                Add(stock);
-            }
-            stock.KitName = product.Name;
-            stock.QuantityAvailable = r.QuantityAvailable;
-            return product;
-        });
+        await TeachCourse(courseId);
+        var p = await marketplace.Listing(productId);
+        Require(p.CourseId == courseId, "Product not found.", 404);
+        // Legacy numeric stock is interpreted as binary availability; no warehouse record is changed.
+        return await marketplace.Save(
+            productId,
+            new SellerListingRequest(
+                r.Name,
+                r.PriceVnd,
+                r.Description,
+                r.ImageAssetId,
+                courseId,
+                r.QuantityAvailable > 0,
+                p.Revision
+            )
+        );
     }
 
-    public Task<bool> DeleteCourseProduct(string courseId, string productId)
+    public async Task<bool> DeleteCourseProduct(string courseId, string productId)
     {
-        return Store.TransactionAsync(async () =>
-        {
-            await TeachCourse(courseId);
-            var product = await Get<Product>(productId);
-            Require(product.CourseId == courseId && product.IsActive, "Product not found.", 404);
-            product.IsActive = false;
-            return true;
-        });
+        await TeachCourse(courseId);
+        var p = await marketplace.Listing(productId);
+        Require(p.CourseId == courseId, "Product not found.", 404);
+        return await marketplace.Delete(productId);
     }
 
     public async Task<object> Plans()
@@ -269,7 +226,7 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
             items = await (
                 from i in Q<CartItem>()
                 join p in Q<Product>() on i.ProductId equals p.Id
-                where i.CartId == c.Id
+                where i.CartId == c.Id && p.IsActive && p.ApprovalStatus == "approved"
                 select new
                 {
                     i.Id,
@@ -287,7 +244,13 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
         {
             var c = await CartEntity();
             var p = await Get<Product>(r.ProductId);
-            Require(p.IsActive, "Product is unavailable.");
+            if (r.Quantity > 0)
+                Require(
+                    p.IsActive
+                        && p.ApprovalStatus == "approved"
+                        && (p.FulfillmentMode != "seller" || p.IsAvailable),
+                    "Product is unavailable."
+                );
             var item = await Q<CartItem>()
                 .SingleOrDefaultAsync(x => x.CartId == c.Id && x.ProductId == p.Id);
             if (r.Quantity == 0)
@@ -423,31 +386,46 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 {
                     case "kit":
                         var p = await Get<Product>(line.ItemId);
-                        Require(p.IsActive, "Product is unavailable.");
+                        Require(
+                            p.IsActive
+                                && p.ApprovalStatus == "approved"
+                                && (p.FulfillmentMode != "seller" || p.IsAvailable),
+                            "Product is unavailable."
+                        );
                         physical = true;
-                        var sku =
-                            await Q<InventorySku>().SingleOrDefaultAsync(x => x.ProductId == p.Id)
-                            ?? throw new BusinessException(
-                                409,
-                                "Product has no available inventory."
-                            );
-                        Require(sku.QuantityAvailable >= line.Quantity, "Insufficient stock.", 409);
-                        sku.QuantityAvailable -= line.Quantity;
-                        sku.QuantityReserved += line.Quantity;
                         item.ProductId = p.Id;
                         item.Title = p.Name;
                         item.ThumbnailUrl = p.ThumbnailUrl;
                         item.UnitPriceVnd = p.PriceVnd;
                         item.KitItems = p.KitItems.ToList();
-                        Add(
-                            new InventoryReservation
-                            {
-                                OrderItemId = item.Id,
-                                InventorySkuId = sku.Id,
-                                Quantity = line.Quantity,
-                                ExpiresAt = DateTime.UtcNow.AddMinutes(30),
-                            }
-                        );
+                        if (p.FulfillmentMode == "seller")
+                            item.SellerId = p.CreatedBy;
+                        else
+                        {
+                            var sku =
+                                await Q<InventorySku>()
+                                    .SingleOrDefaultAsync(x => x.ProductId == p.Id)
+                                ?? throw new BusinessException(
+                                    409,
+                                    "Product has no available inventory."
+                                );
+                            Require(
+                                sku.QuantityAvailable >= line.Quantity,
+                                "Insufficient stock.",
+                                409
+                            );
+                            sku.QuantityAvailable -= line.Quantity;
+                            sku.QuantityReserved += line.Quantity;
+                            Add(
+                                new InventoryReservation
+                                {
+                                    OrderItemId = item.Id,
+                                    InventorySkuId = sku.Id,
+                                    Quantity = line.Quantity,
+                                    ExpiresAt = DateTime.UtcNow.AddMinutes(30),
+                                }
+                            );
+                        }
                         break;
                     case "course":
                         Require(
@@ -598,6 +576,9 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
             trackingEvents = await Q<OrderTrackingEvent>()
                 .Where(x => x.OrderId == id)
                 .OrderBy(x => x.Timestamp)
+                .ToListAsync(),
+            sellerFulfillments = await Q<SellerFulfillment>()
+                .Where(x => x.OrderId == id)
                 .ToListAsync(),
             shipments = await Q<FulfillmentOrder>().Where(x => x.OrderId == id).ToListAsync(),
         };
@@ -751,7 +732,10 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 o.PaidAt = DateTime.UtcNow;
             }
 
-            o.Status = reservations.Count > 0 ? "preparing" : "delivered";
+            o.Status =
+                reservations.Count > 0 || items.Any(i => i.SellerId != null)
+                    ? "preparing"
+                    : "delivered";
             Add(
                 new OrderTrackingEvent
                 {

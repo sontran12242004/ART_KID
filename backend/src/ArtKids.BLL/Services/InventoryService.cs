@@ -31,6 +31,11 @@ public sealed class InventoryService(IUnitOfWork store, ICurrentUser actor)
         Roles("admin");
         var p = await Get<Product>(r.ProductId);
         Require(
+            p.FulfillmentMode == "platform",
+            "Seller listings do not use warehouse inventory.",
+            409
+        );
+        Require(
             !await Q<InventorySku>().AnyAsync(x => x.Sku == r.Sku || x.ProductId == r.ProductId),
             "SKU or product inventory already exists.",
             409
@@ -207,23 +212,7 @@ public sealed class InventoryService(IUnitOfWork store, ICurrentUser actor)
             if (status == "delivered")
             {
                 s.DeliveredAt = DateTime.UtcNow;
-                var physicalIds = Q<OrderItem>().Where(x => x.OrderId == o.Id).Select(x => x.Id);
-                var expected = await Q<InventoryReservation>()
-                    .Where(x => physicalIds.Contains(x.OrderItemId) && x.Status == "committed")
-                    .SumAsync(x => x.Quantity);
-                if (
-                    await Q<FulfillmentOrder>()
-                        .Where(x => x.OrderId == o.Id && x.Status == "delivered")
-                        .SumAsync(x => x.Quantity) == expected
-                )
-                {
-                    o.Status = "delivered";
-                    if (o.PaymentStatus == "cod")
-                    {
-                        o.PaymentStatus = "paid";
-                        o.PaidAt = DateTime.UtcNow;
-                    }
-                }
+                await OrderFulfillment.UpdateCompletion(Store, o);
             }
 
             Add(
