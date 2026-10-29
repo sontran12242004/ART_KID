@@ -35,4 +35,6 @@ PR #1 remains an open draft targeting main. Order confirmation correction: 25 HT
 - [x] Pass 29 HTTP tests, 64 Flutter tests, analyzer, backend build and both EF model checks.
 - [x] Verify the updated Flutter web flow in Edge and review the parent screenshot.
 - [x] Document event identity, additive projection and unresolved verification boundaries.
-- [ ] Commit/push the polish and update existing Draft PR #1; do not merge.
+- [x] Commit/push the polish and update existing Draft PR #1; do not merge.
+
+Parent tracking polish: 29 HTTP tests and 64 Flutter tests passed; analyzer, backend/web builds, both EF model checks and real Edge tracking/refresh smoke passed. PR #1 remains open and draft, targeting main. Seller delivery remains an unverified report; no COD collection or GHN integration is asserted.
