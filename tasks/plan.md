@@ -1,5 +1,13 @@
 # Teacher marketplace listing and approval implementation plan
 
+## Parent tracking polish (2026-10-29)
+
+- Inspect: seller fulfillment currently emits no tracking events; the parent model discards seller fulfillment progress, and event flags can show several current milestones.
+- Add `SellerOrderTracking.cs` for Vietnamese seller milestones and deterministic per-order/seller/state event IDs. Call within existing checkout/fulfillment transactions; retries and carrier metadata edits must not duplicate milestones. Do not alter order/payment transitions or add migrations.
+- `CommerceService.cs`: add parent/admin-only seller progress projection (names, own order item titles, status, manually supplied carrier/tracking, actual timestamps); retain existing response fields. Normalize marketplace timeline flags and translate known historical system text on response without rewriting history.
+- Flutter: add a small seller progress entity/widget and decode it in the existing OrderModel; display each seller independently with an explicit seller-reported/unverified-carrier notice. Reuse the timeline, render local timestamps, and add refresh. Correct marketplace tracking-button fallback so an order code/default GHN is never presented as a verified shipment.
+- Add backend tracking/idempotency/multi-seller/privacy/payment regressions and Flutter parsing/rendering/refresh/fallback tests. Run relevant existing suites, build and browser smoke, then commit/push this branch and update Draft PR #1. Preserve legacy platform shipping and all approval, payment, inventory and authorization logic.
+
 ## PR #1 correction: order processing (2026-10-29)
 
 - Keep listing moderation unchanged. No new persisted fields or migrations: use existing payment method/status, seller snapshots and fulfillment records, with additive response action flags.

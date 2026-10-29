@@ -363,6 +363,7 @@ public sealed class MarketplaceService(IUnitOfWork store, ICurrentUser actor)
                 )
                     (await Get<Product>(i.ProductId!)).SoldCount += i.Quantity;
             await Store.SaveAsync();
+            await SellerOrderTracking.Record(Store, o, Actor.Id, r.Status);
             await OrderFulfillment.UpdateCompletion(Store, o);
             return s;
         });

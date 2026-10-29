@@ -542,8 +542,8 @@ public sealed class CommerceService(
                     Description = hasSeller
                         ? (
                             r.PaymentMethod == "cod"
-                                ? "Seller COD fulfillment may begin; collection is unverified."
-                                : "Awaiting verified funds; marketplace transfer verification policy is not configured."
+                                ? "Đơn COD đã được tạo. Giảng viên có thể chuẩn bị học cụ; tiền COD chưa được xác minh đã thu."
+                                : "Đơn đang chờ xác minh chuyển khoản. Vui lòng chờ hướng dẫn về tài khoản nhận tiền và quy trình xác minh; chưa thể giao hàng."
                         )
                         : "Awaiting admin confirmation; no payment gateway has been charged.",
                 }
@@ -555,6 +555,21 @@ public sealed class CommerceService(
                 )
                     Remove(item);
             await Store.SaveAsync();
+            if (hasSeller && r.PaymentMethod == "cod")
+                foreach (
+                    var sellerId in await Q<OrderItem>()
+                        .Where(i => i.OrderId == order.Id && i.SellerId != null)
+                        .Select(i => i.SellerId!)
+                        .Distinct()
+                        .ToListAsync()
+                )
+                    await SellerOrderTracking.Record(
+                        Store,
+                        order,
+                        sellerId,
+                        "preparing",
+                        readyOnly: true
+                    );
             return await OrderDetail(order.Id);
         });
     }
@@ -626,18 +641,53 @@ public sealed class CommerceService(
     {
         var order = await OwnOrder(id);
         await SetOrderActions([order]);
+        var items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync();
+        var sellerIds = items
+            .Where(i => i.SellerId != null)
+            .Select(i => i.SellerId!)
+            .Distinct()
+            .ToList();
+        var sellers = await Q<User>()
+            .Where(u => sellerIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.FullName);
+        var fulfillments = await Q<SellerFulfillment>().Where(s => s.OrderId == id).ToListAsync();
+        var trackingEvents = await Q<OrderTrackingEvent>()
+            .Where(e => e.OrderId == id)
+            .OrderBy(e => e.Timestamp)
+            .ThenBy(e => e.CreatedAt)
+            .ThenBy(e => e.Id)
+            .ToListAsync();
         return new
         {
             order,
-            items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync(),
+            items,
             shippingInfo = await Q<OrderShippingInfo>().SingleOrDefaultAsync(x => x.OrderId == id),
-            trackingEvents = await Q<OrderTrackingEvent>()
-                .Where(x => x.OrderId == id)
-                .OrderBy(x => x.Timestamp)
-                .ToListAsync(),
-            sellerFulfillments = await Q<SellerFulfillment>()
-                .Where(x => x.OrderId == id)
-                .ToListAsync(),
+            trackingEvents = order.HasMarketplaceItems
+                ? SellerOrderTracking.ForParent(trackingEvents)
+                : trackingEvents,
+            sellerFulfillments = fulfillments,
+            sellerProgress = sellerIds
+                .Select(sellerId =>
+                {
+                    var fulfillment = fulfillments.SingleOrDefault(f => f.SellerId == sellerId);
+                    return new
+                    {
+                        sellerId,
+                        sellerName = sellers[sellerId],
+                        itemTitles = items
+                            .Where(i => i.SellerId == sellerId)
+                            .Select(i => i.Title)
+                            .ToList(),
+                        status = OrderFulfillment.SellerStatus(order, fulfillment?.Status),
+                        carrier = string.IsNullOrWhiteSpace(fulfillment?.Carrier)
+                            ? null
+                            : fulfillment.Carrier,
+                        trackingNumber = fulfillment?.TrackingNumber,
+                        shippedAt = fulfillment?.ShippedAt,
+                        deliveredAt = fulfillment?.DeliveredAt,
+                    };
+                })
+                .ToList(),
             shipments = await Q<FulfillmentOrder>().Where(x => x.OrderId == id).ToListAsync(),
         };
     }
@@ -817,7 +867,9 @@ public sealed class CommerceService(
                 {
                     OrderId = id,
                     Title = "Đã xác nhận",
-                    Description = "Confirmed by administrator.",
+                    Description = hasSeller
+                        ? "Phần hàng do ART_KID xử lý đã được xác nhận."
+                        : "Confirmed by administrator.",
                 }
             );
             Notify(o.ParentId, "Đơn hàng đã xác nhận", o.OrderCode, id);
