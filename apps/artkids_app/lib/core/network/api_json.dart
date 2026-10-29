@@ -44,7 +44,7 @@ Map<String, dynamic> apiProduct(dynamic value, {String? baseUrl}) {
   return product;
 }
 
-Map<String, dynamic> apiOrder(dynamic value) {
+Map<String, dynamic> apiOrder(dynamic value, {String? baseUrl}) {
   final wrapper = apiMap(value);
   final result = apiMap({
     ...?(wrapper['order'] as Map<String, dynamic>?),
@@ -54,6 +54,10 @@ Map<String, dynamic> apiOrder(dynamic value) {
   result['items'] = (result['items'] as List<dynamic>? ?? []).map((item) {
     final map = apiMap(item);
     map['kit_name'] = map['title'] ?? map['kit_name'];
+    final thumbnail = map['thumbnail_url'];
+    if (baseUrl != null && thumbnail is String && thumbnail.startsWith('/')) {
+      map['thumbnail_url'] = Uri.parse(baseUrl).resolve(thumbnail).toString();
+    }
     return map;
   }).toList();
   return result;

@@ -77,27 +77,33 @@ class OrderActionButtons extends StatelessWidget {
   }
 
   Widget _buildPrimaryAction(BuildContext context) {
+    if (order.canCancel) {
+      return ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFFDEDEC),
+          foregroundColor: const Color(0xFFE74C3C),
+          elevation: 0,
+          side: const BorderSide(color: Color(0xFFE74C3C), width: 1.2),
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: () => _showCancelDialog(context),
+        icon: const Icon(Icons.cancel_outlined, size: 18),
+        label: const Text(
+          'Hủy đơn',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+        ),
+      );
+    }
     switch (order.status) {
       case OrderStatus.pendingConfirmation:
-        return ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFDEDEC),
-            foregroundColor: const Color(0xFFE74C3C),
-            elevation: 0,
-            side: const BorderSide(color: Color(0xFFE74C3C), width: 1.2),
-            padding: const EdgeInsets.symmetric(vertical: 13),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          onPressed: () => _showCancelDialog(context),
-          icon: const Icon(Icons.cancel_outlined, size: 18),
-          label: const Text(
-            'Hủy đơn',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-          ),
+        return Text(
+          order.awaitingMarketplacePayment
+              ? 'Chờ xác minh thanh toán'
+              : 'Đơn đang được xử lý',
         );
-
       case OrderStatus.preparing:
         return ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
@@ -111,9 +117,11 @@ class OrderActionButtons extends StatelessWidget {
           ),
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text(
-                  'Học cụ đang được đóng gói cẩn thận tại kho ArtKids.',
+                  order.sellerProgress.isNotEmpty
+                      ? 'Giảng viên đang chuẩn bị học cụ để giao.'
+                      : 'Học cụ đang được đóng gói cẩn thận tại kho ArtKids.',
                 ),
                 behavior: SnackBarBehavior.floating,
               ),
@@ -139,9 +147,12 @@ class OrderActionButtons extends StatelessWidget {
           ),
           onPressed: () => _launchTrackingUrl(context),
           icon: const Icon(Icons.open_in_new_rounded, size: 18),
-          label: const Text(
-            'Theo dõi vận đơn',
-            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
+          label: Text(
+            order.sellerProgress.isNotEmpty &&
+                    (order.shippingInfo.trackingUrl?.isEmpty ?? true)
+                ? 'Xem tiến độ người bán'
+                : 'Theo dõi vận đơn',
+            style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
           ),
         );
 
@@ -223,6 +234,16 @@ class OrderActionButtons extends StatelessWidget {
       }
     }
 
+    if (order.sellerProgress.isNotEmpty && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Xem tiến độ và mã vận đơn do từng giảng viên cung cấp trong chi tiết đơn. Chưa có đường dẫn tra cứu được xác minh.',
+          ),
+        ),
+      );
+      return;
+    }
     // Fallback nếu không có url hoặc không mở được
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

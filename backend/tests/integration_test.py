@@ -830,6 +830,10 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(product["courseId"], "course_basics")
         self.assertEqual(product["category"], "course_kit")
         self.assertEqual(product["thumbnailUrl"], url)
+        self.assertEqual(product["approvalStatus"], "pending")
+        self.request("GET", url.removeprefix("/api/v1"), expected=404)
+        product = self.request("POST", f'/marketplace/reviews/{product["id"]}',
+            {"status": "approved", "expectedRevision": product["revision"]}, self.admin)
         self.assertEqual(self.request("GET", url.removeprefix("/api/v1")), PNG)
         self.request("POST", path, body, self.teacher, 409)
         listing = self.request("GET", "/shop/products?courseId=course_basics&pageSize=100")
@@ -867,20 +871,7 @@ class ApiTests(unittest.TestCase):
             {"reason": "Test complete"},
             self.parent,
         )
-        self.request(
-            "PUT",
-            "/shop/products/" + product["id"],
-            {
-                "name": product["name"],
-                "priceVnd": 125000,
-                "description": product["description"],
-                "category": "course_kit",
-                "thumbnailUrl": url,
-                "courseId": "course_basics",
-                "isActive": False,
-            },
-            self.admin,
-        )
+        self.request("DELETE", f'/marketplace/listings/{product["id"]}', token=self.teacher, expected=204)
         self.request("GET", url.removeprefix("/api/v1"), expected=404)
 
     def test_13_course_and_product_management(self):
@@ -927,6 +918,8 @@ class ApiTests(unittest.TestCase):
             self.teacher,
         )
         pid = product["id"]
+        product = self.request("POST", f'/marketplace/reviews/{pid}',
+            {"status": "approved", "expectedRevision": product["revision"]}, self.admin)
         path = f"/courses/{cid}/products/{pid}"
         self.request("GET", f"/courses/{cid}/products", token=self.other_teacher, expected=404)
         self.request("GET", f"/courses/{cid}/products", token=self.parent, expected=403)
@@ -956,16 +949,21 @@ class ApiTests(unittest.TestCase):
         self.request("PUT", path, edited, self.parent, 403)
         self.request("PUT", path, {**edited, "priceVnd": -1}, self.teacher, 400)
         self.request("PUT", f"/courses/course_basics/products/{pid}", edited, self.teacher, 404)
-        self.request("PUT", path, {**edited, "expectedQuantityAvailable": 5}, self.teacher, 409)
+        self.request("PUT", f"/marketplace/listings/{pid}", {
+            **edited, "courseId": cid, "expectedRevision": product["revision"] - 1,
+        }, self.teacher, 409)
         replacement = self.upload(kind="product_image", child=None, token=self.teacher)
         updated = self.request(
             "PUT", path, {**edited, "imageAssetId": replacement["id"]}, self.teacher
         )
         self.assertEqual(updated["thumbnailUrl"], replacement["url"])
+        self.request("GET", replacement["url"].removeprefix("/api/v1"), expected=404)
+        self.request("POST", f'/marketplace/reviews/{pid}',
+            {"status": "approved", "expectedRevision": updated["revision"]}, self.admin)
         self.assertEqual(self.request("GET", replacement["url"].removeprefix("/api/v1")), PNG)
         entries = self.request("GET", f"/courses/{cid}/products", token=self.teacher)
-        self.assertEqual(entries[0]["quantityAvailable"], 4)
-        self.assertEqual(entries[0]["quantityReserved"], 1)
+        self.assertEqual(entries[0]["quantityAvailable"], 1)
+        self.assertEqual(entries[0]["quantityReserved"], 0)
         detail = self.request("GET", f'/commerce/orders/{order["order"]["id"]}', token=self.parent)
         self.assertEqual(detail["items"][0]["unitPriceVnd"], 125000)
         self.request("DELETE", path, token=self.teacher, expected=204)

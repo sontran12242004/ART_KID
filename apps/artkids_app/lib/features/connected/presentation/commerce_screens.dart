@@ -88,7 +88,7 @@ class _ConnectedCheckoutState extends ConsumerState<ConnectedCheckout> {
             items: [
               const DropdownMenuItem(
                 value: 'manual_transfer',
-                child: Text('Chuyển khoản · chờ quản trị xác nhận'),
+                child: Text('Chuyển khoản · chờ xác minh thanh toán'),
               ),
               if (!single)
                 const DropdownMenuItem(
@@ -142,7 +142,12 @@ class _ConnectedCheckoutState extends ConsumerState<ConnectedCheckout> {
               return result.data;
             },
             onSuccess: (data) {
-              toast(context, 'Đã tạo đơn. Thanh toán đang chờ xác nhận.');
+              toast(
+                context,
+                method == 'cod'
+                    ? 'Đã tạo đơn COD. Tiền chưa được xác minh đã thu.'
+                    : 'Đã tạo đơn. Chờ xác minh tiền chuyển khoản.',
+              );
               context.go('/parent/orders/${data['order']['id']}');
             },
           ),

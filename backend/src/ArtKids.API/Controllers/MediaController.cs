@@ -47,6 +47,7 @@ public sealed class MediaController(MediaService service) : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> Download(string id, string? childId = null)
     {
+        Response.Headers.CacheControl = "private, no-store";
         var file = await service.Download(id, childId);
         return File(file.Stream, file.ContentType, enableRangeProcessing: true);
     }
@@ -54,6 +55,7 @@ public sealed class MediaController(MediaService service) : ControllerBase
     [HttpGet("products/{id}"), AllowAnonymous]
     public async Task<IActionResult> ProductImage(string id)
     {
+        Response.Headers.CacheControl = "private, no-store";
         var file = await service.ProductImage(id);
         return File(file.Stream, file.ContentType);
     }

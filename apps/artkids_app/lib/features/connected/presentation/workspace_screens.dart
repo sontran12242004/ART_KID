@@ -342,6 +342,21 @@ class StaffWorkspace extends ConsumerWidget {
             title: const Text('Lớp học trực tuyến'),
             onTap: () => context.push('/parent/live'),
           ),
+          ListTile(
+            leading: const Icon(Icons.storefront_outlined),
+            title: Text(
+              admin ? 'Duyệt học cụ của giảng viên' : 'Quản lý học cụ của tôi',
+            ),
+            onTap: () => context.push(
+              admin ? '/staff/marketplace/reviews' : '/staff/marketplace',
+            ),
+          ),
+          if (!admin)
+            ListTile(
+              leading: const Icon(Icons.local_shipping_outlined),
+              title: const Text('Đơn học cụ của tôi'),
+              onTap: () => context.push('/staff/marketplace/orders'),
+            ),
           if (admin)
             ListTile(
               title: const Text('Xác nhận đơn & giao hàng'),
@@ -458,29 +473,31 @@ class StaffWorkspace extends ConsumerWidget {
                           child: const Text('Tạo lớp trực tuyến'),
                         ),
                         const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(240, 44),
+                        if (!admin) ...[
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(240, 44),
+                            ),
+                            onPressed: () => context.push(
+                              '/staff/courses/${c['id']}/products/new',
+                            ),
+                            icon: const Icon(Icons.storefront_outlined),
+                            label: const Text('Đăng bán học cụ'),
                           ),
-                          onPressed: () => context.push(
-                            '/staff/courses/${c['id']}/products/new',
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(240, 44),
+                            ),
+                            onPressed: () => showCourseProductsDialog(
+                              context,
+                              c['id'],
+                              c['title'],
+                            ),
+                            icon: const Icon(Icons.inventory_2_outlined),
+                            label: const Text('Xem học cụ liên quan'),
                           ),
-                          icon: const Icon(Icons.storefront_outlined),
-                          label: const Text('Đăng bán học cụ'),
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(240, 44),
-                          ),
-                          onPressed: () => showCourseProductsDialog(
-                            context,
-                            c['id'],
-                            c['title'],
-                          ),
-                          icon: const Icon(Icons.inventory_2_outlined),
-                          label: const Text('Xem học cụ liên quan'),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -507,11 +524,13 @@ class AdminOrders extends ConsumerWidget {
               child: ListTile(
                 title: Text(o['orderCode'] ?? o['id']),
                 subtitle: Text(
-                  '${statusLabel(o['status'])} · ${money(o['totalAmountVnd'] ?? o['totalVnd'] ?? 0)}',
+                  '${o['awaitingMarketplacePayment'] == true ? 'Chờ xác minh tiền marketplace' : statusLabel(o['status'])} · ${money(o['totalAmountVnd'] ?? o['totalVnd'] ?? 0)}',
                 ),
-                trailing: o['status'] == 'pending_confirmation'
+                trailing: o['requiresLegacyConfirmation'] == true
                     ? ActionButton(
-                        label: 'Xác nhận thanh toán',
+                        label: o['hasMarketplaceItems'] == true
+                            ? 'Xác nhận phần hàng nền tảng'
+                            : 'Xác nhận thanh toán',
                         action: (r) => r
                             .read(dioProvider)
                             .post(
