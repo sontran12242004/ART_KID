@@ -73,6 +73,13 @@ class MarketplaceTests(ApiTests):
     def test_marketplace_roles_ownership_and_legacy_bypass(self):
         product, body, _ = self.listing()
         pid = product["id"]
+        mine = self.request("GET", "/marketplace/listings?pageSize=100", token=self.teacher)
+        self.assertIn(pid, [p["id"] for p in mine["items"]])
+        others = self.request("GET", "/marketplace/listings?pageSize=100", token=self.other_teacher)
+        self.assertNotIn(pid, [p["id"] for p in others["items"]])
+        queue = self.request("GET", "/marketplace/reviews?pageSize=100", token=self.admin)
+        self.assertIn(pid, [p["id"] for p in queue["items"]])
+        self.request("GET", "/marketplace/reviews", token=self.teacher, expected=403)
         for token in [self.admin, self.parent]:
             self.request("POST", "/marketplace/listings", body, token, 403)
             self.request("POST", "/courses/course_basics/products", {**body, "quantityAvailable": 1}, token, 403)
@@ -137,6 +144,10 @@ class MarketplaceTests(ApiTests):
         self.request("POST", f"/commerce/orders/{oid}/cancel", {"reason": "Forbidden"}, self.teacher, 404)
         self.request("POST", f"/commerce/orders/{oid}/confirm", token=self.admin)
         for token, own, foreign in [(self.teacher, first, second), (self.other_teacher, second, first)]:
+            summaries = self.request("GET", "/marketplace/orders?pageSize=100", token=token)
+            summary = next(o for o in summaries["items"] if o["id"] == oid)
+            self.assertEqual(summary["subtotalVnd"], 250000)
+            self.assertNotIn("totalAmountVnd", summary)
             detail = self.request("GET", path, token=token)
             self.assertEqual([i["productId"] for i in detail["items"]], [own["id"]])
             self.assertEqual(detail["subtotalVnd"], 250000)

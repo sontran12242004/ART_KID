@@ -81,7 +81,9 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     final data = response.data;
     if (data is Map<String, dynamic>) {
       final orderJson = (data['data'] as Map<String, dynamic>?) ?? data;
-      return OrderModel.fromJson(apiOrder(orderJson));
+      return OrderModel.fromJson(
+        apiOrder(orderJson, baseUrl: _dio.options.baseUrl),
+      );
     }
     throw DioException(
       requestOptions: response.requestOptions,
