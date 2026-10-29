@@ -25,3 +25,14 @@ Target: main. Branch: codex/teacher-marketplace-approval. Created as an open dra
 - [x] Push the committed correction and update Draft PR #1.
 
 PR #1 remains an open draft targeting main. Order confirmation correction: 25 HTTP tests and 60 Flutter tests passed; real Edge smoke issued zero marketplace order-confirmation requests. No new schema migration or GHN changes.
+
+## Parent tracking polish
+
+- [x] Inspect current seller fulfillment, parent timeline, projections and regression tests.
+- [x] Add transaction-bound, idempotent Vietnamese milestones without changing fulfillment/payment rules.
+- [x] Show independent seller progress, seller attribution and refresh in parent order detail.
+- [x] Prevent fabricated marketplace tracking references; preserve legacy platform behavior.
+- [x] Pass 29 HTTP tests, 64 Flutter tests, analyzer, backend build and both EF model checks.
+- [x] Verify the updated Flutter web flow in Edge and review the parent screenshot.
+- [x] Document event identity, additive projection and unresolved verification boundaries.
+- [ ] Commit/push the polish and update existing Draft PR #1; do not merge.

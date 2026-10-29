@@ -72,6 +72,7 @@ async function responseAction(page, method, path, action) {
     await parent.getByLabel('Thanh toán khi nhận hàng',{exact:true}).last().click();
     const order=await responseAction(parent,'POST','/commerce/checkout',()=>parent.getByRole('button',{name:/Đặt hàng/}).click());
     if(order.order.status !== 'preparing' || order.order.paymentStatus !== 'cod') throw Error('COD checkout must prepare without verifying collection');
+    if(order.sellerProgress.length !== 1 || order.sellerProgress[0].status !== 'preparing') throw Error('Missing initial parent seller progress');
     console.log('PASS real UI COD checkout immediately ready for sellers');
     await go(admin,'/staff/orders');
     if(await admin.getByRole('button',{name:/Xác nhận thanh toán|Xác nhận phần hàng nền tảng/}).count()) throw Error('Seller-only COD must not have admin confirmation controls');
@@ -87,7 +88,14 @@ async function responseAction(page, method, path, action) {
     await go(parent,'/parent/orders/'+order.order.id);
     const finalOrder = (await (await finalResponse).json()).order;
     if(finalOrder.status !== 'delivered' || finalOrder.paymentStatus !== 'cod' || finalOrder.paidAt !== null) throw Error('Delivery must not verify COD collection');
-    console.log('PASS real UI seller shipping without admin confirmation; COD collection remains unverified');
+    const finalDetail = await responseAction(parent,'GET','/commerce/orders/'+order.order.id,()=>parent.getByRole('button',{name:'Cập nhật tiến độ',exact:true}).click());
+    if(finalDetail.sellerProgress.length !== 1 || finalDetail.sellerProgress[0].status !== 'delivered') throw Error('Parent progress is stale');
+    const events = finalDetail.trackingEvents;
+    if(events.at(-1).title !== 'Giảng viên báo đã giao hàng' || events.filter(e=>e.isCurrent).length !== 1 || new Set(events.map(e=>e.id)).size !== events.length) throw Error('Parent timeline is inconsistent');
+    await pause(parent);
+    await parent.mouse.wheel(0,500); await pause(parent);
+    await parent.screenshot({path:artifacts+'/marketplace-parent-tracking.png'});
+    console.log('PASS parent refresh and Vietnamese seller timeline; COD collection remains unverified');
     await teacher.setViewportSize({width:390,height:844});
     await go(teacher,'/staff/marketplace/new');
     await teacher.getByRole('button',{name:'Gửi duyệt',exact:true}).waitFor();

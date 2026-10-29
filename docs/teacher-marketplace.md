@@ -61,9 +61,21 @@ Marketplace COD delivery never marks funds collected. `SellerFulfillment` is uni
 
 This endpoint records teacher-arranged shipping. It does **not** call GHN, purchase labels, register carrier shipments, calculate carrier rates, or claim carrier acceptance. A teammate can integrate carrier registration around this record later with separate provider IDs/verification and webhook handling. No GHN/provider integration is changed. The existing platform fulfillment webhook/API retains its responsibility; marketplace payment cannot be inferred from its delivery signal. Order completion now checks all platform allocations and all seller deliveries, so neither side can complete a mixed order early.
 
-MVP limits: no seller payout/commission accounting, automatic carrier verification, returns/refunds workflow, partial shipments within one seller's order, or content revision archive. Existing order-detail JSON exposes `sellerFulfillments` to buyer/admin; the new seller UI displays its own carrier/tracking. Historical platform products remain administered through the existing platform paths.
+MVP limits: no seller payout/commission accounting, automatic carrier verification, returns/refunds workflow, partial shipments within one seller's order, or content revision archive. Existing order-detail JSON exposes `sellerFulfillments` to buyer/admin; the seller UI displays its own carrier/tracking. Historical platform products remain administered through the existing platform paths.
 
 The order-processing correction adds no migration: the response flags are `[NotMapped]`; existing pending seller COD records become fulfillable without data rewriting.
+
+## Parent tracking and seller-reported milestones
+
+Seller COD checkout records a preparing milestone for each seller. Successful seller fulfillment updates record preparing, shipping or delivered milestones inside the existing serializable transaction. A deterministic event ID derived from order ID, seller ID and status prevents duplicate milestones on idempotent checkout, repeated fulfillment requests and metadata-only preparation updates. Concurrent conflicting writes retain the existing retry/409 behavior. Payment status and aggregate order completion rules are unchanged.
+
+Buyer/admin `GET commerce/orders/{id}` retains `sellerFulfillments` and adds `sellerProgress`: one entry for every seller snapshot in the purchased items, including sellers without a fulfillment record yet. Each entry contains `sellerId`, `sellerName`, `itemTitles`, computed `status`, optional `carrier`, `trackingNumber`, `shippedAt` and `deliveredAt`. Only supplied carrier/reference values are returned; this projection creates no tracking URL. Seller endpoints continue to expose only the requesting seller's lines and fulfillment.
+
+The parent detail screen displays each seller independently, so one seller's reported delivery cannot make another seller appear delivered. Its refresh button reloads the existing detail endpoint; there is no new background polling. Order creation, timeline and seller timestamps use the device's local time. Marketplace timeline responses identify only the latest milestone as current and previous milestones as passed. Known English system messages in historical marketplace events are translated into Vietnamese in response copies; persisted historical text and user-entered cancellation reasons are not rewritten, and historical dispatch/delivery dates are not invented.
+
+Vietnamese shipping/delivery titles and the per-seller card explicitly attribute updates to the instructor. **Teacher-reported delivery is neither verified carrier delivery nor proof of COD collection.** Marketplace COD remains `cod` with `paidAt=null`; transfer receipt and verification policy remain unresolved as described above. For marketplace orders without a real tracking URL, the tracking action refers parents to seller progress instead of substituting the order code or a default GHN reference. No carrier acceptance, shipping registration or payment verification is introduced.
+
+This polish requires no schema migration. Existing orders gain the computed per-seller projection immediately; only subsequent checkout/fulfillment actions create new milestones.
 
 ## Migrations and deployment
 
@@ -92,16 +104,17 @@ Commands run from the repository root unless stated otherwise:
 | Check | Result |
 | --- | --- |
 | `dotnet build backend/ArtKids.slnx --no-restore` with local SDK 10.0.403 | Passed; 0 warnings/errors. |
-| Existing HTTP integration scenarios inherited by `MarketplaceTests` | All 15 passed in the combined 25-case order workflow run: auth, ownership, course access, submissions/AI, checkout atomicity/idempotency/cancel, vouchers, payment confirmation, platform shipment, subscriptions/monthly kits, live classes, grading and family browser. |
+| Existing HTTP integration scenarios inherited by `MarketplaceTests` | All 15 passed in the combined 29-case tracking run: auth, ownership, course access, submissions/AI, checkout atomicity/idempotency/cancel, vouchers, payment confirmation, platform shipment, subscriptions/monthly kits, live classes, grading and family browser. |
 | `python -m unittest discover -s backend/tests -p marketplace_test.py -k test_marketplace -v` | All 4 passed within the combined 25-case run against real HTTP and fresh migrated SQLite. Covers linked/standalone submission, approval/rejection/resubmission, private media, edit visibility, stale revisions, roles/ownership, legacy bypass, availability/cart/checkout, stock preservation, mixed-seller isolation and manual shipping. |
 | `python -m unittest discover -s backend/tests -p marketplace_order_workflow_test.py -k OrderWorkflowTests -v` | All 25 passed: 15 legacy + 4 marketplace + 6 order workflow regressions (COD, transfers, trusted paid state, ownership, cancellation/vouchers, mixed fulfillment and reservation expiry). |
+| `python -m unittest discover -s backend/tests -p marketplace_tracking_test.py -k MarketplaceTrackingTests -v` | All 29 passed: the previous 25 scenarios plus four parent-tracking regressions for per-state milestones, checkout/fulfillment idempotency and concurrent retries, independent sellers/privacy, Vietnamese historical response translation and unchanged COD payment. |
 | `python -m unittest discover -s backend/tests -p marketplace_migration_test.py -v` | Passed: legacy product, stock and order data preserved through upgrade/rollback/re-upgrade, correct defaults and foreign keys. |
 | `dotnet ef migrations has-pending-model-changes` for both contexts | No pending changes. |
 | Postgres migration SQL generation from `CourseSoftDeletion` | Passed. Live Postgres execution remains unverified in this environment. |
-| `flutter test --no-pub` from `apps/artkids_app` | All 60 tests passed: existing marketplace tests plus 8 new seller readiness/admin action/parent cancellation checks. |
+| `flutter test --no-pub` from `apps/artkids_app` | All 64 tests passed: the previous 60 plus four parent-tracking regressions for model compatibility, independent seller progress/attribution, refresh and avoiding fabricated carrier tracking. |
 | `flutter analyze --no-pub` | Passed: no issues found. |
 | `flutter build web --no-pub --dart-define=API_BASE_URL=http://localhost:5081/api/v1 --output=<absolute path to .tools/qa-web>` | JavaScript build passed. Existing flutter_tts Wasm dry-run warnings remain; no Wasm build is claimed. |
-| `node backend/tests/marketplace_ui_smoke.cjs` in Edge against real Flutter web + isolated SQLite API | Teacher submission/private pending image, admin approval, existing cart/COD checkout, no admin order confirmation, seller shipping/delivery with COD still unverified and 390×844 mobile form passed. QA used isolated API/web ports 5081/8081 without stopping existing servers; screenshots saved under ignored `backend/tests/artifacts/`. |
+| `node backend/tests/marketplace_ui_smoke.cjs` in Edge against real Flutter web + isolated SQLite API | Teacher submission/private pending image, admin approval, existing cart/COD checkout, no admin order confirmation, seller shipping/delivery with COD still unverified, parent refresh/Vietnamese timeline and 390×844 mobile form passed. QA used isolated API/web ports 5081/8081 without stopping existing servers; screenshots saved under ignored `backend/tests/artifacts/`, including `marketplace-parent-tracking.png`. |
 
 Initial failures were corrected: a new fixture accidentally used a course owned by the same instructor; the migration test needed explicit SQLite connection disposal on Windows; the widget test needed the current TestFlutterView property and existing dialog button label. A further failing regression test reproduced the relative order-thumbnail URL issue found in browser testing; the existing order mapper now resolves uploaded images against the API origin. The browser smoke requires Playwright, Edge, a seeded local API and a served Flutter web build (see its header); Python `course_products_smoke.py` was adapted but the executed browser test was the Node script. Browser QA used an ignored local dev.env containing only local URLs/mock flags, as required by the existing bootstrap setup.
 
@@ -114,6 +127,7 @@ QA used .NET SDK 10.0.403 and Flutter 3.47.3 / Dart 3.13.3. The .NET SDK and tem
 - `backend/src/ArtKids.BLL/Contracts/MarketplaceRequests.cs`: validated seller, review, availability and shipping contracts.
 - `backend/src/ArtKids.BLL/Services/MarketplaceService.cs`: seller listing/review/order operations and authorization.
 - `backend/src/ArtKids.BLL/Services/OrderFulfillment.cs`: shared aggregate delivery completion for mixed orders.
+- `backend/src/ArtKids.BLL/Services/SellerOrderTracking.cs`: idempotent Vietnamese seller milestones and historical marketplace timeline response localization.
 - `backend/src/ArtKids.BLL/Services/CommerceService.cs`: legacy route delegation, public/cart visibility, seller checkout and physical confirmation compatibility.
 - `backend/src/ArtKids.BLL/Services/InventoryService.cs`: block seller SKU creation and wait for seller completion.
 - `backend/src/ArtKids.BLL/Services/MediaService.cs`: moderation-aware image access.
@@ -128,6 +142,7 @@ QA used .NET SDK 10.0.403 and Flutter 3.47.3 / Dart 3.13.3. The .NET SDK and tem
 - `apps/artkids_app/test/features/connected/marketplace_test.dart`: form resubmission, required rejection reason, manual shipping payload, stock parser and order-thumbnail regression tests.
 - `backend/tests/marketplace_test.py`, `marketplace_migration_test.py`, `integration_test.py`, `course_products_smoke.py`, `marketplace_ui_smoke.cjs`, `marketplace_order_workflow_test.py`: new coverage and adapt existing immediate-publish expectations.
 - Order correction additionally touches `apps/artkids_app/lib/features/connected/presentation/commerce_screens.dart` and `widgets.dart` for payment wording/readiness labels; `features/orders/domain/entities/order_entity.dart`, `data/models/order.dart`, `presentation/widgets/order_action_buttons.dart`, `presentation/screens/order_detail_screen.dart` for server cancellation permission and pending-payment information; `test/features/connected/order_workflow_test.dart` for UI regressions.
+- Parent tracking adds `features/orders/domain/entities/seller_delivery_progress.dart`, `presentation/widgets/seller_delivery_progress_card.dart`, and updates the order mapper, detail/actions and timeline widgets. `backend/tests/marketplace_tracking_test.py`, `apps/artkids_app/test/features/connected/parent_tracking_test.dart` and the browser smoke cover the tracking correction.
 - `.gitignore`, `tasks/plan.md`, `tasks/todo.md`, this document and README: local-tool exclusion, implementation plan/checklist and handoff.
 
 ## Framework references

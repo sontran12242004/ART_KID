@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import 'seller_delivery_progress.dart';
 import '../enums/order_status.dart';
 import '../enums/order_type.dart';
 import '../enums/payment_status.dart';
@@ -25,6 +26,7 @@ class OrderEntity extends Equatable {
     this.voucherCode,
     required this.totalAmountVnd,
     this.trackingEvents = const [],
+    this.sellerProgress = const [],
     this.cancelReason,
     this.cancellationAllowed,
     this.awaitingMarketplacePayment = false,
@@ -74,6 +76,7 @@ class OrderEntity extends Equatable {
 
   /// Timeline các mốc theo dõi
   final List<OrderTrackingEventEntity> trackingEvents;
+  final List<SellerDeliveryProgress> sellerProgress;
 
   /// Lý do hủy đơn (nếu có)
   final String? cancelReason;
@@ -123,6 +126,7 @@ class OrderEntity extends Equatable {
       voucherCode: voucherCode ?? this.voucherCode,
       totalAmountVnd: totalAmountVnd ?? this.totalAmountVnd,
       trackingEvents: trackingEvents ?? this.trackingEvents,
+      sellerProgress: sellerProgress,
       cancelReason: cancelReason ?? this.cancelReason,
       cancellationAllowed: cancellationAllowed,
       awaitingMarketplacePayment: awaitingMarketplacePayment,
@@ -146,6 +150,7 @@ class OrderEntity extends Equatable {
     voucherCode,
     totalAmountVnd,
     trackingEvents,
+    sellerProgress,
     cancelReason,
     cancellationAllowed,
     awaitingMarketplacePayment,
