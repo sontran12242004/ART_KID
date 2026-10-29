@@ -9,4 +9,7 @@
 - [x] Reuse publishing form and add guarded management/review/order screens.
 - [x] Run integration, migration and Flutter validation; fix introduced regressions.
 - [x] Document APIs, limitations, tests and GHN integration boundary.
-- [ ] Review, commit, push, create and attach Draft PR; never merge.
+- [x] Review, commit, push, create and attach Draft PR; never merge.
+
+Draft PR: https://github.com/sontran12242004/ART_KID/pull/1
+Target: main. Branch: codex/teacher-marketplace-approval. Created as an open draft; no merge performed.
