@@ -22,4 +22,6 @@ Target: main. Branch: codex/teacher-marketplace-approval. Created as an open dra
 - [x] Update seller/admin/parent UI permissions and payment wording.
 - [x] Run 25 HTTP tests, 60 Flutter tests, analyzer and both EF model checks.
 - [x] Run final web browser smoke without any marketplace order confirmation requests.
-- [ ] Push the committed correction and update Draft PR #1.
+- [x] Push the committed correction and update Draft PR #1.
+
+PR #1 remains an open draft targeting main. Order confirmation correction: 25 HTTP tests and 60 Flutter tests passed; real Edge smoke issued zero marketplace order-confirmation requests. No new schema migration or GHN changes.
