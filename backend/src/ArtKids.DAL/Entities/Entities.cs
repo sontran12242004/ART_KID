@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace ArtKids.DAL.Entities;
@@ -323,6 +324,18 @@ public sealed class Voucher : Entity
 
 public sealed class Order : Entity
 {
+    // Response actions are derived from order lines/fulfillment, never persisted or accepted as input.
+    [NotMapped]
+    public bool HasMarketplaceItems { get; set; }
+
+    [NotMapped]
+    public bool RequiresLegacyConfirmation { get; set; }
+
+    [NotMapped]
+    public bool AwaitingMarketplacePayment { get; set; }
+
+    [NotMapped]
+    public bool CanCancel { get; set; }
     public string OrderCode { get; set; } = "";
     public string ParentId { get; set; } = "";
     public string? ChildId { get; set; }

@@ -207,26 +207,41 @@ public sealed class MarketplaceService(IUnitOfWork store, ICurrentUser actor)
         Roles("instructor");
         var ids = Q<OrderItem>().Where(i => i.SellerId == Actor.Id).Select(i => i.OrderId);
         var q = Q<Order>().Where(o => ids.Contains(o.Id));
+        var rows = await q.OrderByDescending(o => o.CreatedAt)
+            .ThenBy(o => o.Id)
+            .Skip((Page(page) - 1) * Size(size))
+            .Take(Size(size))
+            .Select(o => new
+            {
+                order = o,
+                fulfillmentStatus = Q<SellerFulfillment>()
+                    .Where(s => s.OrderId == o.Id && s.SellerId == Actor.Id)
+                    .Select(s => s.Status)
+                    .FirstOrDefault(),
+                subtotalVnd = Q<OrderItem>()
+                    .Where(i => i.OrderId == o.Id && i.SellerId == Actor.Id)
+                    .Sum(i => i.UnitPriceVnd * i.Quantity),
+            })
+            .ToListAsync();
         return new
         {
             total = await q.CountAsync(),
             page = Page(page),
             pageSize = Size(size),
-            items = await q.OrderByDescending(o => o.CreatedAt)
-                .ThenBy(o => o.Id)
-                .Skip((Page(page) - 1) * Size(size))
-                .Take(Size(size))
-                .Select(o => new
-                {
-                    o.Id,
-                    o.OrderCode,
-                    o.Status,
-                    o.CreatedAt,
-                    subtotalVnd = Q<OrderItem>()
-                        .Where(i => i.OrderId == o.Id && i.SellerId == Actor.Id)
-                        .Sum(i => i.UnitPriceVnd * i.Quantity),
-                })
-                .ToListAsync(),
+            items = rows.Select(row => new
+            {
+                row.order.Id,
+                row.order.OrderCode,
+                row.order.Status,
+                row.order.CreatedAt,
+                row.subtotalVnd,
+                canFulfill = OrderFulfillment.CanSellerFulfill(row.order),
+                collectionUnverified = row.order.PaymentMethodName == "cod"
+                    && row.order.PaymentStatus != "paid",
+                awaitingPayment = row.order.Status != "cancelled"
+                    && !OrderFulfillment.CanSellerFulfill(row.order),
+                sellerStatus = OrderFulfillment.SellerStatus(row.order, row.fulfillmentStatus),
+            }),
         };
     }
 
@@ -256,12 +271,18 @@ public sealed class MarketplaceService(IUnitOfWork store, ICurrentUser actor)
                 i.ThumbnailUrl,
             })
             .ToListAsync();
+        var fulfillment = await Q<SellerFulfillment>()
+            .SingleOrDefaultAsync(s => s.OrderId == id && s.SellerId == Actor.Id);
         return new
         {
             o.Id,
             o.OrderCode,
             o.Status,
             o.CreatedAt,
+            canFulfill = OrderFulfillment.CanSellerFulfill(o),
+            collectionUnverified = o.PaymentMethodName == "cod" && o.PaymentStatus != "paid",
+            awaitingPayment = o.Status != "cancelled" && !OrderFulfillment.CanSellerFulfill(o),
+            sellerStatus = OrderFulfillment.SellerStatus(o, fulfillment?.Status),
             items,
             subtotalVnd = items.Sum(i => i.UnitPriceVnd * i.Quantity),
             shippingInfo = await Q<OrderShippingInfo>()
@@ -273,8 +294,7 @@ public sealed class MarketplaceService(IUnitOfWork store, ICurrentUser actor)
                     s.FullAddress,
                 })
                 .SingleOrDefaultAsync(),
-            fulfillment = await Q<SellerFulfillment>()
-                .SingleOrDefaultAsync(s => s.OrderId == id && s.SellerId == Actor.Id),
+            fulfillment,
         };
     }
 
@@ -284,8 +304,20 @@ public sealed class MarketplaceService(IUnitOfWork store, ICurrentUser actor)
         {
             var o = await OwnSellerOrder(id);
             Require(
-                o.Status is "preparing" or "shipping" or "delivered",
-                "Administrator must confirm the order before shipping.",
+                OrderFulfillment.CanSellerFulfill(o),
+                "Order is cancelled or awaiting verified payment.",
+                409
+            );
+            var itemIds = Q<OrderItem>().Where(i => i.OrderId == id).Select(i => i.Id);
+            Require(
+                await OrderFulfillment.SellerDispatched(Store, id)
+                    || !await Q<InventoryReservation>()
+                        .AnyAsync(r =>
+                            itemIds.Contains(r.OrderItemId)
+                            && r.Status == "reserved"
+                            && r.ExpiresAt <= DateTime.UtcNow
+                        ),
+                "Platform stock reservation expired. Reload the order before dispatch.",
                 409
             );
             var s = await Q<SellerFulfillment>()
@@ -313,6 +345,7 @@ public sealed class MarketplaceService(IUnitOfWork store, ICurrentUser actor)
                 "Carrier and tracking cannot change after dispatch.",
                 409
             );
+            var firstDelivery = s.Status != "delivered" && r.Status == "delivered";
             s.Carrier = r.Carrier;
             s.TrackingNumber = string.IsNullOrWhiteSpace(r.TrackingNumber)
                 ? null
@@ -322,6 +355,13 @@ public sealed class MarketplaceService(IUnitOfWork store, ICurrentUser actor)
                 s.ShippedAt ??= DateTime.UtcNow;
             if (r.Status == "delivered")
                 s.DeliveredAt ??= DateTime.UtcNow;
+            if (firstDelivery)
+                foreach (
+                    var i in await Q<OrderItem>()
+                        .Where(i => i.OrderId == id && i.SellerId == Actor.Id)
+                        .ToListAsync()
+                )
+                    (await Get<Product>(i.ProductId!)).SoldCount += i.Quantity;
             await Store.SaveAsync();
             await OrderFulfillment.UpdateCompletion(Store, o);
             return s;

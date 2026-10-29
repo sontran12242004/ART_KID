@@ -138,7 +138,7 @@ class MarketplaceTests(ApiTests):
         oid = order["order"]["id"]
         path = f"/marketplace/orders/{oid}"
         fulfillment = {"carrier": "GHN", "trackingNumber": "MANUAL-" + uuid.uuid4().hex, "status": "shipping"}
-        self.request("PUT", path + "/fulfillment", fulfillment, self.teacher, 409)
+        self.assertTrue(self.request("GET", path, token=self.teacher)["canFulfill"])
         self.request("POST", f"/commerce/orders/{oid}/confirm", token=self.teacher, expected=403)
         self.request("GET", f"/commerce/orders/{oid}", token=self.teacher, expected=404)
         self.request("POST", f"/commerce/orders/{oid}/cancel", {"reason": "Forbidden"}, self.teacher, 404)
@@ -170,4 +170,4 @@ class MarketplaceTests(ApiTests):
         for status in ["shipping", "delivered"]:
             self.request("POST", f'/fulfillment/shipments/{shipment["id"]}/status', {"status": status}, self.admin)
         final = self.request("GET", f"/commerce/orders/{oid}", token=self.parent)
-        self.assertEqual((final["order"]["status"], final["order"]["paymentStatus"]), ("delivered", "paid"))
+        self.assertEqual((final["order"]["status"], final["order"]["paymentStatus"]), ("delivered", "cod"))

@@ -1,5 +1,14 @@
 # Teacher marketplace listing and approval implementation plan
 
+## PR #1 correction: order processing (2026-10-29)
+
+- Keep listing moderation unchanged. No new persisted fields or migrations: use existing payment method/status, seller snapshots and fulfillment records, with additive response action flags.
+- `CommerceService.cs`: seller-only COD starts preparing; expose order actions without changing existing fields; allow cancellation before seller dispatch; preserve legacy platform confirmation/reservations. Reject unverified marketplace transfers through the legacy confirm route. Protect dispatched mixed orders from whole-order reservation expiry/cancellation.
+- `MarketplaceService.cs`, `OrderFulfillment.cs`: COD sellers may fulfill immediately regardless of the platform portion's confirmation. Transfer sellers wait for verified paid state. Prevent premature completion while platform reservations are still reserved, and never infer marketplace COD collection from delivery. Count seller sales once on delivery.
+- Flutter seller/admin screens: show seller readiness and pending payment; remove seller-only order approval buttons and keep platform-only/mixed platform actions. Carry server cancellation permission into the parent order action button.
+- Tests: reproduce COD/transfer/admin-bypass/cancellation/mixed-stock failures before fixes; rerun legacy integration, Flutter tests/analyze and real browser smoke without marketplace order confirmation. Update this plan, technical payment-policy documentation and existing Draft PR #1; push this branch only.
+- Open policy: marketplace bank-account recipient and authorized verifier are unspecified. Do not add a payment-verification endpoint or mark marketplace transfers/COD paid based on seller claims. Unverified marketplace transfers stay blocked; verified payment integration is a future explicit policy decision.
+
 Source: ART_KID_CODEX_TASK.md supplied in Downloads, plus current main. Work only on `codex/teacher-marketplace-approval`.
 
 ## Decisions and compatibility boundaries

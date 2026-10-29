@@ -372,6 +372,8 @@ public sealed class CommerceService(
                 PaymentStatus = r.PaymentMethod == "cod" ? "cod" : "pending",
             };
             Add(order);
+            var hasSeller = false;
+            var hasLegacy = false;
             var physical = false;
             var includedDelivery = false;
             foreach (var line in r.Items)
@@ -399,7 +401,10 @@ public sealed class CommerceService(
                         item.UnitPriceVnd = p.PriceVnd;
                         item.KitItems = p.KitItems.ToList();
                         if (p.FulfillmentMode == "seller")
+                        {
                             item.SellerId = p.CreatedBy;
+                            hasSeller = true;
+                        }
                         else
                         {
                             var sku =
@@ -493,6 +498,7 @@ public sealed class CommerceService(
                         throw new BusinessException(400, "Unknown item type.");
                 }
 
+                hasLegacy |= item.SellerId is null;
                 order.SubtotalVnd = checked(order.SubtotalVnd + item.UnitPriceVnd * item.Quantity);
                 Add(item);
             }
@@ -525,14 +531,21 @@ public sealed class CommerceService(
                 r.PaymentMethod != "cod" || r.Items.All(x => x.ItemType == "kit"),
                 "COD is available only for one-time physical kit purchases. Digital courses/subscriptions require verified transfer."
             );
+            if (hasSeller && !hasLegacy && r.PaymentMethod == "cod")
+                order.Status = "preparing";
             order.TotalAmountVnd = order.SubtotalVnd + order.ShippingFeeVnd - order.DiscountVnd;
             Add(
                 new OrderTrackingEvent
                 {
                     OrderId = order.Id,
                     Title = "Đã đặt hàng",
-                    Description =
-                        "Awaiting admin confirmation; no payment gateway has been charged.",
+                    Description = hasSeller
+                        ? (
+                            r.PaymentMethod == "cod"
+                                ? "Seller COD fulfillment may begin; collection is unverified."
+                                : "Awaiting verified funds; marketplace transfer verification policy is not configured."
+                        )
+                        : "Awaiting admin confirmation; no payment gateway has been charged.",
                 }
             );
             var cart = await Q<Cart>().SingleOrDefaultAsync(x => x.ParentId == Actor.Id);
@@ -559,15 +572,60 @@ public sealed class CommerceService(
         var q = Q<Order>();
         if (Actor.Role != "admin")
             q = q.Where(x => x.ParentId == Actor.Id);
-        return await q.OrderByDescending(x => x.CreatedAt)
+        var orders = await q.OrderByDescending(x => x.CreatedAt)
             .Skip((Page(page) - 1) * Size(size))
             .Take(Size(size))
             .ToListAsync();
+        await SetOrderActions(orders);
+        return orders;
+    }
+
+    private async Task SetOrderActions(List<Order> orders)
+    {
+        var ids = orders.Select(o => o.Id).ToList();
+        var lines = await Q<OrderItem>()
+            .Where(i => ids.Contains(i.OrderId))
+            .Select(i => new { i.OrderId, i.SellerId })
+            .ToListAsync();
+        var dispatched = await Q<SellerFulfillment>()
+            .Where(s =>
+                ids.Contains(s.OrderId)
+                && (s.ShippedAt != null || s.Status == "shipping" || s.Status == "delivered")
+            )
+            .Select(s => s.OrderId)
+            .Distinct()
+            .ToListAsync();
+        foreach (var o in orders)
+        {
+            var ownLines = lines.Where(i => i.OrderId == o.Id).ToList();
+            o.HasMarketplaceItems = ownLines.Any(i => i.SellerId != null);
+            var hasLegacy = ownLines.Any(i => i.SellerId == null);
+            o.AwaitingMarketplacePayment =
+                o.HasMarketplaceItems
+                && o.PaymentMethodName != "cod"
+                && o.PaymentStatus != "paid"
+                && o.Status != "cancelled";
+            o.RequiresLegacyConfirmation =
+                hasLegacy && o.Status == "pending_confirmation" && !o.AwaitingMarketplacePayment;
+            o.CanCancel =
+                (
+                    o.Status == "pending_confirmation"
+                    || (
+                        o.HasMarketplaceItems
+                        && !hasLegacy
+                        && o.PaymentMethodName == "cod"
+                        && o.Status == "preparing"
+                    )
+                )
+                && !dispatched.Contains(o.Id)
+                && (!o.HasMarketplaceItems || o.PaymentStatus != "paid");
+        }
     }
 
     public async Task<object> OrderDetail(string id)
     {
         var order = await OwnOrder(id);
+        await SetOrderActions([order]);
         return new
         {
             order,
@@ -591,9 +649,10 @@ public sealed class CommerceService(
             var o = await OwnOrder(id);
             if (o.Status == "cancelled")
                 return await OrderDetail(id);
+            await SetOrderActions([o]);
             Require(
-                o.Status == "pending_confirmation",
-                "Only unconfirmed orders can be cancelled.",
+                o.CanCancel,
+                "This order cannot be cancelled after dispatch, payment or legacy confirmation.",
                 409
             );
             await Release(o, reason);
@@ -638,16 +697,33 @@ public sealed class CommerceService(
         {
             Roles("admin");
             var o = await Get<Order>(id);
+            var items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync();
+            var hasSeller = items.Any(i => i.SellerId != null);
+            Require(
+                !hasSeller || o.PaymentMethodName == "cod" || o.PaymentStatus == "paid",
+                "Marketplace transfer verification policy is not configured. Do not confirm unverified funds.",
+                409
+            );
+            if (hasSeller && items.All(i => i.SellerId != null) && o.PaymentMethodName == "cod")
+            {
+                Require(o.Status != "cancelled", "Order cannot be confirmed.", 409);
+                // Backward-compatible no-op; seller-only COD never requires this endpoint.
+                if (o.Status == "pending_confirmation")
+                    o.Status = "preparing";
+                return await OrderDetail(id);
+            }
             if (o.Status is "preparing" or "shipping" or "delivered")
                 return await OrderDetail(id);
             Require(o.Status == "pending_confirmation", "Order cannot be confirmed.", 409);
-            var items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync();
+            var sellerDispatched = await OrderFulfillment.SellerDispatched(Store, id);
             var itemIds = items.Select(x => x.Id).ToList();
             var reservations = await Q<InventoryReservation>()
                 .Where(x => itemIds.Contains(x.OrderItemId))
                 .ToListAsync();
             Require(
-                reservations.All(x => x.Status == "reserved" && x.ExpiresAt > DateTime.UtcNow),
+                reservations.All(x =>
+                    x.Status == "reserved" && (x.ExpiresAt > DateTime.UtcNow || sellerDispatched)
+                ),
                 "Stock reservation expired; cancel this order and checkout again.",
                 409
             );
@@ -659,7 +735,7 @@ public sealed class CommerceService(
 
             foreach (var i in items)
             {
-                if (i.ProductId is not null)
+                if (i.ProductId is not null && i.SellerId is null)
                     (await Get<Product>(i.ProductId)).SoldCount += i.Quantity;
                 if (i.CourseId is not null)
                 {
@@ -726,7 +802,7 @@ public sealed class CommerceService(
                 }
             }
 
-            if (o.PaymentMethodName != "cod")
+            if (o.PaymentMethodName != "cod" && o.PaymentStatus != "paid")
             {
                 o.PaymentStatus = "paid";
                 o.PaidAt = DateTime.UtcNow;
@@ -746,6 +822,8 @@ public sealed class CommerceService(
             );
             Notify(o.ParentId, "Đơn hàng đã xác nhận", o.OrderCode, id);
             await Store.SaveAsync();
+            if (hasSeller)
+                await OrderFulfillment.UpdateCompletion(Store, o);
             return await OrderDetail(id);
         });
     }
@@ -792,7 +870,10 @@ public sealed class CommerceService(
             await Store.TransactionAsync(async () =>
             {
                 var o = await Get<Order>(id);
-                if (o.Status == "pending_confirmation")
+                if (
+                    o.Status == "pending_confirmation"
+                    && !await OrderFulfillment.SellerDispatched(Store, id)
+                )
                     await Release(o, "Stock reservation expired.");
                 return true;
             });
