@@ -13,3 +13,13 @@
 
 Draft PR: https://github.com/sontran12242004/ART_KID/pull/1
 Target: main. Branch: codex/teacher-marketplace-approval. Created as an open draft; no merge performed.
+
+## Order confirmation correction
+
+- [x] Reproduce and remove mandatory admin confirmation for seller COD.
+- [x] Keep marketplace transfers pending; document missing recipient and verification policy.
+- [x] Preserve mixed platform allocations, expiry safety, cancellation/vouchers and seller isolation.
+- [x] Update seller/admin/parent UI permissions and payment wording.
+- [x] Run 25 HTTP tests, 60 Flutter tests, analyzer and both EF model checks.
+- [x] Run final web browser smoke without any marketplace order confirmation requests.
+- [ ] Push the committed correction and update Draft PR #1.

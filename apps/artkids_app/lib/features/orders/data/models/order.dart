@@ -25,6 +25,8 @@ class OrderModel extends OrderEntity {
     required super.totalAmountVnd,
     super.trackingEvents,
     super.cancelReason,
+    super.cancellationAllowed,
+    super.awaitingMarketplacePayment,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -48,6 +50,12 @@ class OrderModel extends OrderEntity {
         .toList();
 
     return OrderModel(
+      cancellationAllowed:
+          json['can_cancel'] as bool? ?? json['canCancel'] as bool?,
+      awaitingMarketplacePayment:
+          json['awaiting_marketplace_payment'] as bool? ??
+          json['awaitingMarketplacePayment'] as bool? ??
+          false,
       id: json['id'] as String? ?? '',
       orderCode:
           json['order_code'] as String? ??
@@ -97,6 +105,8 @@ class OrderModel extends OrderEntity {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      if (cancellationAllowed != null) 'can_cancel': cancellationAllowed,
+      'awaiting_marketplace_payment': awaitingMarketplacePayment,
       'order_code': orderCode,
       'created_at': createdAt.toIso8601String(),
       'status': status.value,

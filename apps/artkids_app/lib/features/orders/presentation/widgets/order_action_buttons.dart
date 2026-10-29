@@ -77,27 +77,33 @@ class OrderActionButtons extends StatelessWidget {
   }
 
   Widget _buildPrimaryAction(BuildContext context) {
+    if (order.canCancel) {
+      return ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFFDEDEC),
+          foregroundColor: const Color(0xFFE74C3C),
+          elevation: 0,
+          side: const BorderSide(color: Color(0xFFE74C3C), width: 1.2),
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: () => _showCancelDialog(context),
+        icon: const Icon(Icons.cancel_outlined, size: 18),
+        label: const Text(
+          'Hủy đơn',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+        ),
+      );
+    }
     switch (order.status) {
       case OrderStatus.pendingConfirmation:
-        return ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFDEDEC),
-            foregroundColor: const Color(0xFFE74C3C),
-            elevation: 0,
-            side: const BorderSide(color: Color(0xFFE74C3C), width: 1.2),
-            padding: const EdgeInsets.symmetric(vertical: 13),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          onPressed: () => _showCancelDialog(context),
-          icon: const Icon(Icons.cancel_outlined, size: 18),
-          label: const Text(
-            'Hủy đơn',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-          ),
+        return Text(
+          order.awaitingMarketplacePayment
+              ? 'Chờ xác minh thanh toán'
+              : 'Đơn đang được xử lý',
         );
-
       case OrderStatus.preparing:
         return ElevatedButton.icon(
           style: ElevatedButton.styleFrom(

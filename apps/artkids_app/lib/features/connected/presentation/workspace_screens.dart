@@ -524,11 +524,13 @@ class AdminOrders extends ConsumerWidget {
               child: ListTile(
                 title: Text(o['orderCode'] ?? o['id']),
                 subtitle: Text(
-                  '${statusLabel(o['status'])} · ${money(o['totalAmountVnd'] ?? o['totalVnd'] ?? 0)}',
+                  '${o['awaitingMarketplacePayment'] == true ? 'Chờ xác minh tiền marketplace' : statusLabel(o['status'])} · ${money(o['totalAmountVnd'] ?? o['totalVnd'] ?? 0)}',
                 ),
-                trailing: o['status'] == 'pending_confirmation'
+                trailing: o['requiresLegacyConfirmation'] == true
                     ? ActionButton(
-                        label: 'Xác nhận thanh toán',
+                        label: o['hasMarketplaceItems'] == true
+                            ? 'Xác nhận phần hàng nền tảng'
+                            : 'Xác nhận thanh toán',
                         action: (r) => r
                             .read(dioProvider)
                             .post(

@@ -26,6 +26,8 @@ class OrderEntity extends Equatable {
     required this.totalAmountVnd,
     this.trackingEvents = const [],
     this.cancelReason,
+    this.cancellationAllowed,
+    this.awaitingMarketplacePayment = false,
   });
 
   /// ID hệ thống của đơn hàng
@@ -75,6 +77,13 @@ class OrderEntity extends Equatable {
 
   /// Lý do hủy đơn (nếu có)
   final String? cancelReason;
+  final bool? cancellationAllowed;
+  final bool awaitingMarketplacePayment;
+  bool get canCancel =>
+      status != OrderStatus.cancelled &&
+      status != OrderStatus.shipping &&
+      status != OrderStatus.delivered &&
+      (cancellationAllowed ?? status == OrderStatus.pendingConfirmation);
 
   /// Tổng số món kit trong đơn
   int get totalItemsCount => items.fold(0, (sum, item) => sum + item.quantity);
@@ -115,6 +124,8 @@ class OrderEntity extends Equatable {
       totalAmountVnd: totalAmountVnd ?? this.totalAmountVnd,
       trackingEvents: trackingEvents ?? this.trackingEvents,
       cancelReason: cancelReason ?? this.cancelReason,
+      cancellationAllowed: cancellationAllowed,
+      awaitingMarketplacePayment: awaitingMarketplacePayment,
     );
   }
 
@@ -136,5 +147,7 @@ class OrderEntity extends Equatable {
     totalAmountVnd,
     trackingEvents,
     cancelReason,
+    cancellationAllowed,
+    awaitingMarketplacePayment,
   ];
 }

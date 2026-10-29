@@ -71,6 +71,13 @@ class OrderDetailScreen extends ConsumerWidget {
               children: [
                 // a. Header trạng thái (Badge lớn, Mã đơn, Ngày đặt, Dự kiến giao)
                 _buildStatusHeader(context, order),
+                if (order.awaitingMarketplacePayment)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Đơn marketplace đang chờ xác minh tiền chuyển khoản. Bên nhận tiền và quy trình xác minh chưa được thống nhất; chưa thể giao hàng.',
+                    ),
+                  ),
                 const SizedBox(height: 16),
 
                 // b. Timeline theo dõi tiến trình

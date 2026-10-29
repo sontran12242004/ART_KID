@@ -27,7 +27,7 @@ class _SellerOrdersState extends State<SellerOrdersScreen> {
               child: ListTile(
                 title: Text(o['orderCode']),
                 subtitle: Text(
-                  '${statusLabel(o['status'])} · Học cụ của bạn: ${money(o['subtotalVnd'])}',
+                  '${statusLabel(o['sellerStatus'] ?? o['status'])} · Học cụ của bạn: ${money(o['subtotalVnd'])}',
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () =>
@@ -73,7 +73,7 @@ class SellerOrderDetailScreen extends StatelessWidget {
             data['orderCode'],
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          Text(statusLabel(data['status'])),
+          Text(statusLabel(data['sellerStatus'] ?? data['status'])),
           for (final i in data['items'])
             ListTile(
               title: Text(i['title']),
@@ -87,9 +87,15 @@ class SellerOrderDetailScreen extends StatelessWidget {
             Text('Địa chỉ: ${data['shippingInfo']['fullAddress']}'),
           ],
           const SizedBox(height: 20),
-          if (data['status'] == 'pending_confirmation')
-            const Text('Chờ quản trị viên xác nhận đơn trước khi giao hàng.'),
-          if (['preparing', 'shipping', 'delivered'].contains(data['status']))
+          if (data['awaitingPayment'] == true)
+            const Text(
+              'Chờ xác minh tiền chuyển khoản. Bên nhận tiền và trách nhiệm xác minh chưa được thống nhất; chưa thể giao hàng.',
+            ),
+          if (data['canFulfill'] == true) ...[
+            if (data['collectionUnverified'] == true)
+              const Text(
+                'COD chỉ là phương thức thu tiền; trạng thái giao hàng không xác nhận đã thu tiền.',
+              ),
             SellerShippingForm(
               key: ValueKey('${data['fulfillment']}'),
               orderId: id,
@@ -97,6 +103,7 @@ class SellerOrderDetailScreen extends StatelessWidget {
                   ? null
                   : Map<String, dynamic>.from(data['fulfillment']),
             ),
+          ],
         ],
       ),
     ),
