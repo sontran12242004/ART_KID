@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/network/api_interceptor.dart';
 import '../../../core/network/dio_client.dart';
 import '../data/connected_api.dart';
+import '../../../core/widgets/app_snack_bar.dart';
 
 String money(num value) => NumberFormat.currency(
   locale: 'vi_VN',
@@ -44,7 +45,8 @@ String statusLabel(dynamic value) =>
     value?.toString() ??
     '';
 void toast(BuildContext context, String message, {bool error = false}) {
-  ScaffoldMessenger.of(context).showSnackBar(
+  showAppSnackBar(
+    context,
     SnackBar(
       content: Text(message),
       backgroundColor: error ? Colors.red.shade700 : Colors.teal.shade700,

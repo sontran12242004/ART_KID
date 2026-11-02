@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/network/dio_client.dart';
+import '../../../core/widgets/app_snack_bar.dart';
 
 class LiveMediaPermissionState {
   const LiveMediaPermissionState({
@@ -564,7 +565,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     final tokenData = _roomTokenData;
     if (tokenData == null) return;
     if (!_permissionState.anyGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Text(
             'Vui lòng cấp quyền Microphone hoặc Camera trước khi vào phòng học.',
@@ -746,14 +748,16 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       });
 
       if (mutedByInstructor) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           const SnackBar(
             content: Text('Gia sư đã yêu cầu tắt microphone của bạn.'),
           ),
         );
       }
       if (shareRevoked) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           const SnackBar(
             content: Text(
               'Gia sư đã thu hồi quyền chia sẻ màn hình của bạn.',
@@ -785,7 +789,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
   Future<void> _startScreenShareFlow() async {
     if (_actionBusy) return;
     if (!_canShareScreen) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Text(
             'Bạn chưa được gia sư cấp quyền chia sẻ màn hình trong buổi học này.',
@@ -798,7 +803,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     if (_activeScreenShare != null && !_isSelfSharingScreen) {
       final currentPresenter =
           '${_activeScreenShare?['presenterName'] ?? 'Người tham gia khác'}';
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(
           content: Text(
             'Hiện tại $currentPresenter đang chia sẻ màn hình. Chỉ một người được chia sẻ tại một thời điểm.',
@@ -893,7 +899,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       final startResult = await screenService.startScreenShare();
       if (!mounted) return;
       if (!startResult.started) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           SnackBar(
             content: Text(
               startResult.message ??
@@ -928,7 +935,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       if (!mounted) return;
       _applyRoomSnapshot(res);
       _startScreenShareFrameLoop();
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Text('Đã bắt đầu chia sẻ màn hình trong lớp học.'),
         ),
@@ -936,7 +944,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     } catch (e) {
       await screenService.stopScreenShare();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(content: Text(_formatRoomError(e))),
       );
     } finally {
@@ -964,7 +973,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
         }
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           const SnackBar(
             content: Text(
               'Đã dừng chia sẻ màn hình. Cuộc gọi âm thanh/video vẫn tiếp tục.',
@@ -974,7 +984,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           SnackBar(content: Text(_formatRoomError(e))),
         );
       }
@@ -1002,7 +1013,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       }
     } catch (_) {}
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
+    showAppSnackBar(
+      context,
       const SnackBar(
         content: Text(
           'Hệ điều hành đã dừng phiên chia sẻ màn hình. Cuộc gọi âm thanh/video vẫn tiếp tục.',
@@ -1028,7 +1040,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       );
       if (!mounted) return;
       _applyRoomSnapshot(res);
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(
           content: Text(
             grant
@@ -1039,7 +1052,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(content: Text(_formatRoomError(e))),
       );
     } finally {
@@ -1192,12 +1206,14 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       );
       if (!mounted) return;
       _applyRoomSnapshot(res);
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(content: Text('Đã tắt microphone của $name.')),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(content: Text(_formatRoomError(e))),
       );
     } finally {
@@ -1271,7 +1287,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       );
       _releaseMediaAndRoomResources();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Text('Đã kết thúc buổi học và đóng phòng trực tuyến.'),
         ),
@@ -1283,7 +1300,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(content: Text(_formatRoomError(e))),
       );
     } finally {

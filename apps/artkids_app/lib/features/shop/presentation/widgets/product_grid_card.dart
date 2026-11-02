@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../data/models/product.dart';
 import '../providers/cart_provider.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Card sản phẩm dạng lưới (2 cột) trong Cửa hàng học cụ
 class ProductGridCard extends ConsumerWidget {
@@ -206,7 +207,8 @@ class ProductGridCard extends ConsumerWidget {
                                     .addToCart(product, quantity: 1);
                                 if (!context.mounted) return;
                                 if (!ok) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  showAppSnackBar(
+                                    context,
                                     SnackBar(
                                       content: Text(
                                         ref.read(cartSyncErrorProvider) ??
@@ -216,7 +218,8 @@ class ProductGridCard extends ConsumerWidget {
                                   );
                                   return;
                                 }
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                showAppSnackBar(
+                                  context,
                                   SnackBar(
                                     content: Row(
                                       children: [

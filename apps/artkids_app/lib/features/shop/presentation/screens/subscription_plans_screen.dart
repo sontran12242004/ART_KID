@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/shop_provider.dart';
 import '../widgets/subscription_plan_card.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình chọn gói subscription — Parent Mode
 class SubscriptionPlansScreen extends ConsumerStatefulWidget {
@@ -140,7 +141,8 @@ class _SubscriptionPlansScreenState
                       final selectedPlan = plans.firstWhere(
                         (p) => p.id == _selectedPlanId,
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      showAppSnackBar(
+                        context,
                         SnackBar(
                           backgroundColor: const Color(0xFF2E7D32),
                           content: Text(

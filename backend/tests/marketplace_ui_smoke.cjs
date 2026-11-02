@@ -62,7 +62,20 @@ async function responseAction(page, method, path, action) {
     const parent=await login(browser,'parent');
     await go(parent,'/parent/shop/product/'+product.id);
     await responseAction(parent,'PUT','/commerce/cart/items',()=>parent.getByRole('button',{name:/Thêm.*Giỏ/}).click());
-    await go(parent,'/parent/shop/cart');
+    const cartAction = parent.getByRole('button',{name:'XEM GIỎ',exact:true});
+    await cartAction.waitFor({state:'visible'});
+    await cartAction.waitFor({state:'hidden',timeout:5000});
+    for (let i=0; i<2; i++) {
+      await responseAction(parent,'PUT','/commerce/cart/items',()=>parent.getByRole('button',{name:/Thêm.*Giỏ/}).click());
+    }
+    await cartAction.waitFor({state:'visible'});
+    await parent.screenshot({path:artifacts+'/toast-cart-success.png'});
+    await cartAction.waitFor({state:'hidden',timeout:3000});
+    const cartResult = await responseAction(parent,'PUT','/commerce/cart/items',()=>parent.getByRole('button',{name:/Thêm.*Giỏ/}).click());
+    if(cartResult.items.find(i=>i.productId===product.id)?.quantity !== 4) throw Error('Toast fix changed cart quantities');
+    await cartAction.click();
+    await parent.waitForURL(/\/#\/parent\/shop\/cart$/);
+    console.log('PASS cart toast expires, rapid results do not queue, View Cart navigates, quantity stays correct');
     await parent.getByRole('button',{name:/Tiến hành thanh toán/}).click();
     await field(parent,'Tên người nhận','Browser Parent');
     await field(parent,'Số điện thoại','0901234567');
@@ -96,10 +109,29 @@ async function responseAction(page, method, path, action) {
     await parent.mouse.wheel(0,500); await pause(parent);
     await parent.screenshot({path:artifacts+'/marketplace-parent-tracking.png'});
     console.log('PASS parent refresh and Vietnamese seller timeline; COD collection remains unverified');
+    await go(parent,'/parent/shop/product/'+product.id);
+    await parent.getByRole('button',{name:/Thêm.*Giỏ/}).waitFor();
+    await go(teacher,'/staff/marketplace/listings/'+product.id);
+    await responseAction(teacher,'PUT','/marketplace/listings/'+product.id+'/availability',()=>teacher.getByRole('button',{name:'Đổi còn / hết hàng và gửi duyệt',exact:true}).click());
+    const denied = parent.waitForResponse(r=>r.request().method()==='PUT' && r.url().endsWith('/commerce/cart/items'));
+    await parent.getByRole('button',{name:/Thêm.*Giỏ/}).click();
+    if((await denied).status()!==400) throw Error('Stale unavailable product should be rejected');
+    // Flutter also announces the message in an aria-live node; select visible content.
+    const errorToast = parent.locator('span').filter({hasText:/^Product is unavailable\.$/});
+    await errorToast.waitFor({state:'visible'});
+    if(await cartAction.count()) throw Error('Failure must not show a success action');
+    await parent.screenshot({path:artifacts+'/toast-cart-error.png'});
+    await errorToast.waitFor({state:'hidden',timeout:6000});
+    console.log('PASS unavailable item reports API failure once, without false cart success');
     await teacher.setViewportSize({width:390,height:844});
     await go(teacher,'/staff/marketplace/new');
     await teacher.getByRole('button',{name:'Gửi duyệt',exact:true}).waitFor();
     await teacher.screenshot({path:artifacts+'/marketplace-form-mobile.png'});
     console.log('PASS mobile form rendered at 390x844');
+  }catch(error){
+    for(const [index,page] of browser.contexts().flatMap(c=>c.pages()).entries()) {
+      await page.screenshot({path:artifacts+'/marketplace-failure-'+index+'.png'}).catch(()=>{});
+    }
+    throw error;
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
