@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,17 +31,21 @@ class _VnpayPaymentScreenState extends ConsumerState<VnpayPaymentScreen> {
   Map<String, dynamic>? data;
   String? error;
   bool busy = false;
+  bool redirecting = false;
   Timer? timer;
   int polls = 0;
 
   @override
   void initState() {
     super.initState();
+    redirecting = widget.autoStart && widget.orderId.isNotEmpty;
     if (widget.orderId.isNotEmpty) {
       Future.microtask(() async {
         await _load();
         if (mounted && widget.autoStart && data?['canPay'] == true) {
           await _pay();
+        } else if (mounted) {
+          setState(() => redirecting = false);
         }
       });
       timer = Timer.periodic(const Duration(seconds: 3), (_) {
@@ -98,8 +103,14 @@ class _VnpayPaymentScreenState extends ConsumerState<VnpayPaymentScreen> {
       )) {
         throw StateError('Không mở được VNPay. Vui lòng thử lại.');
       }
+      if (mounted && !kIsWeb) setState(() => redirecting = false);
     } catch (exception) {
-      if (mounted) setState(() => error = apiError(exception));
+      if (mounted) {
+        setState(() {
+          error = apiError(exception);
+          redirecting = false;
+        });
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -107,6 +118,20 @@ class _VnpayPaymentScreenState extends ConsumerState<VnpayPaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (redirecting) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Đang chuyển đến VNPay…'),
+            ],
+          ),
+        ),
+      );
+    }
     final paid = data?['paymentStatus'] == 'paid';
     final awaitingConfirmation = !paid && widget.result == 'pending';
     return Scaffold(

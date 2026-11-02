@@ -56,18 +56,6 @@ class ConnectedKidHome extends ConsumerWidget {
             ),
           ),
           for (final item in [
-            (
-              'Vẽ & Ghép Tranh',
-              Icons.extension,
-              Colors.orange,
-              '/matching-game',
-            ),
-            (
-              'Thư Viện Tranh',
-              Icons.collections,
-              Colors.blue,
-              '/matching-game/gallery',
-            ),
             ('Khóa Học Vẽ', Icons.school, Colors.redAccent, '/parent/courses'),
             ('Bài Vẽ & Nhận Xét', Icons.brush, Colors.teal, '/parent/submissions'),
             (
