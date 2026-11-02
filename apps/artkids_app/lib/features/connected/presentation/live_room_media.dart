@@ -10,6 +10,7 @@ class LiveRoomMedia extends ChangeNotifier {
   lk.EventsListener<lk.RoomEvent>? _events;
   bool _closed = false;
   bool disconnected = false;
+  lk.CameraPosition _cameraPosition = lk.CameraPosition.front;
 
   bool get cameraEnabled => _camera != null && !_camera!.muted;
   bool get microphoneEnabled => _microphone != null && !_microphone!.muted;
@@ -32,7 +33,8 @@ class LiveRoomMedia extends ChangeNotifier {
     } else if (enabled) {
       if (_camera == null) {
         final track = await lk.LocalVideoTrack.createCameraTrack(
-          const lk.CameraCaptureOptions(
+          lk.CameraCaptureOptions(
+            cameraPosition: _cameraPosition,
             params: lk.VideoParametersPresets.h360_169,
           ),
         );
@@ -45,7 +47,11 @@ class LiveRoomMedia extends ChangeNotifier {
         await _camera!.unmute();
       }
     } else {
-      await _camera?.mute();
+      // Unpublished tracks have no RTP sender, so SDK unmute cannot restart
+      // them after mute stops capture. Release and recapture on the next enable.
+      final camera = _camera;
+      _camera = null;
+      await camera?.dispose();
     }
     _changed();
   }
@@ -68,15 +74,17 @@ class LiveRoomMedia extends ChangeNotifier {
         await _microphone!.unmute();
       }
     } else {
-      await _microphone?.mute();
+      final microphone = _microphone;
+      _microphone = null;
+      await microphone?.dispose();
     }
     _changed();
   }
 
   Future<void> switchCamera(bool front) async {
-    await _camera?.setCameraPosition(
-      front ? lk.CameraPosition.front : lk.CameraPosition.back,
-    );
+    final position = front ? lk.CameraPosition.front : lk.CameraPosition.back;
+    await _camera?.setCameraPosition(position);
+    _cameraPosition = position;
     _changed();
   }
 

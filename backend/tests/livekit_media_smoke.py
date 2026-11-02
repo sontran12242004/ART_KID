@@ -51,6 +51,14 @@ with sync_playwright() as p:
    page.wait_for_selector('flt-semantics-placeholder',state='attached',timeout=45000)
    page.locator('flt-semantics-placeholder').evaluate('(e)=>e.click()')
    page.wait_for_function("[...document.querySelectorAll('video')].some(v=>v.videoWidth>0 && !v.paused)",timeout=45000)
+   for cycle in range(2):
+    for device,kind in [('cam','Video'),('mic','Audio')]:
+     page.get_by_role('button',name=re.compile('^T.t '+device)).click()
+     page.wait_for_function("window.testStreams.flatMap(s=>s.get"+kind+"Tracks()).every(t=>t.readyState==='ended')")
+     page.get_by_role('button',name=re.compile('^B.t '+device)).click()
+     page.wait_for_function("window.testStreams.flatMap(s=>s.get"+kind+"Tracks()).some(t=>t.readyState==='live')")
+    page.wait_for_function("[...document.querySelectorAll('video')].some(v=>v.videoWidth>0 && !v.paused)")
+   print(role+': repeated pre-join camera/microphone restart: PASS',flush=True)
    page.get_by_role('button',name=re.compile('^V.o ph.ng (d.y|h.c) tr.c tuy.n$')).click()
    page.get_by_role('button',name=re.compile('^R.i ph.ng')).wait_for(timeout=45000)
    print(role+': joined actual LiveKit Cloud room',flush=True)
@@ -65,7 +73,9 @@ with sync_playwright() as p:
   page.wait_for_function("[...document.querySelectorAll('video')].filter(v=>v.videoWidth>0&&!v.paused).length>=2")
   page.get_by_role('button',name=re.compile('^T.t mic')).click()
   page.wait_for_function("window.testStreams.flatMap(s=>s.getAudioTracks()).every(t=>t.readyState==='ended')")
-  print('Camera restart and microphone mute: PASS',flush=True)
+  page.get_by_role('button',name=re.compile('^B.t mic')).click()
+  page.wait_for_function("window.testStreams.flatMap(s=>s.getAudioTracks()).some(t=>t.readyState==='live')")
+  print('Camera and microphone restart in room: PASS',flush=True)
   for page in pages:
    page.get_by_role('button',name=re.compile('^R.i ph.ng')).click()
    page.wait_for_function("window.testStreams.flatMap(s=>s.getTracks()).every(t=>t.readyState==='ended')")
