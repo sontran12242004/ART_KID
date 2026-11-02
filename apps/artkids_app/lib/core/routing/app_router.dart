@@ -6,6 +6,7 @@ import '../../features/connected/presentation/family_screens.dart';
 import '../../features/connected/presentation/learning_screens.dart';
 import '../../features/connected/presentation/grading_screens.dart';
 import '../../features/connected/presentation/family_submission_browser.dart';
+import '../../features/connected/presentation/vnpay_payment_screen.dart';
 import '../../features/connected/presentation/commerce_screens.dart';
 import '../../features/connected/presentation/workspace_screens.dart';
 import '../../features/connected/presentation/course_product_screens.dart';
@@ -100,6 +101,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/parent/payments/vnpay/result',
+        builder: (_, s) => VnpayPaymentScreen(
+          orderId: s.uri.queryParameters['orderId'] ?? '',
+          result: s.uri.queryParameters['result'],
+        ),
+      ),
+      GoRoute(
+        path: '/parent/payments/vnpay/:id',
+        builder: (_, s) => VnpayPaymentScreen(
+          orderId: s.pathParameters['id']!,
+          autoStart: true,
+        ),
+      ),
       GoRoute(
         path: '/staff/marketplace',
         builder: (_, _) => const MarketplaceListingsScreen(),

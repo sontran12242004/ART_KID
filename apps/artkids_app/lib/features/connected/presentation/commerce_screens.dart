@@ -21,6 +21,12 @@ class _ConnectedCheckoutState extends ConsumerState<ConnectedCheckout> {
   final key = 'checkout-${DateTime.now().microsecondsSinceEpoch}';
   String method = 'manual_transfer';
   @override
+  void initState() {
+    super.initState();
+    if (widget.id == null) method = 'vnpay';
+  }
+
+  @override
   void dispose() {
     name.dispose();
     phone.dispose();
@@ -86,6 +92,11 @@ class _ConnectedCheckoutState extends ConsumerState<ConnectedCheckout> {
           DropdownButtonFormField<String>(
             initialValue: method,
             items: [
+              if (!single)
+                const DropdownMenuItem(
+                  value: 'vnpay',
+                  child: Text('VNPay Sandbox · Thanh toán trực tuyến'),
+                ),
               const DropdownMenuItem(
                 value: 'manual_transfer',
                 child: Text('Chuyển khoản · chờ xác minh thanh toán'),
@@ -102,7 +113,18 @@ class _ConnectedCheckoutState extends ConsumerState<ConnectedCheckout> {
           const SizedBox(height: 20),
           ActionButton(
             label: 'Đặt hàng',
+            enabled: single || cart.isNotEmpty,
             action: (r) async {
+              if (method == 'vnpay') {
+                final configuration = await r
+                    .read(dioProvider)
+                    .get('/payments/vnpay/config');
+                if (configuration.data['isConfigured'] != true) {
+                  throw Exception(
+                    'VNPay Sandbox chưa được cấu hình. Vui lòng điền TmnCode và HashSecret tại backend.',
+                  );
+                }
+              }
               final items = single
                   ? [
                       {
@@ -142,6 +164,10 @@ class _ConnectedCheckoutState extends ConsumerState<ConnectedCheckout> {
               return result.data;
             },
             onSuccess: (data) {
+              if (method == 'vnpay') {
+                context.go('/parent/payments/vnpay/${data['order']['id']}');
+                return;
+              }
               toast(
                 context,
                 method == 'cod'

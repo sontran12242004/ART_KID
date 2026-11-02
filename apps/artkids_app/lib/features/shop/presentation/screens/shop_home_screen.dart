@@ -134,13 +134,7 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
                   },
                   child: GridView.builder(
                     padding: const EdgeInsets.all(16),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.65,
-                          crossAxisSpacing: 14,
-                          mainAxisSpacing: 14,
-                        ),
+                    gridDelegate: _productGridDelegate(context),
                     itemCount: products.length,
                     itemBuilder: (context, index) {
                       final product = products[index];
@@ -159,12 +153,25 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
                   ),
                 );
               },
-              loading: () => _buildSkeletonLoading(),
+              loading: () => _buildSkeletonLoading(context),
               error: (error, _) => _buildErrorState(error),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  SliverGridDelegate _productGridDelegate(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width - 32;
+    final columns = (width / 280).floor().clamp(2, 6);
+    final cardWidth = (width - (columns - 1) * 14) / columns;
+    final textScale = MediaQuery.textScalerOf(context).scale(14) / 14;
+    return SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: columns,
+      mainAxisExtent: cardWidth / 1.15 + 132 * textScale,
+      crossAxisSpacing: 14,
+      mainAxisSpacing: 14,
     );
   }
 
@@ -224,15 +231,10 @@ class _ShopHomeScreenState extends ConsumerState<ShopHomeScreen> {
     );
   }
 
-  Widget _buildSkeletonLoading() {
+  Widget _buildSkeletonLoading(BuildContext context) {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.65,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
-      ),
+      gridDelegate: _productGridDelegate(context),
       itemCount: 4,
       itemBuilder: (_, _) => Container(
         decoration: BoxDecoration(
