@@ -56,7 +56,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           !state.uri.path.startsWith('/submissions') &&
           !(user.role == 'admin' &&
               state.uri.path.startsWith('/parent/orders')) &&
-          !['/parent/submissions', '/parent/live'].contains(state.uri.path)) {
+          !state.uri.path.startsWith('/parent/live') &&
+          state.uri.path != '/parent/submissions') {
         return '/staff';
       }
       if (user.role == 'parent' && state.uri.path.startsWith('/staff')) {
@@ -170,6 +171,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/parent/live',
         builder: (_, _) => const LiveClassesScreen(),
+      ),
+      GoRoute(
+        path: '/parent/live/sessions/:id',
+        builder: (_, s) => LiveSessionDetailScreen(
+          sessionId: s.pathParameters['id']!,
+          childId: s.uri.queryParameters['childId'],
+        ),
+      ),
+      GoRoute(
+        path: '/parent/live/sessions/:id/room',
+        builder: (_, s) => LiveClassroomScreen(
+          sessionId: s.pathParameters['id']!,
+          childId: s.uri.queryParameters['childId'],
+        ),
       ),
       GoRoute(
         path: '/kid/lesson/:id',

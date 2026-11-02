@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/network/dio_client.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
 import 'family_screens.dart';
@@ -9,6 +8,7 @@ import 'widgets.dart';
 import 'course_product_screens.dart';
 import 'course_lecture_dialog.dart';
 import 'lecture_upload_screen.dart';
+export 'live_class_screens.dart';
 
 class ConnectedKidHome extends ConsumerWidget {
   const ConnectedKidHome({super.key});
@@ -135,125 +135,6 @@ class ConnectedBadges extends ConsumerWidget {
       ),
     ),
   );
-}
-
-class LiveClassesScreen extends ConsumerWidget {
-  const LiveClassesScreen({super.key});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final child = ref.watch(authProvider).selectedChild;
-    final staff = ref.watch(authProvider).currentUser?.role != 'parent';
-    return Scaffold(
-      appBar: AppBar(title: const Text('Lớp học trực tuyến')),
-      body: ApiView(
-        path: '/live/classes',
-        builder: (data) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            for (final c in data)
-              Card(
-                child: ExpansionTile(
-                  title: Text(c['name']),
-                  subtitle: Text('Tối đa ${c['capacity']} học sinh'),
-                  children: [
-                    if (!staff)
-                      ActionButton(
-                        label: 'Đăng ký bé vào lớp',
-                        action: (r) => r
-                            .read(dioProvider)
-                            .post(
-                              '/live/classes/${c['id']}/enrollments',
-                              data: {'childId': child?.id},
-                            ),
-                      ),
-                    if (staff)
-                      FilledButton(
-                        onPressed: () async {
-                          final v = await askFields(
-                            context,
-                            'Lên lịch buổi học',
-                            [
-                              const EntryField('title', 'Tên buổi học'),
-                              EntryField(
-                                'startsAt',
-                                'Bắt đầu (ISO, ví dụ 2026-10-21T19:00:00+07:00)',
-                                value: DateTime.now()
-                                    .add(const Duration(minutes: 5))
-                                    .toIso8601String(),
-                              ),
-                              EntryField(
-                                'endsAt',
-                                'Kết thúc (ISO)',
-                                value: DateTime.now()
-                                    .add(const Duration(hours: 1))
-                                    .toIso8601String(),
-                              ),
-                              const EntryField(
-                                'roomUrl',
-                                'Đường dẫn phòng học HTTPS',
-                              ),
-                            ],
-                          );
-                          if (v != null && context.mounted) {
-                            await mutate(
-                              context,
-                              ref,
-                              '/live/classes/${c['id']}/sessions',
-                              {
-                                ...v,
-                                'startsAt': DateTime.parse(
-                                  v['startsAt']!,
-                                ).toUtc().toIso8601String(),
-                                'endsAt': DateTime.parse(
-                                  v['endsAt']!,
-                                ).toUtc().toIso8601String(),
-                                'provider': 'external',
-                              },
-                            );
-                          }
-                        },
-                        child: const Text('Lên lịch buổi học'),
-                      ),
-                    ApiView(
-                      path: '/live/classes/${c['id']}/sessions',
-                      builder: (sessions) => Column(
-                        children: [
-                          for (final s in sessions)
-                            ListTile(
-                              title: Text(s['title']),
-                              subtitle: Text(
-                                '${dateLabel(s['startsAt'])} · ${statusLabel(s['status'])}',
-                              ),
-                              trailing: ActionButton(
-                                label: 'Vào lớp',
-                                action: (r) => r
-                                    .read(dioProvider)
-                                    .post(
-                                      '/live/sessions/${s['id']}/join',
-                                      data: staff ? {} : {'childId': child?.id},
-                                    ),
-                                onSuccess: (result) async {
-                                  final url = result.data['joinUrl'];
-                                  if (url != null) {
-                                    await launchUrl(
-                                      Uri.parse(url),
-                                      mode: LaunchMode.externalApplication,
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class StaffWorkspace extends ConsumerWidget {
