@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: artkid-api
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_HTTP_PORTS
+        value: "8080"
+      - key: Database__Provider
+        value: Postgres
+      - key: Database__MigrateOnStartup
+        value: "true"
+      - key: Seed__Enabled
+        value: "false"
+      - key: ConnectionStrings__Postgres
+        sync: false
+      - key: Jwt__Issuer
+        value: ArtKids.API
+      - key: Jwt__Audience
+        value: ArtKids.Client
+      - key: Jwt__Key
+        generateValue: true
+      - key: Cors__Origins__0
+        value: http://localhost:8080
+      - key: Cloudinary__CloudName
+        sync: false
+      - key: Cloudinary__ApiKey
+        sync: false
+      - key: Cloudinary__ApiSecret
+        sync: false
+      - key: Vnpay__Enabled
+        value: "true"
+      - key: Vnpay__TmnCode
+        sync: false
+      - key: Vnpay__HashSecret
+        sync: false
+      - key: Vnpay__PaymentUrl
+        value: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+      - key: Vnpay__ReturnUrl
+        sync: false
+      - key: Vnpay__FrontendReturnUrl
+        value: http://localhost:8080/#/parent/payments/vnpay/result

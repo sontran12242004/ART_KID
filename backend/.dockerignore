@@ -2,6 +2,7 @@
 **/obj
 **/App_Data
 .test-data
+.local
 **/*.Local.json
 **/*.key
 tests

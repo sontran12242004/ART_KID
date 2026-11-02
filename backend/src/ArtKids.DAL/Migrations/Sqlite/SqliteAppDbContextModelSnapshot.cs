@@ -2253,6 +2253,57 @@ namespace ArtKids.DAL.Migrations.Sqlite
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("ArtKids.DAL.Entities.VnpayPayment", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<long>("AmountVnd")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("amount_vnd");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("order_id");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("paid_at");
+
+                    b.Property<string>("ResponseCode")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("response_code");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TransactionNo")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("transaction_no");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("TransactionNo")
+                        .IsUnique();
+
+                    b.ToTable("vnpay_payments", (string)null);
+                });
+
             modelBuilder.Entity("ArtKids.DAL.Entities.Voucher", b =>
                 {
                     b.Property<string>("Id")
@@ -2865,6 +2916,15 @@ namespace ArtKids.DAL.Migrations.Sqlite
                         .WithMany()
                         .HasForeignKey("AvatarPresetId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("ArtKids.DAL.Entities.VnpayPayment", b =>
+                {
+                    b.HasOne("ArtKids.DAL.Entities.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

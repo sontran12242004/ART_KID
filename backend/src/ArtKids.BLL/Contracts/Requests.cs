@@ -281,7 +281,7 @@ public sealed record CheckoutRequest(
     string? ChildId = null,
     string? VoucherCode = null,
     ShippingRequest? Shipping = null,
-    [RegularExpression("^(manual_transfer|cod)$")] string PaymentMethod = "manual_transfer"
+    [RegularExpression("^(manual_transfer|cod|vnpay)$")] string PaymentMethod = "manual_transfer"
 );
 
 public sealed record CancelRequest([Required, MaxLength(1000)] string Reason);
