@@ -118,18 +118,88 @@ public sealed record LiveClassUpdateRequest(
 
 public sealed record ClassEnrollmentRequest([Required] string ChildId);
 
+public sealed record LiveSessionJoinRequest(string? ChildId = null);
+
 public sealed record LiveSessionRequest(
     [Required, MaxLength(200)] string Title,
     DateTime StartsAt,
     DateTime EndsAt,
     string? LessonId = null,
     string? RoomUrl = null,
-    [MaxLength(40)] string Provider = "external"
+    [MaxLength(40)] string Provider = "livekit"
 );
 
 public sealed record SessionStateRequest(
     [Required, RegularExpression("^(live|completed|cancelled)$")] string Status,
     string? RecordingUrl = null
+);
+
+public sealed record LiveRoomTokenRequest(
+    string? ChildId = null,
+    [MaxLength(100)] string? DeviceId = null
+);
+
+public sealed record LiveRoomConnectRequest(
+    [Required] string RoomToken,
+    string? ChildId = null,
+    [MaxLength(100)] string? DeviceId = null,
+    bool MicEnabled = true,
+    bool CameraEnabled = true,
+    [RegularExpression("^(front|back)$")] string CameraFacing = "front"
+);
+
+public sealed record LiveRoomMediaStateRequest(
+    [Required] string RoomToken,
+    string? ChildId = null,
+    [MaxLength(100)] string? DeviceId = null,
+    bool MicEnabled = true,
+    bool CameraEnabled = true,
+    [RegularExpression("^(front|back)$")] string CameraFacing = "front",
+    bool AudioOnly = false,
+    bool IsReconnecting = false
+);
+
+public sealed record LiveRoomModerateRequest(
+    [Required, MaxLength(150)] string TargetIdentity,
+    [Required, MaxLength(40)] string Action
+);
+
+public sealed record LiveRoomDisconnectRequest(
+    string? RoomToken = null,
+    string? ChildId = null,
+    [MaxLength(100)] string? DeviceId = null
+);
+
+public sealed record LiveRoomEndSessionRequest(string? RecordingUrl = null);
+
+public sealed record LiveRoomScreenShareStartRequest(
+    [Required] string RoomToken,
+    string? ChildId = null,
+    [MaxLength(100)] string? DeviceId = null,
+    [MaxLength(80)] string Scope = "entire_screen",
+    bool IncludeDeviceAudio = false,
+    [Range(64, 7680)] int Width = 1080,
+    [Range(64, 7680)] int Height = 1920,
+    [MaxLength(600000)] string? FrameBase64 = null,
+    [MaxLength(200)] string? ContentLabel = null
+);
+
+public sealed record LiveRoomScreenShareFrameRequest(
+    [Required] string RoomToken,
+    [Range(64, 7680)] int Width = 1080,
+    [Range(64, 7680)] int Height = 1920,
+    [Required, MaxLength(600000)] string FrameBase64 = "",
+    [MaxLength(200)] string? ContentLabel = null
+);
+
+public sealed record LiveRoomScreenShareStopRequest(
+    [Required] string RoomToken,
+    [MaxLength(80)] string Reason = "user_stopped"
+);
+
+public sealed record LiveRoomScreenSharePermissionRequest(
+    [Required, MaxLength(150)] string TargetIdentity,
+    bool CanShareScreen
 );
 
 public sealed record CourseProductRequest(
@@ -211,7 +281,7 @@ public sealed record CheckoutRequest(
     string? ChildId = null,
     string? VoucherCode = null,
     ShippingRequest? Shipping = null,
-    [RegularExpression("^(manual_transfer|cod)$")] string PaymentMethod = "manual_transfer"
+    [RegularExpression("^(manual_transfer|cod|vnpay)$")] string PaymentMethod = "manual_transfer"
 );
 
 public sealed record CancelRequest([Required, MaxLength(1000)] string Reason);

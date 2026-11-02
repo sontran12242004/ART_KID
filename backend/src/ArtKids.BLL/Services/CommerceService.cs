@@ -9,7 +9,8 @@ namespace ArtKids.BLL.Services;
 public sealed class CommerceService(
     IUnitOfWork store,
     ICurrentUser actor,
-    MarketplaceService marketplace
+    MarketplaceService marketplace,
+    VnpayService vnpay
 ) : ServiceBase(store, actor)
 {
     public async Task<object> Products(
@@ -349,6 +350,14 @@ public sealed class CommerceService(
         return Store.TransactionAsync<object>(async () =>
         {
             Roles("parent");
+            if (r.PaymentMethod == "vnpay")
+            {
+                vnpay.EnsureConfigured();
+                Require(
+                    r.Items.All(x => x.ItemType == "kit"),
+                    "VNPay hiện hỗ trợ thanh toán học cụ."
+                );
+            }
             var old = await Q<Order>()
                 .SingleOrDefaultAsync(x =>
                     x.ParentId == Actor.Id && x.IdempotencyKey == r.IdempotencyKey
@@ -534,17 +543,24 @@ public sealed class CommerceService(
             if (hasSeller && !hasLegacy && r.PaymentMethod == "cod")
                 order.Status = "preparing";
             order.TotalAmountVnd = order.SubtotalVnd + order.ShippingFeeVnd - order.DiscountVnd;
+            Require(
+                r.PaymentMethod != "vnpay" || order.TotalAmountVnd > 0,
+                "VNPay yêu cầu số tiền lớn hơn 0."
+            );
             Add(
                 new OrderTrackingEvent
                 {
                     OrderId = order.Id,
                     Title = "Đã đặt hàng",
-                    Description = hasSeller
-                        ? (
-                            r.PaymentMethod == "cod"
-                                ? "Đơn COD đã được tạo. Giảng viên có thể chuẩn bị học cụ; tiền COD chưa được xác minh đã thu."
-                                : "Đơn đang chờ xác minh chuyển khoản. Vui lòng chờ hướng dẫn về tài khoản nhận tiền và quy trình xác minh; chưa thể giao hàng."
-                        )
+                    Description =
+                        r.PaymentMethod == "vnpay"
+                            ? "Đơn hàng đang chờ thanh toán qua VNPay Sandbox."
+                        : hasSeller
+                            ? (
+                                r.PaymentMethod == "cod"
+                                    ? "Đơn COD đã được tạo. Giảng viên có thể chuẩn bị học cụ; tiền COD chưa được xác minh đã thu."
+                                    : "Đơn đang chờ xác minh chuyển khoản. Vui lòng chờ hướng dẫn về tài khoản nhận tiền và quy trình xác minh; chưa thể giao hàng."
+                            )
                         : "Awaiting admin confirmation; no payment gateway has been charged.",
                 }
             );
@@ -633,7 +649,8 @@ public sealed class CommerceService(
                     )
                 )
                 && !dispatched.Contains(o.Id)
-                && (!o.HasMarketplaceItems || o.PaymentStatus != "paid");
+                && (!o.HasMarketplaceItems || o.PaymentStatus != "paid")
+                && !(o.PaymentMethodName == "vnpay" && o.PaymentStatus == "paid");
         }
     }
 
@@ -747,6 +764,11 @@ public sealed class CommerceService(
         {
             Roles("admin");
             var o = await Get<Order>(id);
+            Require(
+                o.PaymentMethodName != "vnpay" || o.PaymentStatus == "paid",
+                "Đơn VNPay chưa được xác nhận thanh toán từ IPN.",
+                409
+            );
             var items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync();
             var hasSeller = items.Any(i => i.SellerId != null);
             Require(
@@ -772,7 +794,12 @@ public sealed class CommerceService(
                 .ToListAsync();
             Require(
                 reservations.All(x =>
-                    x.Status == "reserved" && (x.ExpiresAt > DateTime.UtcNow || sellerDispatched)
+                    x.Status == "reserved"
+                    && (
+                        x.ExpiresAt > DateTime.UtcNow
+                        || sellerDispatched
+                        || (o.PaymentMethodName == "vnpay" && o.PaymentStatus == "paid")
+                    )
                 ),
                 "Stock reservation expired; cancel this order and checkout again.",
                 409
@@ -924,6 +951,7 @@ public sealed class CommerceService(
                 var o = await Get<Order>(id);
                 if (
                     o.Status == "pending_confirmation"
+                    && o.PaymentStatus != "paid"
                     && !await OrderFulfillment.SellerDispatched(Store, id)
                 )
                     await Release(o, "Stock reservation expired.");

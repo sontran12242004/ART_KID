@@ -61,6 +61,8 @@ class OrderRepositoryImpl implements OrderRepository {
         'voucherCode': order.voucherCode,
         'paymentMethod': order.paymentMethodName.toLowerCase().contains('cod')
             ? 'cod'
+            : order.paymentMethodName.toLowerCase().contains('vnpay')
+            ? 'vnpay'
             : 'manual_transfer',
         'shipping': {
           'recipientName': order.shippingInfo.recipientName,

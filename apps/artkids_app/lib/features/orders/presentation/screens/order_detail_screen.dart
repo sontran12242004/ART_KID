@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/order_entity.dart';
 import '../../domain/enums/order_status.dart';
@@ -34,12 +35,19 @@ class OrderDetailScreen extends ConsumerWidget {
         elevation: 0.5,
         centerTitle: true,
         leading: IconButton(
+          tooltip: 'Quay lại',
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Color(0xFF0F3B46),
             size: 20,
           ),
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/parent/orders');
+            }
+          },
         ),
         actions: [
           IconButton(
@@ -77,6 +85,18 @@ class OrderDetailScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (order.paymentMethodName == 'vnpay' &&
+                    order.paymentStatus.name != 'paid' &&
+                    order.status != OrderStatus.cancelled)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: FilledButton.icon(
+                      onPressed: () =>
+                          context.push('/parent/payments/vnpay/${order.id}'),
+                      icon: const Icon(Icons.payment),
+                      label: const Text('Tiếp tục thanh toán VNPay'),
+                    ),
+                  ),
                 // a. Header trạng thái (Badge lớn, Mã đơn, Ngày đặt, Dự kiến giao)
                 _buildStatusHeader(context, order),
                 if (order.awaitingMarketplacePayment)

@@ -11,6 +11,13 @@ public abstract class AppDbContext(DbContextOptions options) : DbContext(options
 {
     protected override void OnModelCreating(ModelBuilder b)
     {
+        b.Entity<VnpayPayment>().HasIndex(x => x.OrderId);
+        b.Entity<VnpayPayment>().HasIndex(x => x.TransactionNo).IsUnique();
+        b.Entity<VnpayPayment>()
+            .HasOne<Order>()
+            .WithMany()
+            .HasForeignKey(x => x.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
         var types = typeof(Entity)
             .Assembly.GetTypes()
             .Where(t => t.IsSubclassOf(typeof(Entity)) && !t.IsAbstract);

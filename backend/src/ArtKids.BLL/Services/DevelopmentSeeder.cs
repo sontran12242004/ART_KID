@@ -15,7 +15,29 @@ public sealed class DevelopmentSeeder(
     public async Task Seed()
     {
         if (await store.Repository<User>().Query.AnyAsync())
+        {
+            if (!await store.Repository<LiveClass>().Query.AnyAsync())
+            {
+                await store.TransactionAsync(async () =>
+                {
+                    SeedLiveClasses(DateTime.UtcNow);
+                    return true;
+                });
+            }
+            else if (
+                !await store
+                    .Repository<LiveSession>()
+                    .Query.AnyAsync(x => x.Id == "session_basics_cancelled_1")
+            )
+            {
+                await store.TransactionAsync(async () =>
+                {
+                    SeedAdditionalLiveData(DateTime.UtcNow);
+                    return true;
+                });
+            }
             return;
+        }
         await store.TransactionAsync(async () =>
         {
             var password = config["Seed:Password"] ?? "ArtKids-Test-2026!";
@@ -307,7 +329,206 @@ public sealed class DevelopmentSeeder(
                             HeightPercent = .3,
                         }
                     );
+            SeedLiveClasses(DateTime.UtcNow);
             return true;
         });
+    }
+
+    private void SeedLiveClasses(DateTime now)
+    {
+        store
+            .Repository<LiveClass>()
+            .Add(
+                new()
+                {
+                    Id = "class_basics_morning",
+                    CourseId = "course_basics",
+                    InstructorId = "instructor_test_01",
+                    Name = "Lớp Vẽ Cơ Bản Sáng Tạo A1",
+                    Capacity = 20,
+                    Status = "open",
+                }
+            );
+        store
+            .Repository<LiveClass>()
+            .Add(
+                new()
+                {
+                    Id = "class_basics_creative",
+                    CourseId = "course_basics",
+                    InstructorId = "instructor_test_02",
+                    Name = "Lớp Phối Màu & Tư Duy Hình Khối B2",
+                    Capacity = 25,
+                    Status = "open",
+                }
+            );
+        store
+            .Repository<LiveClass>()
+            .Add(
+                new()
+                {
+                    Id = "class_basics_weekend",
+                    CourseId = "course_basics",
+                    InstructorId = "instructor_test_01",
+                    Name = "Lớp Kèm 1-1 Cọ Nhí C1",
+                    Capacity = 1,
+                    Status = "open",
+                }
+            );
+        store
+            .Repository<LiveClassEnrollment>()
+            .Add(
+                new()
+                {
+                    Id = "lce_bo_morning",
+                    ClassId = "class_basics_morning",
+                    ChildId = "child-1",
+                    Status = "enrolled",
+                    EnrolledAt = now.AddDays(-5),
+                }
+            );
+        store
+            .Repository<LiveClassEnrollment>()
+            .Add(
+                new()
+                {
+                    Id = "lce_bo_creative",
+                    ClassId = "class_basics_creative",
+                    ChildId = "child-1",
+                    Status = "enrolled",
+                    EnrolledAt = now.AddDays(-3),
+                }
+            );
+        store
+            .Repository<LiveSession>()
+            .Add(
+                new()
+                {
+                    Id = "session_basics_past_1",
+                    ClassId = "class_basics_morning",
+                    LessonId = "lesson_basics_1",
+                    Title = "Buổi 1: Làm quen với nét vẽ cơ bản và bố cục trang giấy",
+                    StartsAt = now.AddDays(-2),
+                    EndsAt = now.AddDays(-2).AddHours(1),
+                    Provider = "google_meet",
+                    RoomUrl = "https://meet.google.com/art-kids-basic-01",
+                    Status = "completed",
+                    RecordingUrl = "https://meet.google.com/art-kids-basic-01-recording",
+                }
+            );
+        store
+            .Repository<LiveSession>()
+            .Add(
+                new()
+                {
+                    Id = "session_basics_live_now",
+                    ClassId = "class_basics_creative",
+                    LessonId = "lesson_basics_2",
+                    Title = "Thực hành phối màu nước và tạo hiệu ứng chuyển sắc",
+                    StartsAt = now.AddMinutes(-15),
+                    EndsAt = now.AddHours(2),
+                    Provider = "google_meet",
+                    RoomUrl = "https://meet.google.com/art-kids-live-room",
+                    Status = "live",
+                }
+            );
+        store
+            .Repository<LiveSession>()
+            .Add(
+                new()
+                {
+                    Id = "session_basics_upcoming_2h",
+                    ClassId = "class_basics_morning",
+                    LessonId = "lesson_basics_2",
+                    Title = "Buổi 2: Pha màu cơ bản — Ba màu gốc kỳ diệu",
+                    StartsAt = now.AddHours(2),
+                    EndsAt = now.AddHours(3),
+                    Provider = "zoom",
+                    RoomUrl = "https://zoom.us/j/88990011223",
+                    Status = "scheduled",
+                }
+            );
+        store
+            .Repository<LiveSession>()
+            .Add(
+                new()
+                {
+                    Id = "session_basics_upcoming_no_link",
+                    ClassId = "class_basics_morning",
+                    LessonId = "lesson_basics_1",
+                    Title = "Buổi 3: Vẽ thú cưng đáng yêu từ các hình học đơn giản",
+                    StartsAt = now.AddDays(1),
+                    EndsAt = now.AddDays(1).AddHours(1),
+                    Provider = "microsoft_teams",
+                    RoomUrl = null,
+                    Status = "scheduled",
+                }
+            );
+        SeedAdditionalLiveData(now);
+    }
+
+    private void SeedAdditionalLiveData(DateTime now)
+    {
+        var weekendClass = store
+            .Repository<LiveClass>()
+            .Query.FirstOrDefault(x => x.Id == "class_basics_weekend");
+        if (weekendClass is not null)
+        {
+            weekendClass.Name = "Lớp Kèm 1-1 Cọ Nhí C1";
+            weekendClass.Capacity = 1;
+        }
+
+        if (!store.Repository<LiveClassEnrollment>().Query.Any(x => x.Id == "lce_bo_weekend"))
+        {
+            store
+                .Repository<LiveClassEnrollment>()
+                .Add(
+                    new()
+                    {
+                        Id = "lce_bo_weekend",
+                        ClassId = "class_basics_weekend",
+                        ChildId = "child-1",
+                        Status = "enrolled",
+                        EnrolledAt = now.AddDays(-2),
+                    }
+                );
+        }
+
+        if (!store.Repository<LiveSessionAttendance>().Query.Any(x => x.Id == "lsa_bo_past_1"))
+        {
+            store
+                .Repository<LiveSessionAttendance>()
+                .Add(
+                    new()
+                    {
+                        Id = "lsa_bo_past_1",
+                        SessionId = "session_basics_past_1",
+                        ClassEnrollmentId = "lce_bo_morning",
+                        FirstJoinedAt = now.AddDays(-2).AddMinutes(2),
+                        LastLeftAt = now.AddDays(-2).AddMinutes(55),
+                        TotalDurationSeconds = 3180,
+                    }
+                );
+        }
+
+        if (!store.Repository<LiveSession>().Query.Any(x => x.Id == "session_basics_cancelled_1"))
+        {
+            store
+                .Repository<LiveSession>()
+                .Add(
+                    new()
+                    {
+                        Id = "session_basics_cancelled_1",
+                        ClassId = "class_basics_weekend",
+                        LessonId = "lesson_basics_1",
+                        Title = "Buổi kèm 1-1: Luyện nét cọ mềm (Đã dời lịch)",
+                        StartsAt = now.AddDays(-1),
+                        EndsAt = now.AddDays(-1).AddHours(1),
+                        Provider = "google_meet",
+                        RoomUrl = "https://meet.google.com/art-kids-1on1-c1",
+                        Status = "cancelled",
+                    }
+                );
+        }
     }
 }

@@ -71,6 +71,7 @@ builder
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(dataRoot, "DataProtectionKeys")));
 builder.Services.AddScoped<LiveService>();
 builder.Services.AddScoped<CommerceService>();
+builder.Services.AddScoped<VnpayService>();
 builder.Services.AddScoped<MarketplaceService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<MediaService>();
@@ -226,7 +227,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
-if (development)
+if (development || builder.Configuration.GetValue<bool>("Swagger:Enabled"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
