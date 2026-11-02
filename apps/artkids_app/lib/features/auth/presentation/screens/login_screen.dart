@@ -8,6 +8,7 @@ import '../../../../core/routing/route_paths.dart';
 import '../providers/auth_provider.dart';
 import '../providers/intro_provider.dart';
 import '../widgets/auth_text_field.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 enum _IntroPhase {
   playing,
@@ -330,7 +331,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           SnackBar(
             content: Text('Đăng nhập thất bại: $e'),
             backgroundColor: const Color(0xFFE76F51),
@@ -388,7 +390,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             onPressed: () {
               final email = resetEmailController.text.trim();
               if (email.isEmpty || !email.contains('@')) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                showAppSnackBar(
+                  context,
                   const SnackBar(
                     content: Text('Vui lòng nhập email hợp lệ'),
                     backgroundColor: Color(0xFFE76F51),
@@ -397,7 +400,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 return;
               }
               Navigator.of(dialogContext).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
+              showAppSnackBar(
+                context,
                 SnackBar(
                   content: Text(
                     'Đã gửi liên kết đặt lại mật khẩu tới $email. Vui lòng kiểm tra hộp thư.',

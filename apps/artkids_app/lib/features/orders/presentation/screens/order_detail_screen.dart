@@ -13,6 +13,7 @@ import '../widgets/order_payment_summary.dart';
 import '../widgets/order_status_badge.dart';
 import '../widgets/order_tracking_timeline.dart';
 import '../widgets/seller_delivery_progress_card.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình Chi tiết Đơn hàng — Phục vụ phụ huynh quản lý & theo dõi học cụ
 class OrderDetailScreen extends ConsumerWidget {
@@ -133,7 +134,8 @@ class OrderDetailScreen extends ConsumerWidget {
 
             if (context.mounted) {
               if (success) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                showAppSnackBar(
+                  context,
                   const SnackBar(
                     content: Text('Đã hủy đơn hàng thành công.'),
                     backgroundColor: Color(0xFF27AE60),
@@ -141,7 +143,8 @@ class OrderDetailScreen extends ConsumerWidget {
                   ),
                 );
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
+                showAppSnackBar(
+                  context,
                   const SnackBar(
                     content: Text(
                       'Không thể hủy đơn hàng lúc này. Vui lòng thử lại.',
@@ -432,7 +435,8 @@ class OrderDetailScreen extends ConsumerWidget {
                       Clipboard.setData(
                         ClipboardData(text: shipping.trackingNumber!),
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      showAppSnackBar(
+                        context,
                         const SnackBar(
                           content: Row(
                             children: [

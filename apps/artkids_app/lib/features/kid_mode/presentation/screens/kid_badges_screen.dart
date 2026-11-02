@@ -6,6 +6,7 @@ import '../../domain/entities/achievement_badge.dart';
 import '../providers/kid_badges_notifier.dart';
 import '../widgets/badge_card_widget.dart';
 import '../widgets/badge_detail_dialog.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình Bộ sưu tập 20 Huy Hiệu Thành Tích của bé — Kid Mode
 class KidBadgesScreen extends ConsumerWidget {
@@ -318,7 +319,8 @@ class KidBadgesScreen extends ConsumerWidget {
   }
 
   void _showUnlockToast(BuildContext context, AchievementBadge badge) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    showAppSnackBar(
+      context,
       SnackBar(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         behavior: SnackBarBehavior.floating,

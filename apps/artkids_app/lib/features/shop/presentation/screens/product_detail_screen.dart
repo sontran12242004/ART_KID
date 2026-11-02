@@ -10,6 +10,7 @@ import '../../domain/enums/product_category.dart';
 import '../providers/cart_provider.dart';
 import '../providers/shop_catalog_provider.dart';
 import '../widgets/cart_badge_icon.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình Chi tiết Sản phẩm học cụ — Parent Mode
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -652,7 +653,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                 );
                             if (!context.mounted) return;
                             if (!ok) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              showAppSnackBar(
+                                context,
                                 SnackBar(
                                   content: Text(
                                     ref.read(cartSyncErrorProvider) ??
@@ -662,7 +664,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               );
                               return;
                             }
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            showAppSnackBar(
+                              context,
                               SnackBar(
                                 content: Row(
                                   children: [
@@ -688,6 +691,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   onPressed: () =>
                                       context.push(RoutePaths.parentShopCart),
                                 ),
+                                // Action snack bars otherwise persist past their duration.
+                                persist: false,
                                 backgroundColor: const Color(0xFF27AE60),
                                 behavior: SnackBarBehavior.floating,
                                 duration: const Duration(seconds: 2),

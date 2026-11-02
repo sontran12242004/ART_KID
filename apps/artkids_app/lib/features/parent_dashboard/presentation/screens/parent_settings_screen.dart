@@ -8,6 +8,7 @@ import '../../domain/entities/avatar_preset.dart';
 import '../providers/parent_profile_provider.dart';
 import '../widgets/app_avatar_widget.dart';
 import '../widgets/avatar_picker_bottom_sheet.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình Cài Đặt & Quản Lý Thông Tin Phụ Huynh & Bé (Cho phép đổi Avatar)
 class ParentSettingsScreen extends ConsumerStatefulWidget {
@@ -123,7 +124,8 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
 
     if (mounted) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Row(
             children: [
