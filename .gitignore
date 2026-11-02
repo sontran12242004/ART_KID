@@ -158,3 +158,4 @@ backend/**/appsettings.Local.json
 __pycache__/
 *.py[cod]
 .tools/
+.vercel/
