@@ -8,6 +8,7 @@ import '../../domain/entities/avatar_preset.dart';
 import '../providers/parent_profile_provider.dart';
 import '../widgets/app_avatar_widget.dart';
 import '../widgets/avatar_picker_bottom_sheet.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình Cài Đặt & Quản Lý Thông Tin Phụ Huynh & Bé (Cho phép đổi Avatar)
 class ParentSettingsScreen extends ConsumerStatefulWidget {
@@ -123,15 +124,18 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
 
     if (mounted) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Row(
             children: [
               Icon(Icons.check_circle_rounded, color: Colors.white),
               SizedBox(width: 10),
-              Text(
-                'Đã cập nhật thông tin và avatar thành công!',
-                style: TextStyle(fontWeight: FontWeight.w600),
+              Expanded(
+                child: Text(
+                  'Đã cập nhật thông tin và avatar thành công!',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),

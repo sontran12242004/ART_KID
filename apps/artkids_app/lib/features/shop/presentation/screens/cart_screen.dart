@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/routing/route_paths.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cart_item_tile.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình giỏ hàng học cụ
 class CartScreen extends ConsumerWidget {
@@ -26,9 +27,7 @@ class CartScreen extends ConsumerWidget {
     final subtotal = ref.watch(cartSubtotalVndProvider);
     ref.listen(cartSyncErrorProvider, (_, error) {
       if (error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
+        showAppSnackBar(context, SnackBar(content: Text(error)));
       }
     });
 

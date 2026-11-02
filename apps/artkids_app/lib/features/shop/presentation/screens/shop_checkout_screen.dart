@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/routing/route_paths.dart';
+import '../../../../core/network/api_interceptor.dart';
 import '../../../orders/data/repositories/order_repository.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 import '../../../orders/domain/entities/order_item_entity.dart';
@@ -20,6 +21,7 @@ import '../../data/models/voucher.dart';
 import '../../data/repositories/voucher_repository.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/voucher_selection_sheet.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 enum PaymentMethodOption {
   vietQr(
@@ -923,7 +925,8 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
         _voucherCodeController.text = voucher.code;
         setState(() => _voucherError = null);
         final discount = voucher.calculateDiscount(subtotal);
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           SnackBar(
             content: Row(
               children: [
@@ -948,7 +951,8 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
     ref.read(appliedVoucherProvider.notifier).state = null;
     _voucherCodeController.clear();
     setState(() => _voucherError = null);
-    ScaffoldMessenger.of(context).showSnackBar(
+    showAppSnackBar(
+      context,
       const SnackBar(
         content: Text('Đã gỡ mã giảm giá.'),
         backgroundColor: Color(0xFF5A6B7C),
@@ -985,7 +989,8 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
           _voucherError = null;
           _isValidatingVoucher = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           SnackBar(
             content: Row(
               children: [
@@ -1011,7 +1016,7 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _voucherError = 'Không thể kiểm tra mã lúc này: $e';
+        _voucherError = 'Không thể kiểm tra mã lúc này: ${apiError(e)}';
         _isValidatingVoucher = false;
       });
     }
@@ -1377,7 +1382,8 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(
           content: Row(
             children: [
@@ -1399,9 +1405,10 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
       context.pushReplacement('${RoutePaths.parentOrders}/${createdOrder.id}');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(
-          content: Text('Lỗi khi đặt đơn hàng: $e'),
+          content: Text('Lỗi khi đặt đơn hàng: ${apiError(e)}'),
           backgroundColor: const Color(0xFFE74C3C),
         ),
       );

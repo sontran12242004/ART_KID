@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_interceptor.dart';
 import '../providers/auth_provider.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -36,7 +37,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             displayName: name.text.trim(),
           );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           const SnackBar(
             content: Text(
               'Tạo tài khoản thành công. Hãy đăng nhập và thêm hồ sơ bé.',
@@ -47,9 +49,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(apiError(e))));
+        showAppSnackBar(context, SnackBar(content: Text(apiError(e))));
       }
     } finally {
       if (mounted) setState(() => busy = false);
