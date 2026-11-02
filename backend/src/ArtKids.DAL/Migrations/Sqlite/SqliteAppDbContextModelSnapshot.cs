@@ -1466,6 +1466,10 @@ namespace ArtKids.DAL.Migrations.Sqlite
                         .HasColumnType("INTEGER")
                         .HasColumnName("quantity");
 
+                    b.Property<string>("SellerId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("seller_id");
+
                     b.Property<string>("ThumbnailUrl")
                         .HasColumnType("TEXT")
                         .HasColumnName("thumbnail_url");
@@ -1490,6 +1494,8 @@ namespace ArtKids.DAL.Migrations.Sqlite
                     b.HasIndex("PlanId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("SellerId", "OrderId");
 
                     b.ToTable("order_items", null, t =>
                         {
@@ -1745,6 +1751,13 @@ namespace ArtKids.DAL.Migrations.Sqlite
                         .HasColumnType("TEXT")
                         .HasColumnName("id");
 
+                    b.Property<string>("ApprovalStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("approved")
+                        .HasColumnName("approval_status");
+
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("TEXT")
@@ -1768,6 +1781,13 @@ namespace ArtKids.DAL.Migrations.Sqlite
                         .HasColumnType("TEXT")
                         .HasColumnName("description");
 
+                    b.Property<string>("FulfillmentMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("platform")
+                        .HasColumnName("fulfillment_mode");
+
                     b.PrimitiveCollection<string>("Images")
                         .IsRequired()
                         .HasColumnType("TEXT")
@@ -1776,6 +1796,12 @@ namespace ArtKids.DAL.Migrations.Sqlite
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER")
                         .HasColumnName("is_active");
+
+                    b.Property<bool>("IsAvailable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_available");
 
                     b.PrimitiveCollection<string>("KitItems")
                         .IsRequired()
@@ -1804,6 +1830,25 @@ namespace ArtKids.DAL.Migrations.Sqlite
                         .HasColumnType("TEXT")
                         .HasColumnName("recommended_subscription_plan_id");
 
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<string>("ReviewedBy")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("reviewed_by");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(1)
+                        .HasColumnName("revision");
+
                     b.Property<int>("SoldCount")
                         .HasColumnType("INTEGER")
                         .HasColumnName("sold_count");
@@ -1820,6 +1865,10 @@ namespace ArtKids.DAL.Migrations.Sqlite
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("RecommendedSubscriptionPlanId");
+
+                    b.HasIndex("ReviewedBy");
+
+                    b.HasIndex("FulfillmentMode", "ApprovalStatus");
 
                     b.ToTable("products", (string)null);
                 });
@@ -1861,6 +1910,59 @@ namespace ArtKids.DAL.Migrations.Sqlite
                     b.HasIndex("UserId");
 
                     b.ToTable("refresh_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("ArtKids.DAL.Entities.SellerFulfillment", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Carrier")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("carrier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("delivered_at");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("SellerId")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("seller_id");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("shipped_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("tracking_number");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SellerId");
+
+                    b.HasIndex("OrderId", "SellerId")
+                        .IsUnique();
+
+                    b.ToTable("seller_fulfillments", (string)null);
                 });
 
             modelBuilder.Entity("ArtKids.DAL.Entities.SubmissionReview", b =>
@@ -2596,6 +2698,11 @@ namespace ArtKids.DAL.Migrations.Sqlite
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ArtKids.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("ArtKids.DAL.Entities.OrderShippingInfo", b =>
@@ -2657,6 +2764,11 @@ namespace ArtKids.DAL.Migrations.Sqlite
                         .WithMany()
                         .HasForeignKey("RecommendedSubscriptionPlanId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ArtKids.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("ArtKids.DAL.Entities.RefreshToken", b =>
@@ -2664,6 +2776,21 @@ namespace ArtKids.DAL.Migrations.Sqlite
                     b.HasOne("ArtKids.DAL.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ArtKids.DAL.Entities.SellerFulfillment", b =>
+                {
+                    b.HasOne("ArtKids.DAL.Entities.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ArtKids.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

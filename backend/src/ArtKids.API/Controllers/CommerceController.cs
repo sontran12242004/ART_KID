@@ -20,7 +20,7 @@ public sealed class CommerceController(CommerceService service) : ControllerBase
         return Ok(await service.Products(page, pageSize, search, category, courseId));
     }
 
-    [HttpPost("courses/{courseId}/products"), Authorize(Roles = "admin,instructor")]
+    [HttpPost("courses/{courseId}/products"), Authorize(Roles = "instructor")]
     public async Task<IActionResult> CreateCourseProduct(string courseId, CourseProductRequest r)
     {
         return Ok(await service.CreateCourseProduct(courseId, r));
@@ -38,7 +38,7 @@ public sealed class CommerceController(CommerceService service) : ControllerBase
         return Ok(await service.CourseProducts(courseId));
     }
 
-    [HttpPut("courses/{courseId}/products/{productId}"), Authorize(Roles = "admin,instructor")]
+    [HttpPut("courses/{courseId}/products/{productId}"), Authorize(Roles = "instructor")]
     public async Task<IActionResult> UpdateCourseProduct(
         string courseId,
         string productId,
@@ -48,7 +48,7 @@ public sealed class CommerceController(CommerceService service) : ControllerBase
         return Ok(await service.UpdateCourseProduct(courseId, productId, r));
     }
 
-    [HttpDelete("courses/{courseId}/products/{productId}"), Authorize(Roles = "admin,instructor")]
+    [HttpDelete("courses/{courseId}/products/{productId}"), Authorize(Roles = "instructor")]
     public async Task<IActionResult> DeleteCourseProduct(string courseId, string productId)
     {
         await service.DeleteCourseProduct(courseId, productId);

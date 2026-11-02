@@ -12,6 +12,7 @@ import '../widgets/order_items_section.dart';
 import '../widgets/order_payment_summary.dart';
 import '../widgets/order_status_badge.dart';
 import '../widgets/order_tracking_timeline.dart';
+import '../widgets/seller_delivery_progress_card.dart';
 
 /// Màn hình Chi tiết Đơn hàng — Phục vụ phụ huynh quản lý & theo dõi học cụ
 class OrderDetailScreen extends ConsumerWidget {
@@ -40,6 +41,13 @@ class OrderDetailScreen extends ConsumerWidget {
           ),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Cập nhật tiến độ',
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.invalidate(orderDetailProvider(orderId)),
+          ),
+        ],
         title: const Text(
           'Chi Tiết Đơn Hàng',
           style: TextStyle(
@@ -71,6 +79,13 @@ class OrderDetailScreen extends ConsumerWidget {
               children: [
                 // a. Header trạng thái (Badge lớn, Mã đơn, Ngày đặt, Dự kiến giao)
                 _buildStatusHeader(context, order),
+                if (order.awaitingMarketplacePayment)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Đơn marketplace đang chờ xác minh tiền chuyển khoản. Bên nhận tiền và quy trình xác minh chưa được thống nhất; chưa thể giao hàng.',
+                    ),
+                  ),
                 const SizedBox(height: 16),
 
                 // b. Timeline theo dõi tiến trình
@@ -81,6 +96,10 @@ class OrderDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
+                if (order.sellerProgress.isNotEmpty) ...[
+                  SellerDeliveryProgressCard(progress: order.sellerProgress),
+                  const SizedBox(height: 16),
+                ],
                 // c. Danh sách sản phẩm & Chi tiết bên trong kit
                 OrderItemsSection(items: order.items),
                 const SizedBox(height: 16),
@@ -185,6 +204,14 @@ class OrderDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 14),
 
+          if (order.status == OrderStatus.delivered &&
+              order.sellerProgress.isNotEmpty) ...[
+            const Text(
+              'Trạng thái giao học cụ do giảng viên báo, chưa được hãng vận chuyển xác minh.',
+            ),
+            const SizedBox(height: 12),
+          ],
+
           // Ngày đặt hàng
           Row(
             children: [
@@ -195,7 +222,7 @@ class OrderDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Đặt ngày: ${_dateFormat.format(order.createdAt)}',
+                'Đặt ngày: ${_dateFormat.format(order.createdAt.toLocal())}',
                 style: const TextStyle(
                   fontSize: 13,
                   color: Color(0xFF57606F),

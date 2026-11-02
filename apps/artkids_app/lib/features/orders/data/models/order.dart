@@ -1,3 +1,4 @@
+import '../../domain/entities/seller_delivery_progress.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/enums/order_status.dart';
 import '../../domain/enums/order_type.dart';
@@ -24,7 +25,10 @@ class OrderModel extends OrderEntity {
     super.voucherCode,
     required super.totalAmountVnd,
     super.trackingEvents,
+    super.sellerProgress,
     super.cancelReason,
+    super.cancellationAllowed,
+    super.awaitingMarketplacePayment,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -48,6 +52,12 @@ class OrderModel extends OrderEntity {
         .toList();
 
     return OrderModel(
+      cancellationAllowed:
+          json['can_cancel'] as bool? ?? json['canCancel'] as bool?,
+      awaitingMarketplacePayment:
+          json['awaiting_marketplace_payment'] as bool? ??
+          json['awaitingMarketplacePayment'] as bool? ??
+          false,
       id: json['id'] as String? ?? '',
       orderCode:
           json['order_code'] as String? ??
@@ -89,6 +99,32 @@ class OrderModel extends OrderEntity {
           (json['total'] as num?)?.toInt() ??
           0,
       trackingEvents: trackingEvents,
+      sellerProgress:
+          (json['seller_progress'] as List? ??
+                  json['sellerProgress'] as List? ??
+                  [])
+              .map((raw) {
+                final p = Map<String, dynamic>.from(raw as Map);
+                DateTime? time(String snake, String camel) =>
+                    DateTime.tryParse((p[snake] ?? p[camel]) as String? ?? '');
+                return SellerDeliveryProgress(
+                  sellerId: (p['seller_id'] ?? p['sellerId']) as String? ?? '',
+                  sellerName:
+                      (p['seller_name'] ?? p['sellerName']) as String? ??
+                      'Giảng viên',
+                  status: p['status'] as String? ?? '',
+                  itemTitles:
+                      ((p['item_titles'] ?? p['itemTitles']) as List? ?? [])
+                          .map((t) => t.toString())
+                          .toList(),
+                  carrier: p['carrier'] as String?,
+                  trackingNumber:
+                      (p['tracking_number'] ?? p['trackingNumber']) as String?,
+                  shippedAt: time('shipped_at', 'shippedAt'),
+                  deliveredAt: time('delivered_at', 'deliveredAt'),
+                );
+              })
+              .toList(),
       cancelReason:
           json['cancel_reason'] as String? ?? json['cancelReason'] as String?,
     );
@@ -97,6 +133,8 @@ class OrderModel extends OrderEntity {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      if (cancellationAllowed != null) 'can_cancel': cancellationAllowed,
+      'awaiting_marketplace_payment': awaitingMarketplacePayment,
       'order_code': orderCode,
       'created_at': createdAt.toIso8601String(),
       'status': status.value,
@@ -139,6 +177,20 @@ class OrderModel extends OrderEntity {
       'discount_vnd': discountVnd,
       if (voucherCode != null) 'voucher_code': voucherCode,
       'total_amount_vnd': totalAmountVnd,
+      'seller_progress': sellerProgress
+          .map(
+            (p) => {
+              'seller_id': p.sellerId,
+              'seller_name': p.sellerName,
+              'status': p.status,
+              'item_titles': p.itemTitles,
+              'carrier': p.carrier,
+              'tracking_number': p.trackingNumber,
+              'shipped_at': p.shippedAt?.toIso8601String(),
+              'delivered_at': p.deliveredAt?.toIso8601String(),
+            },
+          )
+          .toList(),
       'tracking_events': trackingEvents
           .map(
             (e) =>

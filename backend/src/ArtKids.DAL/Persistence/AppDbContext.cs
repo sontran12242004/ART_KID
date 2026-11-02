@@ -122,6 +122,17 @@ public abstract class AppDbContext(DbContextOptions options) : DbContext(options
         F<Product, Course>("CourseId");
         F<Product, SubscriptionPlan>("RecommendedSubscriptionPlanId");
         F<Product, User>("CreatedBy");
+        F<Product, User>("ReviewedBy");
+        F<OrderItem, User>("SellerId");
+        F<SellerFulfillment, Order>("OrderId");
+        F<SellerFulfillment, User>("SellerId");
+        b.Entity<SellerFulfillment>().HasIndex(x => new { x.OrderId, x.SellerId }).IsUnique();
+        b.Entity<OrderItem>().HasIndex(x => new { x.SellerId, x.OrderId });
+        b.Entity<Product>().HasIndex(x => new { x.FulfillmentMode, x.ApprovalStatus });
+        b.Entity<Product>().Property(x => x.ApprovalStatus).HasDefaultValue("approved");
+        b.Entity<Product>().Property(x => x.FulfillmentMode).HasDefaultValue("platform");
+        b.Entity<Product>().Property(x => x.IsAvailable).HasDefaultValue(true);
+        b.Entity<Product>().Property(x => x.Revision).HasDefaultValue(1);
         F<Cart, User>("ParentId");
         F<CartItem, Cart>("CartId");
         F<CartItem, Product>("ProductId");

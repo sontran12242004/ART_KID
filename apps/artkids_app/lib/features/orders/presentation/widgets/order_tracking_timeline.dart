@@ -135,7 +135,9 @@ class OrderTrackingTimeline extends StatelessWidget {
                                 ),
                                 if (event.timestamp != null)
                                   Text(
-                                    _dateFormat.format(event.timestamp!),
+                                    _dateFormat.format(
+                                      event.timestamp!.toLocal(),
+                                    ),
                                     style: const TextStyle(
                                       fontSize: 11.5,
                                       color: Color(0xFF7F8C8D),

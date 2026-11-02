@@ -157,3 +157,4 @@ backend/**/appsettings.Local.json
 *.pid.lock
 __pycache__/
 *.py[cod]
+.tools/

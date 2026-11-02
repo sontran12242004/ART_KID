@@ -1471,6 +1471,10 @@ namespace ArtKids.DAL.Migrations.Postgres
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
 
+                    b.Property<string>("SellerId")
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("seller_id");
+
                     b.Property<string>("ThumbnailUrl")
                         .HasColumnType("text")
                         .HasColumnName("thumbnail_url");
@@ -1495,6 +1499,8 @@ namespace ArtKids.DAL.Migrations.Postgres
                     b.HasIndex("PlanId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("SellerId", "OrderId");
 
                     b.ToTable("order_items", null, t =>
                         {
@@ -1750,6 +1756,13 @@ namespace ArtKids.DAL.Migrations.Postgres
                         .HasColumnType("character varying(64)")
                         .HasColumnName("id");
 
+                    b.Property<string>("ApprovalStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("approved")
+                        .HasColumnName("approval_status");
+
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("text")
@@ -1773,6 +1786,13 @@ namespace ArtKids.DAL.Migrations.Postgres
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<string>("FulfillmentMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("platform")
+                        .HasColumnName("fulfillment_mode");
+
                     b.PrimitiveCollection<string>("Images")
                         .IsRequired()
                         .HasColumnType("text")
@@ -1781,6 +1801,12 @@ namespace ArtKids.DAL.Migrations.Postgres
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
+
+                    b.Property<bool>("IsAvailable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_available");
 
                     b.PrimitiveCollection<string>("KitItems")
                         .IsRequired()
@@ -1809,6 +1835,25 @@ namespace ArtKids.DAL.Migrations.Postgres
                         .HasColumnType("character varying(64)")
                         .HasColumnName("recommended_subscription_plan_id");
 
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<string>("ReviewedBy")
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("reviewed_by");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("revision");
+
                     b.Property<int>("SoldCount")
                         .HasColumnType("integer")
                         .HasColumnName("sold_count");
@@ -1825,6 +1870,10 @@ namespace ArtKids.DAL.Migrations.Postgres
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("RecommendedSubscriptionPlanId");
+
+                    b.HasIndex("ReviewedBy");
+
+                    b.HasIndex("FulfillmentMode", "ApprovalStatus");
 
                     b.ToTable("products", (string)null);
                 });
@@ -1866,6 +1915,59 @@ namespace ArtKids.DAL.Migrations.Postgres
                     b.HasIndex("UserId");
 
                     b.ToTable("refresh_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("ArtKids.DAL.Entities.SellerFulfillment", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Carrier")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("carrier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("delivered_at");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("SellerId")
+                        .IsRequired()
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("seller_id");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("shipped_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("tracking_number");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SellerId");
+
+                    b.HasIndex("OrderId", "SellerId")
+                        .IsUnique();
+
+                    b.ToTable("seller_fulfillments", (string)null);
                 });
 
             modelBuilder.Entity("ArtKids.DAL.Entities.SubmissionReview", b =>
@@ -2601,6 +2703,11 @@ namespace ArtKids.DAL.Migrations.Postgres
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ArtKids.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("ArtKids.DAL.Entities.OrderShippingInfo", b =>
@@ -2662,6 +2769,11 @@ namespace ArtKids.DAL.Migrations.Postgres
                         .WithMany()
                         .HasForeignKey("RecommendedSubscriptionPlanId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ArtKids.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("ArtKids.DAL.Entities.RefreshToken", b =>
@@ -2669,6 +2781,21 @@ namespace ArtKids.DAL.Migrations.Postgres
                     b.HasOne("ArtKids.DAL.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ArtKids.DAL.Entities.SellerFulfillment", b =>
+                {
+                    b.HasOne("ArtKids.DAL.Entities.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ArtKids.DAL.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

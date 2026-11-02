@@ -1,3 +1,5 @@
+import '../../features/connected/presentation/marketplace_screens.dart';
+import '../../features/connected/presentation/seller_order_screens.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/connected/presentation/family_screens.dart';
 import '../../features/connected/presentation/learning_screens.dart';
@@ -60,6 +62,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       if (user.role == 'parent' && state.uri.path.startsWith('/staff')) {
         return '/parent';
       }
+      final path = state.uri.path;
+      final reviewRoute = path.startsWith('/staff/marketplace/reviews');
+      final sellerRoute =
+          path.startsWith('/staff/marketplace') && !reviewRoute ||
+          path.startsWith('/staff/courses/') && path.endsWith('/products/new');
+      if (reviewRoute && user.role != 'admin' ||
+          sellerRoute && user.role != 'instructor' ||
+          path == '/staff/orders' && user.role != 'admin') {
+        return '/staff';
+      }
       if (user.role == 'parent' &&
           state.uri.path.startsWith('/kid') &&
           ref.read(authProvider).selectedChild == null) {
@@ -68,6 +80,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/staff/marketplace',
+        builder: (_, _) => const MarketplaceListingsScreen(),
+      ),
+      GoRoute(
+        path: '/staff/marketplace/new',
+        builder: (_, _) => const CourseProductPublishScreen(),
+      ),
+      GoRoute(
+        path: '/staff/marketplace/listings/:id',
+        builder: (_, s) =>
+            MarketplaceListingDetail(id: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/staff/marketplace/reviews',
+        builder: (_, _) => const MarketplaceListingsScreen(review: true),
+      ),
+      GoRoute(
+        path: '/staff/marketplace/reviews/:id',
+        builder: (_, s) =>
+            MarketplaceListingDetail(id: s.pathParameters['id']!, review: true),
+      ),
+      GoRoute(
+        path: '/staff/marketplace/orders',
+        builder: (_, _) => const SellerOrdersScreen(),
+      ),
+      GoRoute(
+        path: '/staff/marketplace/orders/:id',
+        builder: (_, s) => SellerOrderDetailScreen(id: s.pathParameters['id']!),
+      ),
       GoRoute(path: '/staff', builder: (_, _) => const StaffWorkspace()),
       GoRoute(
         path: '/staff/grading',

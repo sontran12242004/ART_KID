@@ -7,20 +7,19 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/network/api_interceptor.dart';
 import '../../../core/network/dio_client.dart';
 import '../../shop/presentation/providers/shop_catalog_provider.dart';
+import '../../auth/presentation/providers/auth_provider.dart';
 import '../data/connected_api.dart';
 import 'widgets.dart';
 
 class CourseProductPublishScreen extends ConsumerStatefulWidget {
   const CourseProductPublishScreen({
     super.key,
-    required this.courseId,
+    this.courseId,
     this.product,
-    this.quantityAvailable = 0,
     this.onSaved,
   });
-  final String courseId;
+  final String? courseId;
   final Map<String, dynamic>? product;
-  final int quantityAvailable;
   final VoidCallback? onSaved;
 
   @override
@@ -34,7 +33,8 @@ class _CourseProductPublishState
   final _title = TextEditingController();
   final _price = TextEditingController();
   final _description = TextEditingController();
-  final _quantity = TextEditingController(text: '1');
+  bool _available = true;
+  String? _courseId;
   Uint8List? _image;
   String _filename = 'product.png';
   String? _assetId;
@@ -44,12 +44,14 @@ class _CourseProductPublishState
   @override
   void initState() {
     super.initState();
+    _courseId = widget.courseId;
     final product = widget.product;
     if (product != null) {
       _title.text = product['name'] as String;
       _price.text = '${product['priceVnd']}';
       _description.text = product['description'] as String;
-      _quantity.text = '${widget.quantityAvailable}';
+      _available = product['isAvailable'] as bool? ?? true;
+      _courseId = product['courseId'] as String?;
     }
   }
 
@@ -58,7 +60,6 @@ class _CourseProductPublishState
     _title.dispose();
     _price.dispose();
     _description.dispose();
-    _quantity.dispose();
     super.dispose();
   }
 
@@ -101,25 +102,23 @@ class _CourseProductPublishState
         _assetId = media.data['id'] as String;
       }
       await dio.request(
-        '/courses/${widget.courseId}/products${_editing ? '/${widget.product!['id']}' : ''}',
+        '/marketplace/listings${_editing ? '/${widget.product!['id']}' : ''}',
         options: Options(method: _editing ? 'PUT' : 'POST'),
         data: {
           'name': _title.text.trim(),
           'priceVnd': int.parse(_price.text.trim()),
           'description': _description.text.trim(),
           if (_assetId != null) 'imageAssetId': _assetId,
-          'quantityAvailable': int.parse(_quantity.text.trim()),
-          if (_editing) 'expectedQuantityAvailable': widget.quantityAvailable,
+          'courseId': _courseId,
+          'isAvailable': _available,
+          if (_editing) 'expectedRevision': widget.product!['revision'],
         },
       );
       if (!mounted) return;
       ref.invalidate(apiDataProvider);
       ref.invalidate(shopCatalogProvider);
       ref.invalidate(productDetailProvider);
-      toast(
-        context,
-        _editing ? 'Đã cập nhật học cụ.' : 'Đã đăng bán học cụ trong cửa hàng.',
-      );
+      toast(context, 'Đã gửi học cụ để quản trị viên duyệt.');
       if (widget.onSaved != null) {
         widget.onSaved!();
       } else if (context.canPop()) {
@@ -155,16 +154,56 @@ class _CourseProductPublishState
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              ApiView(
-                path: '/courses/${widget.courseId}',
-                builder: (course) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.school),
-                  title: Text(course['title']),
-                  subtitle: const Text(
-                    'Học cụ được bán riêng và gắn với khóa học này.',
-                  ),
+              const Text(
+                'Mọi thay đổi đều cần quản trị viên duyệt trước khi hiển thị. Bạn tự chuẩn bị hàng và sắp xếp vận chuyển.',
+              ),
+              if (_editing) ...[
+                Text(
+                  'Trạng thái: ${listingStatus(widget.product!['approvalStatus'])}',
                 ),
+                if (widget.product!['rejectionReason'] != null)
+                  Text('Lý do từ chối: ${widget.product!['rejectionReason']}'),
+              ],
+              ApiView(
+                path: '/courses?pageSize=100',
+                builder: (data) {
+                  final courses = (data['items'] as List)
+                      .where(
+                        (c) =>
+                            c['instructorId'] ==
+                            ref.watch(authProvider).currentUser?.id,
+                      )
+                      .toList();
+                  return DropdownButtonFormField<String>(
+                    initialValue: courses.any((c) => c['id'] == _courseId)
+                        ? _courseId
+                        : null,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Loại học cụ / khóa học',
+                    ),
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: '',
+                        child: Text('Dụng cụ bán độc lập'),
+                      ),
+                      for (final c in courses)
+                        DropdownMenuItem<String>(
+                          value: c['id'] as String,
+                          child: Text(
+                            c['title'] as String,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                    onChanged: _busy
+                        ? null
+                        : (value) => setState(
+                            () => _courseId = value == '' ? null : value,
+                          ),
+                    hint: const Text('Dụng cụ bán độc lập'),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               if (_image != null) ...[
@@ -190,14 +229,11 @@ class _CourseProductPublishState
                   _editing &&
                   (widget.product!['thumbnailUrl'] as String? ?? '')
                       .isNotEmpty) ...[
-                Image.network(
-                  Uri.parse(
-                    ref.read(dioProvider).options.baseUrl,
-                  ).resolve(widget.product!['thumbnailUrl']).toString(),
+                PrivateImage(
+                  assetId: Uri.parse(
+                    widget.product!['thumbnailUrl'] as String,
+                  ).pathSegments.last,
                   height: 200,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, _, _) =>
-                      const Icon(Icons.image_not_supported_outlined, size: 64),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -255,23 +291,17 @@ class _CourseProductPublishState
                     : null,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _quantity,
-                enabled: !_busy,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Số lượng có sẵn',
-                  helperText: 'Số lượng học cụ có thể đặt mua ngay.',
-                  border: OutlineInputBorder(),
+              SwitchListTile(
+                title: const Text('Còn hàng'),
+                subtitle: Text(
+                  _available
+                      ? 'Có thể nhận đơn sau khi được duyệt'
+                      : 'Hết hàng',
                 ),
-                validator: (value) {
-                  final quantity = int.tryParse(value?.trim() ?? '');
-                  return quantity == null ||
-                          quantity < (_editing ? 0 : 1) ||
-                          quantity > 1000000
-                      ? 'Nhập số lượng từ ${_editing ? 0 : 1} đến 1.000.000.'
-                      : null;
-                },
+                value: _available,
+                onChanged: _busy
+                    ? null
+                    : (value) => setState(() => _available = value),
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
@@ -290,8 +320,8 @@ class _CourseProductPublishState
                   _busy
                       ? 'Đang lưu…'
                       : _editing
-                      ? 'Lưu thay đổi'
-                      : 'Đăng bán học cụ',
+                      ? 'Gửi duyệt lại'
+                      : 'Gửi duyệt',
                 ),
               ),
             ],
@@ -352,7 +382,7 @@ class _CourseProductsManagerState extends ConsumerState<CourseProductsManager> {
     try {
       await ref
           .read(dioProvider)
-          .delete('/courses/${widget.courseId}/products/${product['id']}');
+          .delete('/marketplace/listings/${product['id']}');
       if (!mounted) return;
       ref.invalidate(apiDataProvider);
       ref.invalidate(shopCatalogProvider);
@@ -377,7 +407,6 @@ class _CourseProductsManagerState extends ConsumerState<CourseProductsManager> {
           child: CourseProductPublishScreen(
             courseId: widget.courseId,
             product: Map<String, dynamic>.from(entry['product']),
-            quantityAvailable: entry['quantityAvailable'] as int,
             onSaved: () => Navigator.of(editorContext).pop(),
           ),
         ),
@@ -411,9 +440,12 @@ class _CourseProductsManagerState extends ConsumerState<CourseProductsManager> {
       const Divider(height: 1),
       Expanded(
         child: ApiView(
-          path: '/courses/${widget.courseId}/products',
+          path:
+              '/marketplace/listings?courseId=${widget.courseId}&pageSize=100',
           builder: (data) {
-            final entries = data as List;
+            final entries = (data['items'] as List)
+                .map((p) => {'product': p})
+                .toList();
             if (entries.isEmpty) {
               return const Center(
                 child: Text('Khóa học chưa có học cụ đang bán.'),
@@ -440,37 +472,16 @@ class _CourseProductsManagerState extends ConsumerState<CourseProductsManager> {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: imageUrl.isEmpty
-                                        ? const SizedBox(
-                                            width: 96,
-                                            height: 96,
-                                            child: Icon(
-                                              Icons.inventory_2_outlined,
-                                            ),
-                                          )
-                                        : Image.network(
-                                            Uri.parse(
-                                              ref
-                                                  .read(dioProvider)
-                                                  .options
-                                                  .baseUrl,
-                                            ).resolve(imageUrl).toString(),
-                                            width: 96,
-                                            height: 96,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, _, _) =>
-                                                const SizedBox(
-                                                  width: 96,
-                                                  height: 96,
-                                                  child: Icon(
-                                                    Icons
-                                                        .image_not_supported_outlined,
-                                                  ),
-                                                ),
-                                          ),
-                                  ),
+                                  if (imageUrl.isNotEmpty)
+                                    SizedBox(
+                                      width: 96,
+                                      child: PrivateImage(
+                                        assetId: Uri.parse(
+                                          imageUrl,
+                                        ).pathSegments.last,
+                                        height: 96,
+                                      ),
+                                    ),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
@@ -492,12 +503,11 @@ class _CourseProductsManagerState extends ConsumerState<CourseProductsManager> {
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
-                                          'Có sẵn: ${entry['quantityAvailable']}',
+                                          '${product['isAvailable'] == true ? 'Còn hàng' : 'Hết hàng'} · ${listingStatus(product['approvalStatus'])}',
                                         ),
-                                        if ((entry['quantityReserved'] as int) >
-                                            0)
+                                        if (product['rejectionReason'] != null)
                                           Text(
-                                            'Đang giữ cho đơn: ${entry['quantityReserved']}',
+                                            'Lý do từ chối: ${product['rejectionReason']}',
                                           ),
                                       ],
                                     ),
@@ -603,3 +613,11 @@ class CourseProductsScreen extends ConsumerWidget {
     ),
   );
 }
+
+String listingStatus(dynamic status) =>
+    const {
+      'pending': 'Chờ duyệt',
+      'approved': 'Đã duyệt',
+      'rejected': 'Bị từ chối',
+    }[status] ??
+    '$status';

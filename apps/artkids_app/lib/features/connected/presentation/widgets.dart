@@ -25,6 +25,7 @@ String statusLabel(dynamic value) =>
       'delivered': 'Đã giao',
       'cancelled': 'Đã hủy',
       'pending': 'Chờ thanh toán',
+      'pending_payment': 'Chờ xác minh thanh toán',
       'paid': 'Đã thanh toán',
       'cod': 'Trả khi nhận hàng',
       'pending_review': 'Chờ giáo viên chấm',

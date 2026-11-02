@@ -6,8 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArtKids.BLL.Services;
 
-public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
-    : ServiceBase(store, actor)
+public sealed class CommerceService(
+    IUnitOfWork store,
+    ICurrentUser actor,
+    MarketplaceService marketplace
+) : ServiceBase(store, actor)
 {
     public async Task<object> Products(
         int page,
@@ -17,7 +20,7 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
         string? courseId = null
     )
     {
-        var q = Q<Product>().Where(x => x.IsActive || Actor.Role == "admin");
+        var q = Q<Product>().Where(x => x.IsActive && x.ApprovalStatus == "approved");
         if (!string.IsNullOrWhiteSpace(search))
             q = q.Where(x => x.Name.Contains(search));
         if (category is not null && category != "all")
@@ -35,8 +38,10 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 .Select(x => new
                 {
                     product = x,
-                    inStock = Q<InventorySku>()
-                        .Any(s => s.ProductId == x.Id && s.QuantityAvailable > 0),
+                    inStock = x.FulfillmentMode == "seller"
+                        ? x.IsAvailable
+                        : Q<InventorySku>()
+                            .Any(s => s.ProductId == x.Id && s.QuantityAvailable > 0),
                 })
                 .ToListAsync(),
         };
@@ -45,57 +50,30 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
     public async Task<object> Product(string id)
     {
         var p = await Get<Product>(id);
-        Require(p.IsActive || Actor.Role == "admin", "Product not found.", 404);
+        Require(p.IsActive && p.ApprovalStatus == "approved", "Product not found.", 404);
         return new
         {
             product = p,
-            inStock = await Q<InventorySku>()
-                .AnyAsync(x => x.ProductId == id && x.QuantityAvailable > 0),
+            inStock = p.FulfillmentMode == "seller"
+                ? p.IsAvailable
+                : await Q<InventorySku>()
+                    .AnyAsync(x => x.ProductId == id && x.QuantityAvailable > 0),
         };
     }
 
     public Task<Product> CreateCourseProduct(string courseId, CourseProductRequest r)
     {
-        return Store.TransactionAsync(async () =>
-        {
-            await TeachCourse(courseId);
-            var image = await Get<MediaAsset>(r.ImageAssetId);
-            Require(
-                image.Kind == "product_image" && image.OwnerId == Actor.Id,
-                "Choose a product image uploaded by your account.",
-                403
-            );
-            var imageUrl = $"/api/v1/media/products/{image.Id}";
-            Require(
-                !await Q<Product>().AnyAsync(x => x.ThumbnailUrl == imageUrl),
-                "This image has already been used to publish a product.",
-                409
-            );
-            var product = new Product
-            {
-                Name = r.Name.Trim(),
-                Description = r.Description.Trim(),
-                PriceVnd = r.PriceVnd,
-                Category = "course_kit",
-                CourseId = courseId,
-                ThumbnailUrl = imageUrl,
-                Images = [imageUrl],
-                CreatedBy = Actor.Id,
-                IsActive = true,
-            };
-            Add(product);
-            Add(
-                new InventorySku
-                {
-                    ProductId = product.Id,
-                    Sku = $"KIT-{product.Id}",
-                    KitName = product.Name,
-                    QuantityAvailable = r.QuantityAvailable,
-                    WarehouseLocation = "Instructor course kit",
-                }
-            );
-            return product;
-        });
+        return marketplace.Save(
+            null,
+            new SellerListingRequest(
+                r.Name,
+                r.PriceVnd,
+                r.Description,
+                r.ImageAssetId,
+                courseId,
+                r.QuantityAvailable > 0
+            )
+        );
     }
 
     public async Task<Product> SaveProduct(string? id, ProductRequest r)
@@ -110,6 +88,11 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
             "Original price must be nonnegative."
         );
         var p = id is null ? new Product { CreatedBy = Actor.Id } : await Get<Product>(id);
+        Require(
+            p.FulfillmentMode == "platform",
+            "Use the marketplace review workflow for seller listings.",
+            409
+        );
         p.Name = r.Name;
         p.PriceVnd = r.PriceVnd;
         p.OriginalPriceVnd = r.OriginalPriceVnd;
@@ -131,87 +114,61 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
     {
         await TeachCourse(courseId);
         return await Q<Product>()
-            .Where(p => p.CourseId == courseId && p.IsActive)
+            .Where(p =>
+                p.CourseId == courseId
+                && p.IsActive
+                && (Actor.Role == "admin" || p.CreatedBy == Actor.Id)
+            )
             .OrderBy(p => p.Name)
             .Select(p => new
             {
                 product = p,
-                quantityAvailable = Q<InventorySku>()
-                    .Where(s => s.ProductId == p.Id)
-                    .Select(s => s.QuantityAvailable)
-                    .FirstOrDefault(),
-                quantityReserved = Q<InventorySku>()
-                    .Where(s => s.ProductId == p.Id)
-                    .Select(s => s.QuantityReserved)
-                    .FirstOrDefault(),
+                quantityAvailable = p.FulfillmentMode == "seller"
+                    ? (p.IsAvailable ? 1 : 0)
+                    : Q<InventorySku>()
+                        .Where(s => s.ProductId == p.Id)
+                        .Select(s => s.QuantityAvailable)
+                        .FirstOrDefault(),
+                quantityReserved = p.FulfillmentMode == "seller"
+                    ? 0
+                    : Q<InventorySku>()
+                        .Where(s => s.ProductId == p.Id)
+                        .Select(s => s.QuantityReserved)
+                        .FirstOrDefault(),
             })
             .ToListAsync();
     }
 
-    public Task<Product> UpdateCourseProduct(
+    public async Task<Product> UpdateCourseProduct(
         string courseId,
         string productId,
         CourseProductUpdateRequest r
     )
     {
-        return Store.TransactionAsync(async () =>
-        {
-            await TeachCourse(courseId);
-            var product = await Get<Product>(productId);
-            Require(product.CourseId == courseId && product.IsActive, "Product not found.", 404);
-            if (r.ImageAssetId is not null)
-            {
-                var image = await Get<MediaAsset>(r.ImageAssetId);
-                Require(
-                    image.Kind == "product_image" && image.OwnerId == Actor.Id,
-                    "Choose a product image uploaded by your account.",
-                    403
-                );
-                var url = $"/api/v1/media/products/{image.Id}";
-                Require(
-                    !await Q<Product>().AnyAsync(p => p.Id != productId && p.ThumbnailUrl == url),
-                    "This image is already used by another product.",
-                    409
-                );
-                product.ThumbnailUrl = url;
-                product.Images = [url];
-            }
-            var stock = await Q<InventorySku>().SingleOrDefaultAsync(s => s.ProductId == productId);
-            Require(
-                r.ExpectedQuantityAvailable is null
-                    || (stock?.QuantityAvailable ?? 0) == r.ExpectedQuantityAvailable,
-                "Stock has changed. Reload the product before editing.",
-                409
-            );
-            product.Name = r.Name.Trim();
-            product.Description = r.Description.Trim();
-            product.PriceVnd = r.PriceVnd;
-            if (stock is null)
-            {
-                stock = new InventorySku
-                {
-                    ProductId = productId,
-                    Sku = $"KIT-{productId}",
-                    WarehouseLocation = "Instructor course kit",
-                };
-                Add(stock);
-            }
-            stock.KitName = product.Name;
-            stock.QuantityAvailable = r.QuantityAvailable;
-            return product;
-        });
+        await TeachCourse(courseId);
+        var p = await marketplace.Listing(productId);
+        Require(p.CourseId == courseId, "Product not found.", 404);
+        // Legacy numeric stock is interpreted as binary availability; no warehouse record is changed.
+        return await marketplace.Save(
+            productId,
+            new SellerListingRequest(
+                r.Name,
+                r.PriceVnd,
+                r.Description,
+                r.ImageAssetId,
+                courseId,
+                r.QuantityAvailable > 0,
+                p.Revision
+            )
+        );
     }
 
-    public Task<bool> DeleteCourseProduct(string courseId, string productId)
+    public async Task<bool> DeleteCourseProduct(string courseId, string productId)
     {
-        return Store.TransactionAsync(async () =>
-        {
-            await TeachCourse(courseId);
-            var product = await Get<Product>(productId);
-            Require(product.CourseId == courseId && product.IsActive, "Product not found.", 404);
-            product.IsActive = false;
-            return true;
-        });
+        await TeachCourse(courseId);
+        var p = await marketplace.Listing(productId);
+        Require(p.CourseId == courseId, "Product not found.", 404);
+        return await marketplace.Delete(productId);
     }
 
     public async Task<object> Plans()
@@ -269,7 +226,7 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
             items = await (
                 from i in Q<CartItem>()
                 join p in Q<Product>() on i.ProductId equals p.Id
-                where i.CartId == c.Id
+                where i.CartId == c.Id && p.IsActive && p.ApprovalStatus == "approved"
                 select new
                 {
                     i.Id,
@@ -287,7 +244,13 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
         {
             var c = await CartEntity();
             var p = await Get<Product>(r.ProductId);
-            Require(p.IsActive, "Product is unavailable.");
+            if (r.Quantity > 0)
+                Require(
+                    p.IsActive
+                        && p.ApprovalStatus == "approved"
+                        && (p.FulfillmentMode != "seller" || p.IsAvailable),
+                    "Product is unavailable."
+                );
             var item = await Q<CartItem>()
                 .SingleOrDefaultAsync(x => x.CartId == c.Id && x.ProductId == p.Id);
             if (r.Quantity == 0)
@@ -409,6 +372,8 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 PaymentStatus = r.PaymentMethod == "cod" ? "cod" : "pending",
             };
             Add(order);
+            var hasSeller = false;
+            var hasLegacy = false;
             var physical = false;
             var includedDelivery = false;
             foreach (var line in r.Items)
@@ -423,31 +388,49 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 {
                     case "kit":
                         var p = await Get<Product>(line.ItemId);
-                        Require(p.IsActive, "Product is unavailable.");
+                        Require(
+                            p.IsActive
+                                && p.ApprovalStatus == "approved"
+                                && (p.FulfillmentMode != "seller" || p.IsAvailable),
+                            "Product is unavailable."
+                        );
                         physical = true;
-                        var sku =
-                            await Q<InventorySku>().SingleOrDefaultAsync(x => x.ProductId == p.Id)
-                            ?? throw new BusinessException(
-                                409,
-                                "Product has no available inventory."
-                            );
-                        Require(sku.QuantityAvailable >= line.Quantity, "Insufficient stock.", 409);
-                        sku.QuantityAvailable -= line.Quantity;
-                        sku.QuantityReserved += line.Quantity;
                         item.ProductId = p.Id;
                         item.Title = p.Name;
                         item.ThumbnailUrl = p.ThumbnailUrl;
                         item.UnitPriceVnd = p.PriceVnd;
                         item.KitItems = p.KitItems.ToList();
-                        Add(
-                            new InventoryReservation
-                            {
-                                OrderItemId = item.Id,
-                                InventorySkuId = sku.Id,
-                                Quantity = line.Quantity,
-                                ExpiresAt = DateTime.UtcNow.AddMinutes(30),
-                            }
-                        );
+                        if (p.FulfillmentMode == "seller")
+                        {
+                            item.SellerId = p.CreatedBy;
+                            hasSeller = true;
+                        }
+                        else
+                        {
+                            var sku =
+                                await Q<InventorySku>()
+                                    .SingleOrDefaultAsync(x => x.ProductId == p.Id)
+                                ?? throw new BusinessException(
+                                    409,
+                                    "Product has no available inventory."
+                                );
+                            Require(
+                                sku.QuantityAvailable >= line.Quantity,
+                                "Insufficient stock.",
+                                409
+                            );
+                            sku.QuantityAvailable -= line.Quantity;
+                            sku.QuantityReserved += line.Quantity;
+                            Add(
+                                new InventoryReservation
+                                {
+                                    OrderItemId = item.Id,
+                                    InventorySkuId = sku.Id,
+                                    Quantity = line.Quantity,
+                                    ExpiresAt = DateTime.UtcNow.AddMinutes(30),
+                                }
+                            );
+                        }
                         break;
                     case "course":
                         Require(
@@ -515,6 +498,7 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                         throw new BusinessException(400, "Unknown item type.");
                 }
 
+                hasLegacy |= item.SellerId is null;
                 order.SubtotalVnd = checked(order.SubtotalVnd + item.UnitPriceVnd * item.Quantity);
                 Add(item);
             }
@@ -547,14 +531,21 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 r.PaymentMethod != "cod" || r.Items.All(x => x.ItemType == "kit"),
                 "COD is available only for one-time physical kit purchases. Digital courses/subscriptions require verified transfer."
             );
+            if (hasSeller && !hasLegacy && r.PaymentMethod == "cod")
+                order.Status = "preparing";
             order.TotalAmountVnd = order.SubtotalVnd + order.ShippingFeeVnd - order.DiscountVnd;
             Add(
                 new OrderTrackingEvent
                 {
                     OrderId = order.Id,
                     Title = "Đã đặt hàng",
-                    Description =
-                        "Awaiting admin confirmation; no payment gateway has been charged.",
+                    Description = hasSeller
+                        ? (
+                            r.PaymentMethod == "cod"
+                                ? "Đơn COD đã được tạo. Giảng viên có thể chuẩn bị học cụ; tiền COD chưa được xác minh đã thu."
+                                : "Đơn đang chờ xác minh chuyển khoản. Vui lòng chờ hướng dẫn về tài khoản nhận tiền và quy trình xác minh; chưa thể giao hàng."
+                        )
+                        : "Awaiting admin confirmation; no payment gateway has been charged.",
                 }
             );
             var cart = await Q<Cart>().SingleOrDefaultAsync(x => x.ParentId == Actor.Id);
@@ -564,6 +555,21 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 )
                     Remove(item);
             await Store.SaveAsync();
+            if (hasSeller && r.PaymentMethod == "cod")
+                foreach (
+                    var sellerId in await Q<OrderItem>()
+                        .Where(i => i.OrderId == order.Id && i.SellerId != null)
+                        .Select(i => i.SellerId!)
+                        .Distinct()
+                        .ToListAsync()
+                )
+                    await SellerOrderTracking.Record(
+                        Store,
+                        order,
+                        sellerId,
+                        "preparing",
+                        readyOnly: true
+                    );
             return await OrderDetail(order.Id);
         });
     }
@@ -581,24 +587,107 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
         var q = Q<Order>();
         if (Actor.Role != "admin")
             q = q.Where(x => x.ParentId == Actor.Id);
-        return await q.OrderByDescending(x => x.CreatedAt)
+        var orders = await q.OrderByDescending(x => x.CreatedAt)
             .Skip((Page(page) - 1) * Size(size))
             .Take(Size(size))
             .ToListAsync();
+        await SetOrderActions(orders);
+        return orders;
+    }
+
+    private async Task SetOrderActions(List<Order> orders)
+    {
+        var ids = orders.Select(o => o.Id).ToList();
+        var lines = await Q<OrderItem>()
+            .Where(i => ids.Contains(i.OrderId))
+            .Select(i => new { i.OrderId, i.SellerId })
+            .ToListAsync();
+        var dispatched = await Q<SellerFulfillment>()
+            .Where(s =>
+                ids.Contains(s.OrderId)
+                && (s.ShippedAt != null || s.Status == "shipping" || s.Status == "delivered")
+            )
+            .Select(s => s.OrderId)
+            .Distinct()
+            .ToListAsync();
+        foreach (var o in orders)
+        {
+            var ownLines = lines.Where(i => i.OrderId == o.Id).ToList();
+            o.HasMarketplaceItems = ownLines.Any(i => i.SellerId != null);
+            var hasLegacy = ownLines.Any(i => i.SellerId == null);
+            o.AwaitingMarketplacePayment =
+                o.HasMarketplaceItems
+                && o.PaymentMethodName != "cod"
+                && o.PaymentStatus != "paid"
+                && o.Status != "cancelled";
+            o.RequiresLegacyConfirmation =
+                hasLegacy && o.Status == "pending_confirmation" && !o.AwaitingMarketplacePayment;
+            o.CanCancel =
+                (
+                    o.Status == "pending_confirmation"
+                    || (
+                        o.HasMarketplaceItems
+                        && !hasLegacy
+                        && o.PaymentMethodName == "cod"
+                        && o.Status == "preparing"
+                    )
+                )
+                && !dispatched.Contains(o.Id)
+                && (!o.HasMarketplaceItems || o.PaymentStatus != "paid");
+        }
     }
 
     public async Task<object> OrderDetail(string id)
     {
         var order = await OwnOrder(id);
+        await SetOrderActions([order]);
+        var items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync();
+        var sellerIds = items
+            .Where(i => i.SellerId != null)
+            .Select(i => i.SellerId!)
+            .Distinct()
+            .ToList();
+        var sellers = await Q<User>()
+            .Where(u => sellerIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.FullName);
+        var fulfillments = await Q<SellerFulfillment>().Where(s => s.OrderId == id).ToListAsync();
+        var trackingEvents = await Q<OrderTrackingEvent>()
+            .Where(e => e.OrderId == id)
+            .OrderBy(e => e.Timestamp)
+            .ThenBy(e => e.CreatedAt)
+            .ThenBy(e => e.Id)
+            .ToListAsync();
         return new
         {
             order,
-            items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync(),
+            items,
             shippingInfo = await Q<OrderShippingInfo>().SingleOrDefaultAsync(x => x.OrderId == id),
-            trackingEvents = await Q<OrderTrackingEvent>()
-                .Where(x => x.OrderId == id)
-                .OrderBy(x => x.Timestamp)
-                .ToListAsync(),
+            trackingEvents = order.HasMarketplaceItems
+                ? SellerOrderTracking.ForParent(trackingEvents)
+                : trackingEvents,
+            sellerFulfillments = fulfillments,
+            sellerProgress = sellerIds
+                .Select(sellerId =>
+                {
+                    var fulfillment = fulfillments.SingleOrDefault(f => f.SellerId == sellerId);
+                    return new
+                    {
+                        sellerId,
+                        sellerName = sellers[sellerId],
+                        itemTitles = items
+                            .Where(i => i.SellerId == sellerId)
+                            .Select(i => i.Title)
+                            .ToList(),
+                        status = OrderFulfillment.SellerStatus(order, fulfillment?.Status),
+                        carrier = string.IsNullOrWhiteSpace(fulfillment?.Carrier)
+                            ? null
+                            : fulfillment.Carrier,
+                        trackingNumber = fulfillment?.TrackingNumber,
+                        shippedAt = fulfillment?.ShippedAt,
+                        deliveredAt = fulfillment?.DeliveredAt,
+                    };
+                })
+                .ToList(),
             shipments = await Q<FulfillmentOrder>().Where(x => x.OrderId == id).ToListAsync(),
         };
     }
@@ -610,9 +699,10 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
             var o = await OwnOrder(id);
             if (o.Status == "cancelled")
                 return await OrderDetail(id);
+            await SetOrderActions([o]);
             Require(
-                o.Status == "pending_confirmation",
-                "Only unconfirmed orders can be cancelled.",
+                o.CanCancel,
+                "This order cannot be cancelled after dispatch, payment or legacy confirmation.",
                 409
             );
             await Release(o, reason);
@@ -657,16 +747,33 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
         {
             Roles("admin");
             var o = await Get<Order>(id);
+            var items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync();
+            var hasSeller = items.Any(i => i.SellerId != null);
+            Require(
+                !hasSeller || o.PaymentMethodName == "cod" || o.PaymentStatus == "paid",
+                "Marketplace transfer verification policy is not configured. Do not confirm unverified funds.",
+                409
+            );
+            if (hasSeller && items.All(i => i.SellerId != null) && o.PaymentMethodName == "cod")
+            {
+                Require(o.Status != "cancelled", "Order cannot be confirmed.", 409);
+                // Backward-compatible no-op; seller-only COD never requires this endpoint.
+                if (o.Status == "pending_confirmation")
+                    o.Status = "preparing";
+                return await OrderDetail(id);
+            }
             if (o.Status is "preparing" or "shipping" or "delivered")
                 return await OrderDetail(id);
             Require(o.Status == "pending_confirmation", "Order cannot be confirmed.", 409);
-            var items = await Q<OrderItem>().Where(x => x.OrderId == id).ToListAsync();
+            var sellerDispatched = await OrderFulfillment.SellerDispatched(Store, id);
             var itemIds = items.Select(x => x.Id).ToList();
             var reservations = await Q<InventoryReservation>()
                 .Where(x => itemIds.Contains(x.OrderItemId))
                 .ToListAsync();
             Require(
-                reservations.All(x => x.Status == "reserved" && x.ExpiresAt > DateTime.UtcNow),
+                reservations.All(x =>
+                    x.Status == "reserved" && (x.ExpiresAt > DateTime.UtcNow || sellerDispatched)
+                ),
                 "Stock reservation expired; cancel this order and checkout again.",
                 409
             );
@@ -678,7 +785,7 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
 
             foreach (var i in items)
             {
-                if (i.ProductId is not null)
+                if (i.ProductId is not null && i.SellerId is null)
                     (await Get<Product>(i.ProductId)).SoldCount += i.Quantity;
                 if (i.CourseId is not null)
                 {
@@ -745,23 +852,30 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
                 }
             }
 
-            if (o.PaymentMethodName != "cod")
+            if (o.PaymentMethodName != "cod" && o.PaymentStatus != "paid")
             {
                 o.PaymentStatus = "paid";
                 o.PaidAt = DateTime.UtcNow;
             }
 
-            o.Status = reservations.Count > 0 ? "preparing" : "delivered";
+            o.Status =
+                reservations.Count > 0 || items.Any(i => i.SellerId != null)
+                    ? "preparing"
+                    : "delivered";
             Add(
                 new OrderTrackingEvent
                 {
                     OrderId = id,
                     Title = "Đã xác nhận",
-                    Description = "Confirmed by administrator.",
+                    Description = hasSeller
+                        ? "Phần hàng do ART_KID xử lý đã được xác nhận."
+                        : "Confirmed by administrator.",
                 }
             );
             Notify(o.ParentId, "Đơn hàng đã xác nhận", o.OrderCode, id);
             await Store.SaveAsync();
+            if (hasSeller)
+                await OrderFulfillment.UpdateCompletion(Store, o);
             return await OrderDetail(id);
         });
     }
@@ -808,7 +922,10 @@ public sealed class CommerceService(IUnitOfWork store, ICurrentUser actor)
             await Store.TransactionAsync(async () =>
             {
                 var o = await Get<Order>(id);
-                if (o.Status == "pending_confirmation")
+                if (
+                    o.Status == "pending_confirmation"
+                    && !await OrderFulfillment.SellerDispatched(Store, id)
+                )
                     await Release(o, "Stock reservation expired.");
                 return true;
             });

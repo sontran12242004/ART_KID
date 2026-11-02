@@ -40,20 +40,28 @@ def main():
         fill_field(
             teacher, "Mô tả công dụng", "Bộ màu và cọ giúp bé luyện phối màu trong khóa học."
         )
-        fill_field(teacher, "Số lượng có sẵn", "5")
         Path("backend/tests/artifacts").mkdir(exist_ok=True)
         teacher.screenshot(path="backend/tests/artifacts/course-product-form.png")
         with teacher.expect_response(
             lambda r: r.request.method == "POST"
-            and r.url.endswith("/courses/course_basics/products")
+            and r.url.endswith("/marketplace/listings")
         ) as published:
-            teacher.get_by_role("button", name="Đăng bán học cụ", exact=True).click()
+            teacher.get_by_role("button", name="Gửi duyệt", exact=True).click()
         assert published.value.status == 200, published.value.text()
         product = published.value.json()
         assert product["courseId"] == "course_basics"
         image_url = "http://localhost:5080" + product["thumbnailUrl"]
+        assert product["approvalStatus"] == "pending"
+        assert teacher.request.get(image_url).status == 404
+        log("PASS instructor submits a pending listing with no public image")
+        admin = open_page(browser, "admin")
+        go(admin, "/staff/marketplace/reviews/" + product["id"])
+        with admin.expect_response(lambda r: r.request.method == "POST" and r.url.endswith("/marketplace/reviews/" + product["id"])) as review:
+            admin.get_by_role("button", name="Phê duyệt", exact=True).click()
+        assert review.value.status == 200, review.value.text()
         assert teacher.request.get(image_url).status == 200
-        log("PASS instructor publishes linked course kit with uploaded image and inventory")
+        admin.screenshot(path="backend/tests/artifacts/marketplace-admin-review.png")
+        log("PASS admin approval makes the listing and image public")
 
         parent = open_page(browser, "parent")
         go(parent, "/parent/courses/course_basics/products")

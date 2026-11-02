@@ -2,6 +2,10 @@
 
 > **Đánh thức tiềm năng sáng tạo và năng khiếu hội họa của trẻ em (4–12 tuổi)** thông qua trải nghiệm học vẽ trực tuyến kết hợp học cụ thực tế (Art Kits) và công nghệ trí tuệ nhân tạo (AI Creature) biến nét vẽ của bé thành các mô hình 2D/3D chuyển động sống động.
 
+## Teacher Marketplace (ASP.NET Core + Flutter)
+
+The active backend is `backend/` (ASP.NET Core 10, EF Core SQLite/Postgres). Teacher marketplace listing, admin approval, seller order isolation and manual carrier handoff reuse the existing commerce APIs. See [implementation and API notes](docs/teacher-marketplace.md) and [the phased plan](tasks/plan.md).
+
 ---
 
 ## Giới Thiệu Tổng Quan
