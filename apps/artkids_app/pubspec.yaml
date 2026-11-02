@@ -55,6 +55,7 @@ dependencies:
   equatable: ^2.0.7
   url_launcher: ^6.3.0
   video_player: ^2.10.0
+  livekit_client: 2.11.0
   web: ^1.1.1
 
 dev_dependencies:
@@ -62,7 +63,6 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.4.13
-  retrofit_generator: ^9.1.5
   json_serializable: ^6.8.0
   riverpod_generator: ^2.6.3
   # hive_generator removed — project uses plain Hive boxes without TypeAdapter codegen

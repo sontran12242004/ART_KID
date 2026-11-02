@@ -1,3 +1,4 @@
+import 'package:artkids_app/features/connected/presentation/live_room_media.dart';
 import 'package:artkids_app/core/network/api_interceptor.dart';
 import 'package:artkids_app/core/network/dio_client.dart';
 import 'package:artkids_app/core/network/session_store.dart';
@@ -22,10 +23,8 @@ class _TestAuthRepository implements AuthRepository {
   ];
 
   @override
-  Future<ParentUser> login({
-    required String email,
-    required String password,
-  }) => throw UnimplementedError();
+  Future<ParentUser> login({required String email, required String password}) =>
+      throw UnimplementedError();
 
   @override
   Future<ParentUser> register({
@@ -240,8 +239,9 @@ void main() {
             ],
           });
         }
-        if (uri.path
-                .endsWith('/live/sessions/session-live-1/room/disconnect') &&
+        if (uri.path.endsWith(
+              '/live/sessions/session-live-1/room/disconnect',
+            ) &&
             request.method == 'POST') {
           return jsonResponse({'disconnected': true});
         }
@@ -279,7 +279,8 @@ void main() {
               'id': 'lesson-2',
               'title': 'Phối màu nước',
               'orderIndex': 2,
-              'practiceInstructions': 'Chuẩn bị cọ tròn số 6 và giấy định lượng 300gsm.',
+              'practiceInstructions':
+                  'Chuẩn bị cọ tròn số 6 và giấy định lượng 300gsm.',
               'hasVideo': true,
             },
             'classSessions': [
@@ -328,6 +329,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            liveRoomMediaFactoryProvider.overrideWithValue(
+              _FakeLiveRoomMedia.new,
+            ),
             dioProvider.overrideWithValue(dio),
             authProvider.overrideWith((ref) => _seededParentAuth()),
             urlLauncherProvider.overrideWithValue((uri) async {
@@ -357,10 +361,7 @@ void main() {
       await tester.tap(find.textContaining('Đang diễn ra (1)'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Thực hành phối màu nước chuyển sắc'),
-        findsOneWidget,
-      );
+      expect(find.text('Thực hành phối màu nước chuyển sắc'), findsOneWidget);
       expect(find.text('Google Meet'), findsOneWidget);
       expect(find.text('Tham gia lớp học'), findsOneWidget);
 
@@ -428,10 +429,9 @@ void main() {
         final uri = request.uri;
         if (uri.path.endsWith('/live/sessions')) {
           if (failList) {
-            return jsonResponse(
-              {'title': 'Máy chủ đang bảo trì tạm thời.'},
-              status: 503,
-            );
+            return jsonResponse({
+              'title': 'Máy chủ đang bảo trì tạm thời.',
+            }, status: 503);
           }
           return jsonResponse({
             'items': [],
@@ -442,22 +442,28 @@ void main() {
           });
         }
         if (uri.path.endsWith('/live/sessions/forbidden-session')) {
-          return jsonResponse(
-            {'title': 'Bé chưa đăng ký tham gia lớp học trực tuyến này.'},
-            status: 403,
-          );
+          return jsonResponse({
+            'title': 'Bé chưa đăng ký tham gia lớp học trực tuyến này.',
+          }, status: 403);
         }
         if (uri.path.endsWith('/live/sessions/expired-auth-session')) {
-          return jsonResponse({'title': 'Phiên đăng nhập hết hạn.'}, status: 401);
+          return jsonResponse({
+            'title': 'Phiên đăng nhập hết hạn.',
+          }, status: 401);
         }
         if (uri.path.endsWith('/auth/refresh')) {
-          return jsonResponse({'title': 'Refresh token không hợp lệ.'}, status: 401);
+          return jsonResponse({
+            'title': 'Refresh token không hợp lệ.',
+          }, status: 401);
         }
         return jsonResponse([]);
       });
 
       container = ProviderContainer(
         overrides: [
+          liveRoomMediaFactoryProvider.overrideWithValue(
+            _FakeLiveRoomMedia.new,
+          ),
           sessionStoreProvider.overrideWith((ref) => sessionStore),
           dioProvider.overrideWith((ref) {
             dio.interceptors.clear();
@@ -794,8 +800,9 @@ void main() {
             ],
           });
         }
-        if (uri.path
-                .endsWith('/live/sessions/inst-session-1/room/disconnect') &&
+        if (uri.path.endsWith(
+              '/live/sessions/inst-session-1/room/disconnect',
+            ) &&
             request.method == 'POST') {
           return jsonResponse({'disconnected': true});
         }
@@ -834,10 +841,7 @@ void main() {
           });
         }
         if (uri.path.endsWith('/live/sessions/other-instructor-session')) {
-          return jsonResponse(
-            {'title': 'Session not found.'},
-            status: 404,
-          );
+          return jsonResponse({'title': 'Session not found.'}, status: 404);
         }
         return jsonResponse([]);
       });
@@ -865,6 +869,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            liveRoomMediaFactoryProvider.overrideWithValue(
+              _FakeLiveRoomMedia.new,
+            ),
             dioProvider.overrideWithValue(dio),
             authProvider.overrideWith((ref) => _seededInstructorAuth()),
             urlLauncherProvider.overrideWithValue((uri) async {
@@ -940,7 +947,7 @@ void main() {
         find.text('Kiểm tra thiết bị trước khi vào phòng'),
         findsOneWidget,
       );
-      expect(find.textContaining('LiveKit:Url'), findsOneWidget);
+      expect(find.textContaining('chế độ xem trước'), findsOneWidget);
       await tester.ensureVisible(find.text('Vào phòng dạy trực tuyến'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Vào phòng dạy trực tuyến'));
@@ -968,14 +975,8 @@ void main() {
       // 4. Verify student roster & attendance
       await tester.drag(find.byType(ListView), const Offset(0, -350));
       await tester.pumpAndSettle();
-      expect(
-        find.text('Danh sách học viên & Điểm danh (1/1)'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Đã điểm danh · Thời lượng: 30 phút'),
-        findsOneWidget,
-      );
+      expect(find.text('Danh sách học viên & Điểm danh (1/1)'), findsOneWidget);
+      expect(find.text('Đã điểm danh · Thời lượng: 30 phút'), findsOneWidget);
 
       // 5. Complete session ("Kết thúc buổi học") with confirmation dialog
       await tester.drag(find.byType(ListView), const Offset(0, 350));
@@ -1030,13 +1031,10 @@ void main() {
         if (uri.path.endsWith('/live/sessions/group-session-1/room/token') &&
             request.method == 'POST') {
           if (sessionEnded) {
-            return jsonResponse(
-              {
-                'message':
-                    'Buổi học đã kết thúc. Không thể cấp hoặc sử dụng lại token vào phòng.',
-              },
-              status: 409,
-            );
+            return jsonResponse({
+              'message':
+                  'Buổi học đã kết thúc. Không thể cấp hoặc sử dụng lại token vào phòng.',
+            }, status: 409);
           }
           return jsonResponse({
             'sessionId': 'group-session-1',
@@ -1118,6 +1116,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            liveRoomMediaFactoryProvider.overrideWithValue(
+              _FakeLiveRoomMedia.new,
+            ),
             dioProvider.overrideWithValue(dio),
             authProvider.overrideWith((ref) => _seededInstructorAuth()),
             liveMediaPermissionProvider.overrideWithValue(permService),
@@ -1330,6 +1331,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            liveRoomMediaFactoryProvider.overrideWithValue(
+              _FakeLiveRoomMedia.new,
+            ),
             dioProvider.overrideWithValue(dio),
             authProvider.overrideWith((ref) => _seededInstructorAuth()),
             liveScreenShareProvider.overrideWithValue(screenShareService),
@@ -1351,10 +1355,7 @@ void main() {
       await tester.tap(find.text('Chia sẻ màn hình'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Xác nhận chia sẻ màn hình'),
-        findsOneWidget,
-      );
+      expect(find.text('Xác nhận chia sẻ màn hình'), findsOneWidget);
       expect(
         find.textContaining(
           'Camera và Microphone của bạn vẫn hoạt động độc lập',
@@ -1368,10 +1369,7 @@ void main() {
         find.text('Bạn đã hủy hoặc từ chối cấp quyền chia sẻ màn hình.'),
         findsOneWidget,
       );
-      expect(
-        find.textContaining('Bạn đang chia sẻ màn hình'),
-        findsNothing,
-      );
+      expect(find.textContaining('Bạn đang chia sẻ màn hình'), findsNothing);
 
       // 2. Approve OS permission and start sharing screen
       osPermissionApproved = true;
@@ -1486,4 +1484,29 @@ class _ConfigurablePermissionService extends LiveMediaPermissionService {
 
   @override
   Future<bool> openSystemSettings() => onOpenSettings();
+}
+
+class _FakeLiveRoomMedia extends LiveRoomMedia {
+  bool camera = false;
+  bool microphone = false;
+  @override
+  bool get cameraEnabled => camera;
+  @override
+  bool get microphoneEnabled => microphone;
+  @override
+  Future<void> setCameraEnabled(bool enabled) async {
+    camera = enabled;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setMicrophoneEnabled(bool enabled) async {
+    microphone = enabled;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> switchCamera(bool front) async {}
+  @override
+  Future<void> connect(Map<String, dynamic> configuration) async {}
 }

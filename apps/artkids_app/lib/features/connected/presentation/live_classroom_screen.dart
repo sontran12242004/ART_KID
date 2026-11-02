@@ -8,9 +8,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:livekit_client/livekit_client.dart' as lk;
 
 import '../../../core/network/dio_client.dart';
 import '../../../core/widgets/app_snack_bar.dart';
+import 'live_room_media.dart';
 
 class LiveMediaPermissionState {
   const LiveMediaPermissionState({
@@ -35,10 +37,15 @@ class LiveMediaPermissionService {
   const LiveMediaPermissionService();
 
   bool get _isWidgetTestEnvironment =>
-      kIsWeb ||
       WidgetsBinding.instance.runtimeType.toString().contains('Test');
 
   Future<LiveMediaPermissionState> checkPermissions() async {
+    if (kIsWeb) {
+      return const LiveMediaPermissionState(
+        cameraGranted: false,
+        microphoneGranted: false,
+      );
+    }
     if (_isWidgetTestEnvironment) {
       return const LiveMediaPermissionState(
         cameraGranted: true,
@@ -63,6 +70,13 @@ class LiveMediaPermissionService {
   }
 
   Future<LiveMediaPermissionState> requestPermissions() async {
+    if (kIsWeb) {
+      // Browser permission is requested by actual device capture, not permission_handler.
+      return const LiveMediaPermissionState(
+        cameraGranted: false,
+        microphoneGranted: false,
+      );
+    }
     if (_isWidgetTestEnvironment) {
       return const LiveMediaPermissionState(
         cameraGranted: true,
@@ -375,11 +389,7 @@ enum _ClassroomPhase {
 }
 
 class LiveClassroomScreen extends ConsumerStatefulWidget {
-  const LiveClassroomScreen({
-    super.key,
-    required this.sessionId,
-    this.childId,
-  });
+  const LiveClassroomScreen({super.key, required this.sessionId, this.childId});
 
   final String sessionId;
   final String? childId;
@@ -409,6 +419,9 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
   bool _wasCameraEnabledBeforeBackground = false;
   bool _disposedResources = false;
   bool _actionBusy = false;
+  bool _mediaBusy = false;
+  String? _mediaError;
+  late LiveRoomMedia _media;
 
   bool _canShareScreen = false;
   Map<String, dynamic>? _activeScreenShare;
@@ -436,9 +449,13 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _media = ref.read(liveRoomMediaFactoryProvider)();
+    _media.addListener(_onMediaChanged);
     _deviceId = 'flutter-${DateTime.now().microsecondsSinceEpoch}';
     _screenShareService = ref.read(liveScreenShareProvider);
-    _screenShareService.setOnSystemStopListener(_handleSystemStoppedScreenShare);
+    _screenShareService.setOnSystemStopListener(
+      _handleSystemStoppedScreenShare,
+    );
     _initializePreJoin();
   }
 
@@ -459,10 +476,88 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     _screenShareFrameTimer = null;
     _screenShareService.setOnSystemStopListener(null);
     _screenShareService.stopScreenShare();
+    _media.removeListener(_onMediaChanged);
+    unawaited(_media.close());
+  }
+
+  void _onMediaChanged() {
+    if (!mounted || _disposedResources) return;
+    setState(() {
+      _cameraEnabled = _media.cameraEnabled;
+      _micEnabled = _media.microphoneEnabled;
+      if (_media.disconnected) {
+        _mediaError =
+            'Kết nối âm thanh/video đã ngắt. Vui lòng rời phòng và vào lại.';
+      }
+    });
+  }
+
+  Future<void> _prepareLocalMedia(LiveMediaPermissionState permissions) async {
+    final errors = <String>[];
+    if (kIsWeb || permissions.cameraGranted) {
+      try {
+        await _media.setCameraEnabled(true);
+      } catch (_) {
+        errors.add(
+          'Không mở được camera. Hãy cho phép camera trong trình duyệt và kiểm tra thiết bị có đang được ứng dụng khác sử dụng không.',
+        );
+      }
+    }
+    if (kIsWeb || permissions.microphoneGranted) {
+      try {
+        await _media.setMicrophoneEnabled(true);
+      } catch (_) {
+        errors.add(
+          'Không mở được microphone. Hãy kiểm tra quyền microphone và thiết bị thu âm.',
+        );
+      }
+    }
+    if (!mounted || _disposedResources) return;
+    setState(() {
+      _cameraEnabled = _media.cameraEnabled;
+      _micEnabled = _media.microphoneEnabled;
+      _permissionState = LiveMediaPermissionState(
+        cameraGranted: _media.cameraEnabled,
+        microphoneGranted: _media.microphoneEnabled,
+        cameraPermanentlyDenied: permissions.cameraPermanentlyDenied,
+        microphonePermanentlyDenied: permissions.microphonePermanentlyDenied,
+      );
+      _mediaError = errors.isEmpty ? null : errors.join('\n');
+    });
+  }
+
+  Future<void> _changeDevice(Future<void> Function() action) async {
+    if (_mediaBusy || _disposedResources) return;
+    setState(() => _mediaBusy = true);
+    try {
+      await action();
+      if (!mounted) return;
+      setState(() {
+        _mediaError = null;
+        _cameraEnabled = _media.cameraEnabled;
+        _micEnabled = _media.microphoneEnabled;
+        _permissionState = LiveMediaPermissionState(
+          cameraGranted: _permissionState.cameraGranted || _cameraEnabled,
+          microphoneGranted: _permissionState.microphoneGranted || _micEnabled,
+        );
+      });
+      if (_phase == _ClassroomPhase.inRoom) await _syncRoomState();
+    } catch (_) {
+      if (!mounted) return;
+      setState(
+        () => _mediaError =
+            'Không thay đổi được thiết bị. Hãy kiểm tra quyền Camera/Mic và thử lại.',
+      );
+      showAppSnackBar(context, SnackBar(content: Text(_mediaError!)));
+    } finally {
+      if (mounted) setState(() => _mediaBusy = false);
+    }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // A browser tab losing focus must not mute an ongoing class.
+    if (kIsWeb) return;
     if (_phase == _ClassroomPhase.preJoin &&
         state == AppLifecycleState.resumed) {
       _refreshPermissionsFromStatus();
@@ -475,24 +570,25 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       // Note: If user is actively sharing their screen on Android via MediaProjection
       // ForegroundService, keep the screen-share stream alive when switching apps!
       if (_cameraEnabled && !_isSelfSharingScreen) {
-        setState(() {
-          _cameraEnabled = false;
-          _connectionQuality = 'audio_only';
-        });
-        _syncRoomState(connectionState: 'connected');
+        unawaited(_changeDevice(() => _media.setCameraEnabled(false)));
       }
     } else if (state == AppLifecycleState.resumed) {
       if (_wasCameraEnabledBeforeBackground && _permissionState.cameraGranted) {
-        setState(() {
-          _cameraEnabled = true;
-          _connectionQuality = 'good';
-        });
+        unawaited(_changeDevice(() => _media.setCameraEnabled(true)));
       }
       _syncRoomState(connectionState: 'connected');
     }
   }
 
   Future<void> _initializePreJoin() async {
+    if (_disposedResources) {
+      _disposedResources = false;
+      _media = ref.read(liveRoomMediaFactoryProvider)();
+      _media.addListener(_onMediaChanged);
+      _screenShareService.setOnSystemStopListener(
+        _handleSystemStoppedScreenShare,
+      );
+    }
     setState(() {
       _phase = _ClassroomPhase.loadingToken;
       _errorMessage = null;
@@ -513,14 +609,14 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       if (!mounted) return;
       final permissions =
           (tokenRes['permissions'] as Map?)?.cast<String, dynamic>() ??
-              const {};
+          const {};
       final role = '${tokenRes['participantRole'] ?? 'student'}';
+      await _prepareLocalMedia(perms);
+      if (!mounted) return;
       setState(() {
-        _permissionState = perms;
-        _micEnabled = perms.microphoneGranted;
-        _cameraEnabled = perms.cameraGranted;
         _roomTokenData = tokenRes;
-        _canShareScreen = permissions['canShareScreen'] == true ||
+        _canShareScreen =
+            permissions['canShareScreen'] == true ||
             role == 'instructor' ||
             role == 'admin';
         _phase = _ClassroomPhase.preJoin;
@@ -536,29 +632,13 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
   }
 
   Future<void> _refreshPermissionsFromStatus() async {
-    final permService = ref.read(liveMediaPermissionProvider);
-    final perms = await permService.checkPermissions();
-    if (!mounted) return;
-    setState(() {
-      _permissionState = perms;
-      if (perms.microphoneGranted && !_micEnabled) _micEnabled = true;
-      if (perms.cameraGranted && !_cameraEnabled) _cameraEnabled = true;
-      if (!perms.microphoneGranted) _micEnabled = false;
-      if (!perms.cameraGranted) _cameraEnabled = false;
-    });
+    _onMediaChanged();
   }
 
   Future<void> _recheckOrRequestPermissions() async {
     final permService = ref.read(liveMediaPermissionProvider);
     final perms = await permService.requestPermissions();
-    if (!mounted) return;
-    setState(() {
-      _permissionState = perms;
-      if (!perms.microphoneGranted) _micEnabled = false;
-      if (!perms.cameraGranted) _cameraEnabled = false;
-      if (perms.microphoneGranted && !_micEnabled) _micEnabled = true;
-      if (perms.cameraGranted && !_cameraEnabled) _cameraEnabled = true;
-    });
+    await _prepareLocalMedia(perms);
   }
 
   Future<void> _enterRoom() async {
@@ -594,6 +674,10 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       );
       if (!mounted) return;
       _applyRoomSnapshot(connectRes);
+      await _media.connect(
+        (tokenData['sfu'] as Map?)?.cast<String, dynamic>() ?? const {},
+      );
+      if (!mounted || _disposedResources) return;
       setState(() {
         _connectionQuality = _cameraEnabled ? 'good' : 'audio_only';
         _isReconnecting = false;
@@ -601,6 +685,22 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       });
       _startHeartbeat();
     } catch (e) {
+      final diagnostic = '$e'.replaceAll(
+        RegExp(r'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'),
+        '[token]',
+      );
+      debugPrint('Classroom media connection failed: $diagnostic');
+      // Do not leave a signalling participant or device capture behind when SFU join fails.
+      try {
+        await _postMap(
+          '/live/sessions/${widget.sessionId}/room/disconnect',
+          data: {
+            'roomToken': '${tokenData['roomToken'] ?? ''}',
+            'deviceId': _deviceId,
+          },
+        );
+      } catch (_) {}
+      _releaseMediaAndRoomResources();
       if (!mounted) return;
       setState(() {
         _errorMessage = _formatRoomError(e);
@@ -633,9 +733,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
   }
 
   Future<void> _pushLatestScreenShareFrame() async {
-    if (!mounted ||
-        _phase != _ClassroomPhase.inRoom ||
-        !_isSelfSharingScreen) {
+    if (!mounted || _phase != _ClassroomPhase.inRoom || !_isSelfSharingScreen) {
       _screenShareFrameTimer?.cancel();
       return;
     }
@@ -748,6 +846,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       });
 
       if (mutedByInstructor) {
+        await _media.setMicrophoneEnabled(false);
+        if (!mounted) return;
         showAppSnackBar(
           context,
           const SnackBar(
@@ -759,9 +859,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
         showAppSnackBar(
           context,
           const SnackBar(
-            content: Text(
-              'Gia sư đã thu hồi quyền chia sẻ màn hình của bạn.',
-            ),
+            content: Text('Gia sư đã thu hồi quyền chia sẻ màn hình của bạn.'),
           ),
         );
       }
@@ -777,6 +875,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
           _errorMessage = _formatRoomError(e);
           _phase = _ClassroomPhase.endedOrError;
         });
+        _releaseMediaAndRoomResources();
       } else {
         setState(() {
           _isReconnecting = true;
@@ -823,9 +922,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Nền tảng chưa hỗ trợ chia sẻ màn hình'),
-          content: Text(
-            caps.unsupportedReason ?? caps.scopeDescription,
-          ),
+          content: Text(caps.unsupportedReason ?? caps.scopeDescription),
           actions: [
             FilledButton(
               onPressed: () => Navigator.of(ctx).pop(),
@@ -861,10 +958,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
                 children: [
                   const Text(
                     'Lưu ý về âm thanh & quyền riêng tư:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -944,10 +1038,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     } catch (e) {
       await screenService.stopScreenShare();
       if (!mounted) return;
-      showAppSnackBar(
-        context,
-        SnackBar(content: Text(_formatRoomError(e))),
-      );
+      showAppSnackBar(context, SnackBar(content: Text(_formatRoomError(e))));
     } finally {
       if (mounted) setState(() => _actionBusy = false);
     }
@@ -984,10 +1075,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       }
     } catch (e) {
       if (mounted) {
-        showAppSnackBar(
-          context,
-          SnackBar(content: Text(_formatRoomError(e))),
-        );
+        showAppSnackBar(context, SnackBar(content: Text(_formatRoomError(e))));
       }
     } finally {
       if (mounted) setState(() => _actionBusy = false);
@@ -1033,10 +1121,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     try {
       final res = await _postMap(
         '/live/sessions/${widget.sessionId}/room/screen-share/permission',
-        data: {
-          'targetIdentity': targetIdentity,
-          'canShareScreen': grant,
-        },
+        data: {'targetIdentity': targetIdentity, 'canShareScreen': grant},
       );
       if (!mounted) return;
       _applyRoomSnapshot(res);
@@ -1052,10 +1137,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       );
     } catch (e) {
       if (!mounted) return;
-      showAppSnackBar(
-        context,
-        SnackBar(content: Text(_formatRoomError(e))),
-      );
+      showAppSnackBar(context, SnackBar(content: Text(_formatRoomError(e))));
     } finally {
       if (mounted) setState(() => _actionBusy = false);
     }
@@ -1157,41 +1239,18 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     ]);
   }
 
-  Future<void> _toggleMicrophone() async {
-    if (!_permissionState.microphoneGranted) {
-      await _recheckOrRequestPermissions();
-      if (!_permissionState.microphoneGranted) return;
-    }
-    setState(() {
-      _micEnabled = !_micEnabled;
-    });
-    if (_phase == _ClassroomPhase.inRoom) {
-      await _syncRoomState();
-    }
-  }
+  Future<void> _toggleMicrophone() => _changeDevice(
+    () => _media.setMicrophoneEnabled(!_media.microphoneEnabled),
+  );
 
-  Future<void> _toggleCamera() async {
-    if (!_permissionState.cameraGranted) {
-      await _recheckOrRequestPermissions();
-      if (!_permissionState.cameraGranted) return;
-    }
-    setState(() {
-      _cameraEnabled = !_cameraEnabled;
-      _connectionQuality = _cameraEnabled ? 'good' : 'audio_only';
-    });
-    if (_phase == _ClassroomPhase.inRoom) {
-      await _syncRoomState();
-    }
-  }
+  Future<void> _toggleCamera() =>
+      _changeDevice(() => _media.setCameraEnabled(!_media.cameraEnabled));
 
-  Future<void> _switchCameraFacing() async {
-    setState(() {
-      _cameraFacing = _cameraFacing == 'front' ? 'back' : 'front';
-    });
-    if (_phase == _ClassroomPhase.inRoom) {
-      await _syncRoomState();
-    }
-  }
+  Future<void> _switchCameraFacing() => _changeDevice(() async {
+    final front = _cameraFacing != 'front';
+    await _media.switchCamera(front);
+    if (mounted) setState(() => _cameraFacing = front ? 'front' : 'back');
+  });
 
   Future<void> _muteParticipantMic(String targetIdentity, String name) async {
     if (_actionBusy) return;
@@ -1199,10 +1258,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     try {
       final res = await _postMap(
         '/live/sessions/${widget.sessionId}/room/moderate',
-        data: {
-          'targetIdentity': targetIdentity,
-          'action': 'mute_mic',
-        },
+        data: {'targetIdentity': targetIdentity, 'action': 'mute_mic'},
       );
       if (!mounted) return;
       _applyRoomSnapshot(res);
@@ -1212,10 +1268,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       );
     } catch (e) {
       if (!mounted) return;
-      showAppSnackBar(
-        context,
-        SnackBar(content: Text(_formatRoomError(e))),
-      );
+      showAppSnackBar(context, SnackBar(content: Text(_formatRoomError(e))));
     } finally {
       if (mounted) setState(() => _actionBusy = false);
     }
@@ -1300,10 +1353,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       }
     } catch (e) {
       if (!mounted) return;
-      showAppSnackBar(
-        context,
-        SnackBar(content: Text(_formatRoomError(e))),
-      );
+      showAppSnackBar(context, SnackBar(content: Text(_formatRoomError(e))));
     } finally {
       if (mounted) setState(() => _actionBusy = false);
     }
@@ -1312,11 +1362,10 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
   void _showParticipantsSheet() {
     final permissions =
         (_roomTokenData?['permissions'] as Map?)?.cast<String, dynamic>() ??
-            const {};
+        const {};
     final role = '${_roomTokenData?['participantRole'] ?? 'student'}';
     final isStaff = role == 'instructor' || role == 'admin';
-    final canModerateAudio =
-        permissions['canModerateAudio'] == true || isStaff;
+    final canModerateAudio = permissions['canModerateAudio'] == true || isStaff;
     final canGrantScreenShare =
         permissions['canGrantScreenShare'] == true || isStaff;
     final myIdentity = '${_roomTokenData?['participantIdentity'] ?? ''}';
@@ -1383,10 +1432,12 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
                             final pRole = '${p['role'] ?? 'student'}';
                             final micOn = p['micEnabled'] == true;
                             final camOn = p['cameraEnabled'] == true;
-                            final isSharing = p['screenSharing'] == true ||
+                            final isSharing =
+                                p['screenSharing'] == true ||
                                 _activeScreenShare?['presenterIdentity'] ==
                                     identity;
-                            final pCanShare = p['canShareScreen'] == true ||
+                            final pCanShare =
+                                p['canShareScreen'] == true ||
                                 pRole == 'instructor' ||
                                 pRole == 'admin';
                             final connState =
@@ -1417,7 +1468,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
                                         child: Text(
                                           name.isNotEmpty
                                               ? name.characters.first
-                                                  .toUpperCase()
+                                                    .toUpperCase()
                                               : '?',
                                           style: const TextStyle(
                                             color: Colors.white,
@@ -1493,9 +1544,9 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
                                                   Colors.orangeAccent,
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
                                             ),
                                             onPressed: () async {
                                               Navigator.of(ctx).pop();
@@ -1518,9 +1569,9 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
                                                   : Colors.tealAccent,
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
                                             ),
                                             onPressed: () async {
                                               Navigator.of(ctx).pop();
@@ -1610,31 +1661,31 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       body: SafeArea(
         child: switch (_phase) {
           _ClassroomPhase.loadingToken => const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: Colors.white),
-                  SizedBox(height: 12),
-                  Text(
-                    'Đang xác thực quyền truy cập phòng học...',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ],
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Colors.white),
+                SizedBox(height: 12),
+                Text(
+                  'Đang xác thực quyền truy cập phòng học...',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
             ),
+          ),
           _ClassroomPhase.connectingRoom => const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: Colors.greenAccent),
-                  SizedBox(height: 12),
-                  Text(
-                    'Đang kết nối vào phòng học trực tuyến...',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Colors.greenAccent),
+                SizedBox(height: 12),
+                Text(
+                  'Đang kết nối vào phòng học trực tuyến...',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
             ),
+          ),
           _ClassroomPhase.preJoin => _buildPreJoinBody(),
           _ClassroomPhase.inRoom => _buildInRoomBody(),
           _ClassroomPhase.endedOrError => _buildErrorOrEndedBody(),
@@ -1646,10 +1697,10 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
   Widget _buildConnectionBadge() {
     final (label, color, icon) = switch (_connectionQuality) {
       'reconnecting' => (
-          'Đang kết nối lại...',
-          Colors.orangeAccent,
-          Icons.sync_problem
-        ),
+        'Đang kết nối lại...',
+        Colors.orangeAccent,
+        Icons.sync_problem,
+      ),
       'audio_only' => ('Chỉ âm thanh', Colors.amberAccent, Icons.graphic_eq),
       'disconnected' => ('Mất kết nối', Colors.redAccent, Icons.wifi_off),
       _ => ('Đã kết nối', Colors.greenAccent, Icons.wifi),
@@ -1686,8 +1737,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     final isInstructor = role == 'instructor' || role == 'admin';
     final sfu = (tokenData['sfu'] as Map?)?.cast<String, dynamic>() ?? const {};
     final sfuConfigured = sfu['isConfigured'] == true;
-    final missingKeys = ((sfu['missingConfigurationKeys'] ??
-                sfu['missingConfigKeys']) as List?)
+    final missingKeys =
+        ((sfu['missingConfigurationKeys'] ?? sfu['missingConfigKeys']) as List?)
             ?.cast<String>() ??
         const [];
 
@@ -1728,6 +1779,14 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
             ),
           ),
           const SizedBox(height: 14),
+          if (_mediaError != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                _mediaError!,
+                style: const TextStyle(color: Colors.orangeAccent),
+              ),
+            ),
           if (!_permissionState.allGranted) _buildPermissionWarningCard(),
           Container(
             height: 250,
@@ -1743,77 +1802,88 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
             ),
             child: Stack(
               children: [
-                Center(
-                  child: _cameraEnabled && _permissionState.cameraGranted
-                      ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.videocam,
-                              color: Colors.tealAccent,
-                              size: 48,
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Xem trước Camera ($participantName)',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
+                if (_media.localVideo != null)
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: lk.VideoTrackRenderer(
+                        _media.localVideo!,
+                        fit: lk.VideoViewFit.cover,
+                      ),
+                    ),
+                  ),
+                if (_media.localVideo == null)
+                  Center(
+                    child: _cameraEnabled && _permissionState.cameraGranted
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.videocam,
+                                color: Colors.tealAccent,
+                                size: 48,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _cameraFacing == 'front'
-                                  ? 'Đang chọn: Camera trước'
-                                  : 'Đang chọn: Camera sau',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircleAvatar(
-                              radius: 38,
-                              backgroundColor: isInstructor
-                                  ? const Color(0xFF3949AB)
-                                  : const Color(0xFF00897B),
-                              child: Text(
-                                participantName.isNotEmpty
-                                    ? participantName.characters.first
-                                        .toUpperCase()
-                                    : '?',
+                              const SizedBox(height: 10),
+                              Text(
+                                'Xem trước Camera ($participantName)',
                                 style: const TextStyle(
-                                  fontSize: 28,
                                   color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              participantName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                              const SizedBox(height: 4),
+                              Text(
+                                _cameraFacing == 'front'
+                                    ? 'Đang chọn: Camera trước'
+                                    : 'Đang chọn: Camera sau',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Camera đang tắt — Hiển thị ảnh đại diện',
-                              style: TextStyle(
-                                color: Colors.white60,
-                                fontSize: 13,
+                            ],
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircleAvatar(
+                                radius: 38,
+                                backgroundColor: isInstructor
+                                    ? const Color(0xFF3949AB)
+                                    : const Color(0xFF00897B),
+                                child: Text(
+                                  participantName.isNotEmpty
+                                      ? participantName.characters.first
+                                            .toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    fontSize: 28,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                ),
+                              const SizedBox(height: 10),
+                              Text(
+                                participantName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Camera đang tắt — Hiển thị ảnh đại diện',
+                                style: TextStyle(
+                                  color: Colors.white60,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 Positioned(
                   left: 12,
                   bottom: 12,
@@ -1836,8 +1906,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
                           size: 16,
                           color:
                               _micEnabled && _permissionState.microphoneGranted
-                                  ? Colors.greenAccent
-                                  : Colors.redAccent,
+                              ? Colors.greenAccent
+                              : Colors.redAccent,
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -1941,7 +2011,10 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.amberAccent),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.amberAccent,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -1995,7 +2068,9 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.lightBlueAccent.withValues(alpha: 0.4)),
+        border: Border.all(
+          color: Colors.lightBlueAccent.withValues(alpha: 0.4),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2008,7 +2083,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Phòng học tín hiệu thời gian thực, chia sẻ màn hình, điều khiển Mic/Cam và điểm danh đã hoạt động. Luồng truyền tải media WebRTC SFU đang chờ cấu hình máy chủ (${missingKeys.join(', ')}).',
+              'Camera đang ở chế độ xem trước trên thiết bị của bạn. Phòng học chưa được bật truyền âm thanh/video giữa các thành viên. Vui lòng liên hệ quản trị viên.',
               style: const TextStyle(color: Colors.white70, fontSize: 12.5),
             ),
           ),
@@ -2019,7 +2094,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
 
   Widget _buildInRoomBody() {
     final tokenData = _roomTokenData ?? const {};
-    final isOneOnOne = tokenData['isOneOnOne'] == true ||
+    final isOneOnOne =
+        tokenData['isOneOnOne'] == true ||
         (tokenData['capacity'] is num &&
             (tokenData['capacity'] as num).toInt() == 1);
     final permissions =
@@ -2027,8 +2103,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     final canEndSession = permissions['canEndSession'] == true;
     final sfu = (tokenData['sfu'] as Map?)?.cast<String, dynamic>() ?? const {};
     final sfuConfigured = sfu['isConfigured'] == true;
-    final missingKeys = ((sfu['missingConfigurationKeys'] ??
-                sfu['missingConfigKeys']) as List?)
+    final missingKeys =
+        ((sfu['missingConfigurationKeys'] ?? sfu['missingConfigKeys']) as List?)
             ?.cast<String>() ??
         const [];
 
@@ -2041,6 +2117,20 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
 
     return Column(
       children: [
+        if (_mediaError != null)
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              _mediaError!,
+              style: const TextStyle(color: Colors.orangeAccent),
+            ),
+          ),
+        if (_media.needsAudioGesture)
+          TextButton.icon(
+            onPressed: _media.startAudio,
+            icon: const Icon(Icons.volume_up),
+            label: const Text('Bật âm thanh phòng học'),
+          ),
         if (_isSelfSharingScreen) _buildSelfSharingBanner(),
         if (_isReconnecting)
           Container(
@@ -2085,8 +2175,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
             child: _activeScreenShare != null
                 ? _buildScreenShareStage(_activeScreenShare!)
                 : (isOneOnOne
-                    ? _buildOneOnOneStage(instructors, students)
-                    : _buildGroupStage(instructors, students)),
+                      ? _buildOneOnOneStage(instructors, students)
+                      : _buildGroupStage(instructors, students)),
           ),
         ),
         _buildBottomControlBar(canEndSession: canEndSession),
@@ -2426,7 +2516,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
     final isInstructor = role == 'instructor' || role == 'admin';
     final micOn = participant['micEnabled'] == true;
     final camOn = participant['cameraEnabled'] == true;
-    final facing = '${participant['cameraFacing'] ?? 'front'}';
+    final videoTrack = _media.videoFor(identity, self: isSelf);
     final connState = '${participant['connectionState'] ?? 'connected'}';
 
     return Container(
@@ -2442,84 +2532,98 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
       ),
       child: Stack(
         children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 28),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: camOn
-                    ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.videocam,
-                            color: isInstructor
-                                ? Colors.indigoAccent.shade100
-                                : Colors.tealAccent,
-                            size: isPrimaryStage ? 42 : 30,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isSelf ? '$name (Bạn)' : name,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: isPrimaryStage ? 16 : 13.5,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            facing == 'back'
-                                ? 'Camera đang bật (Camera sau)'
-                                : 'Camera đang bật (Camera trước)',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(
-                            radius: isPrimaryStage ? 32 : 24,
-                            backgroundColor: isInstructor
-                                ? const Color(0xFF3949AB)
-                                : const Color(0xFF00897B),
-                            child: Text(
-                              name.isNotEmpty
-                                  ? name.characters.first.toUpperCase()
-                                  : '?',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: isPrimaryStage ? 24 : 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            isSelf ? '$name (Bạn)' : name,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: isPrimaryStage ? 15.5 : 13,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Camera đang tắt',
-                            style:
-                                TextStyle(color: Colors.white54, fontSize: 12),
-                          ),
-                        ],
-                      ),
+          if (videoTrack != null)
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: lk.VideoTrackRenderer(
+                  videoTrack,
+                  fit: lk.VideoViewFit.cover,
+                ),
               ),
             ),
-          ),
+          if (videoTrack == null)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 28,
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: camOn
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.videocam,
+                              color: isInstructor
+                                  ? Colors.indigoAccent.shade100
+                                  : Colors.tealAccent,
+                              size: isPrimaryStage ? 42 : 30,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isSelf ? '$name (Bạn)' : name,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: isPrimaryStage ? 16 : 13.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Đang chờ hình ảnh camera…',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(
+                              radius: isPrimaryStage ? 32 : 24,
+                              backgroundColor: isInstructor
+                                  ? const Color(0xFF3949AB)
+                                  : const Color(0xFF00897B),
+                              child: Text(
+                                name.isNotEmpty
+                                    ? name.characters.first.toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: isPrimaryStage ? 24 : 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isSelf ? '$name (Bạn)' : name,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: isPrimaryStage ? 15.5 : 13,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Camera đang tắt',
+                              style: TextStyle(
+                                color: Colors.white54,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
           Positioned(
             top: 8,
             left: 8,
@@ -2693,17 +2797,15 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen>
               icon: _isSelfSharingScreen
                   ? Icons.stop_screen_share
                   : Icons.screen_share,
-              label: _isSelfSharingScreen
-                  ? 'Dừng chia sẻ'
-                  : 'Chia sẻ màn hình',
+              label: _isSelfSharingScreen ? 'Dừng chia sẻ' : 'Chia sẻ màn hình',
               active: !_isSelfSharingScreen,
               activeColor: const Color(0xFF00695C),
               inactiveColor: Colors.red.shade800,
               onPressed: _actionBusy
                   ? () {}
                   : (_isSelfSharingScreen
-                      ? _stopScreenShare
-                      : _startScreenShareFlow),
+                        ? _stopScreenShare
+                        : _startScreenShareFlow),
             ),
           _ControlButton(
             icon: Icons.people_alt_outlined,
