@@ -2186,13 +2186,26 @@ class _LiveClassesCatalogView extends ConsumerWidget {
                                             : {'childId': childId},
                                       ),
                                   onSuccess: (result) async {
-                                    final url = result.data['joinUrl']
-                                        ?.toString();
-                                    final uri = url == null
-                                        ? null
-                                        : Uri.tryParse(url);
-                                    if (uri != null && uri.scheme == 'https') {
-                                      await ref.read(urlLauncherProvider)(uri);
+                                    final data = result.data is Map<String, dynamic>
+                                        ? result.data as Map<String, dynamic>
+                                        : <String, dynamic>{};
+                                    final url = data['joinUrl']?.toString();
+                                    final inApp = data['inAppRoom'] == true ||
+                                        url == null ||
+                                        url.contains('/parent/live/sessions/');
+                                    if (inApp) {
+                                      await joinLiveSession(
+                                        context,
+                                        ref,
+                                        sessionId: s['id'].toString(),
+                                        isStaff: isStaff,
+                                        childId: childId,
+                                      );
+                                    } else {
+                                      final uri = Uri.tryParse(url);
+                                      if (uri != null && uri.scheme == 'https') {
+                                        await ref.read(urlLauncherProvider)(uri);
+                                      }
                                     }
                                   },
                                 ),

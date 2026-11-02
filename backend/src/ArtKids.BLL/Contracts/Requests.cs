@@ -118,6 +118,8 @@ public sealed record LiveClassUpdateRequest(
 
 public sealed record ClassEnrollmentRequest([Required] string ChildId);
 
+public sealed record LiveSessionJoinRequest(string? ChildId = null);
+
 public sealed record LiveSessionRequest(
     [Required, MaxLength(200)] string Title,
     DateTime StartsAt,

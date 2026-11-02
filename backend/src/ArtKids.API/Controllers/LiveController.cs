@@ -177,7 +177,7 @@ public sealed class LiveController(LiveService service) : ControllerBase
     }
 
     [HttpPost("sessions/{id}/join")]
-    public async Task<IActionResult> Join(string id, ClassEnrollmentRequest? r)
+    public async Task<IActionResult> Join(string id, LiveSessionJoinRequest? r)
     {
         return Ok(await service.Join(id, r?.ChildId));
     }
