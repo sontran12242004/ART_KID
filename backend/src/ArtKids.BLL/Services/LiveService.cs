@@ -219,6 +219,7 @@ public sealed class LiveService(
     )
     {
         var now = DateTime.UtcNow;
+        var utcExpires = DateTime.SpecifyKind(expiresAt, DateTimeKind.Utc);
         var key = new SymmetricSecurityKey(GetRoomSigningKeyBytes());
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var claims = new List<Claim>
@@ -239,7 +240,7 @@ public sealed class LiveService(
             audience: "artkids-in-app-classroom",
             claims: claims,
             notBefore: now.AddSeconds(-15),
-            expires: expiresAt,
+            expires: utcExpires,
             signingCredentials: creds
         );
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -277,7 +278,7 @@ public sealed class LiveService(
         }
         catch (SecurityTokenExpiredException)
         {
-            throw new BusinessException(401, "Token vào phòng học đã hết hạn. Vui lòng lấy lại quyền vào phòng.");
+            throw new BusinessException(403, "Token vào phòng học đã hết hạn. Vui lòng lấy lại quyền vào phòng.");
         }
         catch (BusinessException)
         {
@@ -285,7 +286,7 @@ public sealed class LiveService(
         }
         catch
         {
-            throw new BusinessException(401, "Token vào phòng học không hợp lệ.");
+            throw new BusinessException(403, "Token vào phòng học không hợp lệ.");
         }
     }
 
@@ -1132,7 +1133,8 @@ public sealed class LiveService(
             );
         }
 
-        var sessionEndExpiry = s.EndsAt.AddMinutes(15);
+        var endsAtUtc = DateTime.SpecifyKind(s.EndsAt, DateTimeKind.Utc);
+        var sessionEndExpiry = endsAtUtc.AddMinutes(15);
         var twoHoursExpiry = now.AddHours(2);
         var expiresAt = sessionEndExpiry < twoHoursExpiry ? sessionEndExpiry : twoHoursExpiry;
         if (expiresAt <= now.AddMinutes(5))
