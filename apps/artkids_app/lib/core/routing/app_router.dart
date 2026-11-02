@@ -54,7 +54,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      if (state.uri.path == RoutePaths.modeSelector) {
+      if (state.uri.path == '/mode-selector') {
         return RoutePaths.parentLogin;
       }
 
@@ -212,7 +212,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Shared Routes
       GoRoute(path: RoutePaths.splash, builder: (_, _) => const LoginScreen()),
       GoRoute(
-        path: RoutePaths.modeSelector,
+        path: '/mode-selector',
         redirect: (_, _) => RoutePaths.parentLogin,
       ),
 

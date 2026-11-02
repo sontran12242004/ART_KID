@@ -3,7 +3,6 @@ class RoutePaths {
 
   // Shared
   static const splash = '/';
-  static const modeSelector = '/mode-selector';
 
   // Parent Mode
   static const parentHome = '/parent';
