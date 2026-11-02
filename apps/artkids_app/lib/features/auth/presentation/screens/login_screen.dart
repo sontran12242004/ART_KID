@@ -9,12 +9,7 @@ import '../providers/auth_provider.dart';
 import '../providers/intro_provider.dart';
 import '../widgets/auth_text_field.dart';
 
-enum _IntroPhase {
-  playing,
-  transitioning,
-  revealingForm,
-  completed,
-}
+enum _IntroPhase { playing, transitioning, revealingForm, completed }
 
 /// Màn hình Đăng Nhập Phụ Huynh kết hợp animation khởi động chuyển đổi logo liền mạch.
 class LoginScreen extends ConsumerStatefulWidget {
@@ -110,9 +105,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _initVideo() async {
-    // 8s timeout: nếu tải video lỗi hoặc giải mã thất bại trên thiết bị chậm thì bỏ qua
-    _videoTimeoutTimer = Timer(const Duration(milliseconds: 8000), () {
-      if (mounted && _phase == _IntroPhase.playing && !_videoInitialized) {
+    // Also cover initialized videos that stall or cannot autoplay.
+    _videoTimeoutTimer = Timer(const Duration(seconds: 15), () {
+      if (mounted && _phase == _IntroPhase.playing) {
         _skipIntroDirectly();
       }
     });
@@ -124,16 +119,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       _videoController = controller;
 
       await controller.initialize();
-      if (!mounted) {
-        controller.dispose();
+      if (!mounted ||
+          _phase != _IntroPhase.playing ||
+          _videoController != controller) {
         return;
       }
 
-      _videoTimeoutTimer?.cancel();
       _videoInitialized = true;
       setState(() {});
 
-      controller.setLooping(false);
+      await controller.setLooping(false);
+      // Browsers allow muted autoplay without a user gesture.
+      await controller.setVolume(0);
+      if (!mounted ||
+          _phase != _IntroPhase.playing ||
+          _videoController != controller) {
+        return;
+      }
       controller.addListener(_videoListener);
       await controller.play();
     } catch (e) {
@@ -147,6 +149,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   void _videoListener() {
     final controller = _videoController;
     if (controller == null || !controller.value.isInitialized) return;
+    if (controller.value.hasError) {
+      _skipIntroDirectly();
+      return;
+    }
 
     final pos = controller.value.position;
     final dur = controller.value.duration;
@@ -167,14 +173,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   void _onVideoCompleted() {
     if (!mounted || _phase != _IntroPhase.playing) return;
+    _videoTimeoutTimer?.cancel();
 
     // Nếu người dùng đã có phiên đăng nhập hợp lệ: chuyển thẳng workspace
     final user = ref.read(authProvider).currentUser;
     if (user != null) {
       ref.read(introPlayedProvider.notifier).markPlayed();
       _cleanUpVideo();
-      final target =
-          user.role == 'parent' ? RoutePaths.parentHome : '/staff';
+      final target = user.role == 'parent' ? RoutePaths.parentHome : '/staff';
       context.go(target);
       return;
     }
@@ -324,8 +330,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           .login(_emailController.text.trim(), _passwordController.text.trim());
       if (mounted) {
         final user = ref.read(authProvider).currentUser;
-        final target =
-            user?.role == 'parent' ? RoutePaths.parentHome : '/staff';
+        final target = user?.role == 'parent'
+            ? RoutePaths.parentHome
+            : '/staff';
         context.go(target);
       }
     } catch (e) {
@@ -345,8 +352,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   void _showForgotPasswordDialog() {
-    final resetEmailController =
-        TextEditingController(text: _emailController.text);
+    final resetEmailController = TextEditingController(
+      text: _emailController.text,
+    );
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -460,6 +468,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             ),
 
           // Lớp chuyển động Logo từ Video sang Login Screen
+          if (_phase == _IntroPhase.playing)
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 16,
+              right: 16,
+              child: FilledButton.tonalIcon(
+                onPressed: _skipIntroDirectly,
+                icon: const Icon(Icons.skip_next_rounded),
+                label: const Text('Bỏ qua'),
+              ),
+            ),
+
           if (_phase == _IntroPhase.transitioning &&
               _sourceRect != null &&
               _targetRect != null)
@@ -478,9 +497,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     // Nền chuyển mờ từ #FAF5E7 sang nền trong suốt để lộ gradient màn login
                     Positioned.fill(
                       child: Container(
-                        color: const Color(0xFFFAF5E7).withValues(
-                          alpha: (1.0 - progress).clamp(0.0, 1.0),
-                        ),
+                        color: const Color(
+                          0xFFFAF5E7,
+                        ).withValues(alpha: (1.0 - progress).clamp(0.0, 1.0)),
                       ),
                     ),
 
@@ -492,9 +511,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF1687A7).withValues(
-                                alpha: 0.22 * progress,
-                              ),
+                              color: const Color(
+                                0xFF1687A7,
+                              ).withValues(alpha: 0.22 * progress),
                               blurRadius: 24 * progress,
                               offset: Offset(0, 10 * progress),
                             ),
@@ -527,11 +546,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFE2F3F5),
-              Color(0xFFF7FDFD),
-              Colors.white,
-            ],
+            colors: [Color(0xFFE2F3F5), Color(0xFFF7FDFD), Colors.white],
           ),
         ),
         child: SafeArea(
@@ -556,8 +571,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF1687A7)
-                                  .withValues(alpha: 0.22),
+                              color: const Color(
+                                0xFF1687A7,
+                              ).withValues(alpha: 0.22),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),
@@ -592,10 +608,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     _buildFormFieldsAndButtons()
                   else
                     // Giữ kích thước khung hình layout
-                    Opacity(
-                      opacity: 0.0,
-                      child: _buildFormFieldsAndButtons(),
-                    ),
+                    Opacity(opacity: 0.0, child: _buildFormFieldsAndButtons()),
                 ],
               ),
             ),
@@ -697,10 +710,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             onPressed: _showForgotPasswordDialog,
             child: const Text(
               'Quên mật khẩu?',
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -740,9 +750,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white,
-                        ),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
                   : const Text(
