@@ -53,15 +53,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
+    // Thời lượng di chuyển & đổi kích thước logo chính xác 800 ms
     _moveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 750),
+      duration: const Duration(milliseconds: 800),
     );
     _moveAnimation = CurvedAnimation(
       parent: _moveController,
       curve: Curves.fastOutSlowIn,
     );
 
+    // Thời lượng hiển thị dần các trường form đăng nhập 500 ms
     _formController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -108,8 +110,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _initVideo() async {
-    // 3.5s timeout: nếu tải video lỗi hoặc giải mã thất bại thì bỏ qua
-    _videoTimeoutTimer = Timer(const Duration(milliseconds: 3500), () {
+    // 8s timeout: nếu tải video lỗi hoặc giải mã thất bại trên thiết bị chậm thì bỏ qua
+    _videoTimeoutTimer = Timer(const Duration(milliseconds: 8000), () {
       if (mounted && _phase == _IntroPhase.playing && !_videoInitialized) {
         _skipIntroDirectly();
       }
@@ -156,7 +158,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       controller.pause();
       _onVideoCompleted();
     } else {
-      // Cập nhật màu nền letterbox theo tiến độ video (từ #011427 sang #FAF5E7)
+      // Cập nhật màu nền theo tiến độ video (từ #063263 sang #FAF5E7)
       if (pos.inMilliseconds >= 7500 && pos.inMilliseconds <= 8700) {
         setState(() {});
       }
@@ -184,7 +186,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       return;
     }
 
-    // Tính toạ độ chuyển cảnh chính xác
+    // Tính toạ độ chuyển cảnh chính xác theo video dọc và phần crop thực tế
     _calculateTransitionGeometry();
 
     setState(() {
@@ -209,33 +211,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   void _calculateTransitionGeometry() {
     final size = MediaQuery.of(context).size;
-    const videoAspect = 1280.0 / 720.0;
+    final videoWidth = _videoController?.value.size.width ?? 720.0;
+    final videoHeight = _videoController?.value.size.height ?? 1280.0;
+    final videoAspect = videoWidth > 0 && videoHeight > 0
+        ? videoWidth / videoHeight
+        : (720.0 / 1280.0);
     final screenAspect = size.width / size.height;
 
+    double scale;
     double displayW;
     double displayH;
     double offsetX;
     double offsetY;
 
+    // Phủ toàn màn hình dọc (BoxFit.cover) giữ nguyên tỷ lệ, không kéo giãn:
     if (screenAspect < videoAspect) {
-      // Màn hình dọc chuẩn điện thoại: video khớp theo chiều rộng
+      // Màn hình dài/thon hơn 9:16 (chuẩn điện thoại hiện đại như 9:19.5, 9:20):
+      // Video khớp theo chiều cao màn hình, căn giữa và chỉ crop phần dư tối thiểu 2 cạnh bên
+      scale = size.height / videoHeight;
+      displayH = size.height;
+      displayW = videoWidth * scale;
+      offsetY = 0.0;
+      offsetX = (size.width - displayW) / 2.0;
+    } else {
+      // Màn hình rộng hơn 9:16 (máy tính bảng, màn hình gập):
+      // Video khớp theo chiều rộng màn hình, căn giữa và crop phần dư trên/dưới
+      scale = size.width / videoWidth;
       displayW = size.width;
-      displayH = size.width / videoAspect;
+      displayH = videoHeight * scale;
       offsetX = 0.0;
       offsetY = (size.height - displayH) / 2.0;
-    } else {
-      // Màn hình ngang / máy tính bảng: video khớp theo chiều cao
-      displayH = size.height;
-      displayW = size.height * videoAspect;
-      offsetX = (size.width - displayW) / 2.0;
-      offsetY = 0.0;
     }
 
-    // Theo kết quả template matching OpenCV trên frame cuối:
-    // Logo tâm tại (634.0, 363.0), đường kính 412 trong không gian video 1280x720
-    final sourceCenterX = offsetX + displayW * (634.0 / 1280.0);
-    final sourceCenterY = offsetY + displayH * (363.0 / 720.0);
-    final sourceDiameter = displayH * (412.0 / 720.0);
+    // Kết quả phân tích chính xác trên video dọc mới 720x1280 (Gemini generated):
+    // Logo ổn định ở khung cuối với tâm tại (344.0, 642.0), đường kính 412 pixel.
+    const logoVideoCenterX = 344.0;
+    const logoVideoCenterY = 642.0;
+    const logoVideoDiameter = 412.0;
+
+    final sourceCenterX = offsetX + logoVideoCenterX * scale;
+    final sourceCenterY = offsetY + logoVideoCenterY * scale;
+    final sourceDiameter = logoVideoDiameter * scale;
 
     _sourceRect = Rect.fromCenter(
       center: Offset(sourceCenterX, sourceCenterY),
@@ -281,17 +297,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Color _getLetterboxColor() {
     final controller = _videoController;
     if (controller == null || !controller.value.isInitialized) {
-      return const Color(0xFF011427);
+      return const Color(0xFF063263);
     }
     final ms = controller.value.position.inMilliseconds;
-    if (ms < 7600) {
-      return const Color(0xFF011427);
+    if (ms < 7500) {
+      return const Color(0xFF063263);
     } else if (ms > 8600) {
       return const Color(0xFFFAF5E7);
     } else {
-      final t = (ms - 7600) / 1000.0;
+      final t = (ms - 7500) / 1100.0;
       return Color.lerp(
-        const Color(0xFF011427),
+        const Color(0xFF063263),
         const Color(0xFFFAF5E7),
         t.clamp(0.0, 1.0),
       )!;
@@ -416,21 +432,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             ),
           ),
 
-          // Lớp phát Video Intro
+          // Lớp phát Video Intro dọc phủ toàn màn hình (BoxFit.cover)
           if (_phase == _IntroPhase.playing)
             Positioned.fill(
               child: Container(
                 color: _getLetterboxColor(),
-                child: Center(
-                  child: _videoController != null && _videoInitialized
-                      ? AspectRatio(
-                          aspectRatio: _videoController!.value.aspectRatio > 0
-                              ? _videoController!.value.aspectRatio
-                              : (1280.0 / 720.0),
-                          child: VideoPlayer(_videoController!),
-                        )
-                      : Container(color: const Color(0xFF011427)),
-                ),
+                child: _videoController != null && _videoInitialized
+                    ? ClipRect(
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: SizedBox(
+                            width: _videoController!.value.size.width > 0
+                                ? _videoController!.value.size.width
+                                : 720.0,
+                            height: _videoController!.value.size.height > 0
+                                ? _videoController!.value.size.height
+                                : 1280.0,
+                            child: VideoPlayer(_videoController!),
+                          ),
+                        ),
+                      )
+                    : Container(color: const Color(0xFF063263)),
               ),
             ),
 

@@ -20,3 +20,4 @@ class IntroPlayedNotifier extends Notifier<bool> {
 
 final introPlayedProvider =
     NotifierProvider<IntroPlayedNotifier, bool>(IntroPlayedNotifier.new);
+
