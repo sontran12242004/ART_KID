@@ -446,7 +446,11 @@ class OrderDetailScreen extends ConsumerWidget {
                                 size: 18,
                               ),
                               SizedBox(width: 8),
-                              Text('Đã sao chép mã vận đơn vào bộ nhớ tạm'),
+                              Expanded(
+                                child: Text(
+                                  'Đã sao chép mã vận đơn vào bộ nhớ tạm',
+                                ),
+                              ),
                             ],
                           ),
                           duration: Duration(seconds: 2),

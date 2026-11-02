@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/routing/route_paths.dart';
+import '../../../../core/network/api_interceptor.dart';
 import '../../../orders/data/repositories/order_repository.dart';
 import '../../../orders/domain/entities/order_entity.dart';
 import '../../../orders/domain/entities/order_item_entity.dart';
@@ -1015,7 +1016,7 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _voucherError = 'Không thể kiểm tra mã lúc này: $e';
+        _voucherError = 'Không thể kiểm tra mã lúc này: ${apiError(e)}';
         _isValidatingVoucher = false;
       });
     }
@@ -1407,7 +1408,7 @@ class _ShopCheckoutScreenState extends ConsumerState<ShopCheckoutScreen> {
       showAppSnackBar(
         context,
         SnackBar(
-          content: Text('Lỗi khi đặt đơn hàng: $e'),
+          content: Text('Lỗi khi đặt đơn hàng: ${apiError(e)}'),
           backgroundColor: const Color(0xFFE74C3C),
         ),
       );

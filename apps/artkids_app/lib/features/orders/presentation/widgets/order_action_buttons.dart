@@ -489,7 +489,11 @@ class OrderActionButtons extends StatelessWidget {
                       children: [
                         Icon(Icons.check_circle_rounded, color: Colors.white),
                         SizedBox(width: 8),
-                        Text('Cảm ơn phụ huynh đã gửi đánh giá quý báu!'),
+                        Expanded(
+                          child: Text(
+                            'Cảm ơn phụ huynh đã gửi đánh giá quý báu!',
+                          ),
+                        ),
                       ],
                     ),
                     backgroundColor: Color(0xFF27AE60),

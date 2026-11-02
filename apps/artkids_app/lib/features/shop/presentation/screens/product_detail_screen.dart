@@ -645,11 +645,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     onPressed: !product.inStock
                         ? null
                         : () async {
+                            final quantity = _selectedQuantity;
                             final ok = await ref
                                 .read(cartProvider.notifier)
                                 .addToCart(
                                   product,
-                                  quantity: _selectedQuantity,
+                                  quantity: quantity,
                                 );
                             if (!context.mounted) return;
                             if (!ok) {
@@ -677,7 +678,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        'Đã thêm $_selectedQuantity món vào giỏ hàng!',
+                                        'Đã thêm $quantity món vào giỏ hàng!',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w600,
                                         ),

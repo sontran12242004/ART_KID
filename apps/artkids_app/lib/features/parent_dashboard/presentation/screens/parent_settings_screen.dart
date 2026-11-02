@@ -131,9 +131,11 @@ class _ParentSettingsScreenState extends ConsumerState<ParentSettingsScreen> {
             children: [
               Icon(Icons.check_circle_rounded, color: Colors.white),
               SizedBox(width: 10),
-              Text(
-                'Đã cập nhật thông tin và avatar thành công!',
-                style: TextStyle(fontWeight: FontWeight.w600),
+              Expanded(
+                child: Text(
+                  'Đã cập nhật thông tin và avatar thành công!',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),

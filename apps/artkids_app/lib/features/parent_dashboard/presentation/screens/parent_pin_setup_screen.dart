@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/parent_dashboard_provider.dart';
+import '../../../../core/network/api_interceptor.dart';
 import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình Cài đặt / Đổi mã PIN bảo vệ Kid Mode — Parent Mode
@@ -51,7 +52,7 @@ class _ParentPinSetupScreenState extends ConsumerState<ParentPinSetupScreen> {
       if (mounted) {
         showAppSnackBar(
           context,
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(apiError(e)), backgroundColor: Colors.red),
         );
       }
     } finally {

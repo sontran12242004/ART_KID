@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../core/routing/route_paths.dart';
+import '../../../../core/network/api_interceptor.dart';
 import '../providers/auth_provider.dart';
 import '../providers/intro_provider.dart';
 import '../widgets/auth_text_field.dart';
@@ -334,7 +335,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         showAppSnackBar(
           context,
           SnackBar(
-            content: Text('Đăng nhập thất bại: $e'),
+            content: Text('Đăng nhập thất bại: ${apiError(e)}'),
             backgroundColor: const Color(0xFFE76F51),
           ),
         );
