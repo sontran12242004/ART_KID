@@ -42,3 +42,7 @@ The change fixes transient notification delivery/presentation. It does not imple
 Tests use local fixtures or isolated development databases, not production data. Screenshots are ignored under `backend/tests/artifacts/`. No Android/iOS device build or live carrier/payment integration is claimed.
 
 Framework references: [SnackBar.persist](https://api.flutter.dev/flutter/material/SnackBar/persist.html), [clearSnackBars](https://api.flutter.dev/flutter/material/ScaffoldMessengerState/clearSnackBars.html), [removeCurrentSnackBar](https://api.flutter.dev/flutter/material/ScaffoldMessengerState/removeCurrentSnackBar.html).
+
+## Delivery
+
+Committed and pushed on `codex/fix-toast-messages`. [Draft PR #3](https://github.com/sontran12242004/ART_KID/pull/3) targets `Live_Steam-for-Teacher` to show only the toast fix. Verified open/draft; no merge was performed. Feature commits: `27413a1` (transient presenter/cart timeout) and `eb3b33a` (accurate/readable feedback and regressions).
