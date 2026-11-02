@@ -14,7 +14,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/mode_selector_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/kid_mode/presentation/screens/kid_pin_gate_screen.dart';
 import '../../features/matching_game/presentation/screens/completed_gallery_screen.dart';
@@ -55,6 +54,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
+      if (state.uri.path == RoutePaths.modeSelector) {
+        return RoutePaths.parentLogin;
+      }
+
       // Khi intro đã hoàn tất mà truy cập lại root '/':
       if (state.uri.path == RoutePaths.splash) {
         if (user == null) return RoutePaths.parentLogin;
@@ -63,7 +66,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final public = [
         '/',
-        '/mode-selector',
         '/parent/login',
         '/parent/register',
       ].contains(state.uri.path);
@@ -211,7 +213,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: RoutePaths.splash, builder: (_, _) => const LoginScreen()),
       GoRoute(
         path: RoutePaths.modeSelector,
-        builder: (_, _) => const ModeSelectorScreen(),
+        redirect: (_, _) => RoutePaths.parentLogin,
       ),
 
       // Parent Mode Routes

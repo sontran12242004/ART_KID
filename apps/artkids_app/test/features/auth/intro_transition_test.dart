@@ -46,7 +46,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Login form elements must be immediately visible and enabled
-        expect(find.text('Đăng Nhập Phụ Huynh'), findsOneWidget);
+        expect(find.text('Đăng Nhập ArtKids'), findsOneWidget);
         expect(find.text('Email'), findsOneWidget);
         expect(find.text('Mật khẩu'), findsOneWidget);
         expect(find.text('Đăng Nhập'), findsOneWidget);
@@ -96,7 +96,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Login form becomes available
-        expect(find.text('Đăng Nhập Phụ Huynh'), findsOneWidget);
+        expect(find.text('Đăng Nhập ArtKids'), findsOneWidget);
         expect(find.text('Đăng Nhập'), findsOneWidget);
         expect(container.read(introPlayedProvider), isTrue);
       },

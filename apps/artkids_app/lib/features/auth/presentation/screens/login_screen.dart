@@ -269,7 +269,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       final topPadding = MediaQuery.of(context).padding.top;
       _targetRect = Rect.fromLTWH(
         (size.width - 165.0) / 2.0,
-        topPadding + 20.0 + 48.0 + 6.0,
+        topPadding + 20.0 + 18.0 + 6.0,
         165.0,
         165.0,
       );
@@ -323,7 +323,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           .read(authProvider.notifier)
           .login(_emailController.text.trim(), _passwordController.text.trim());
       if (mounted) {
-        context.go(RoutePaths.parentHome);
+        final user = ref.read(authProvider).currentUser;
+        final target =
+            user?.role == 'parent' ? RoutePaths.parentHome : '/staff';
+        context.go(target);
       }
     } catch (e) {
       if (mounted) {
@@ -363,7 +366,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             const SizedBox(height: 16),
             AuthTextField(
               controller: resetEmailController,
-              hintText: 'Email của phụ huynh',
+              hintText: 'Email của bạn',
               prefixIcon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
             ),
@@ -539,26 +542,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Nút Back góc trên bên trái
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_rounded,
-                        color: Color(0xFF1687A7),
-                        size: 28,
-                      ),
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go(RoutePaths.modeSelector);
-                        }
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 18),
 
                   // Logo ArtKids 3D hình tròn ở trung tâm
                   Center(
@@ -627,7 +611,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       children: [
         // Tiêu đề
         const Text(
-          'Đăng Nhập Phụ Huynh',
+          'Đăng Nhập ArtKids',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 25,
@@ -640,7 +624,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
         // Mô tả phụ
         const Text(
-          'Đồng hành và theo dõi tiến trình học tập\ncủa bé',
+          'Khám phá thế giới sáng tạo và đồng hành cùng bé',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14.5,
