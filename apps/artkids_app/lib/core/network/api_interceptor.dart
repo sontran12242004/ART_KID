@@ -43,6 +43,7 @@ class ApiInterceptor extends Interceptor {
     if (error.response?.statusCode == 401 &&
         session.refreshToken != null &&
         request.extra['retried'] != true &&
+        !request.path.contains('/room/') &&
         ![
           '/auth/login',
           '/auth/register',
