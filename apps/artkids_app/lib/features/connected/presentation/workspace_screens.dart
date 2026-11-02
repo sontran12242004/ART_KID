@@ -56,20 +56,13 @@ class ConnectedKidHome extends ConsumerWidget {
             ),
           ),
           for (final item in [
-            (
-              'Vẽ & Ghép Tranh',
-              Icons.extension,
-              Colors.orange,
-              '/matching-game',
-            ),
-            (
-              'Thư Viện Tranh',
-              Icons.collections,
-              Colors.blue,
-              '/matching-game/gallery',
-            ),
             ('Khóa Học Vẽ', Icons.school, Colors.redAccent, '/parent/courses'),
-            ('Bài Vẽ & Nhận Xét', Icons.brush, Colors.teal, '/parent/submissions'),
+            (
+              'Bài Vẽ & Nhận Xét',
+              Icons.brush,
+              Colors.teal,
+              '/parent/submissions',
+            ),
             (
               'Lớp Học Trực Tuyến',
               Icons.video_call,
@@ -261,10 +254,7 @@ class StaffWorkspace extends ConsumerWidget {
                 subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 11.5,
-                ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 11.5),
               ),
             ],
           ),
@@ -497,9 +487,7 @@ class StaffWorkspace extends ConsumerWidget {
                   title: admin ? 'Duyệt học cụ' : 'Học cụ của tôi',
                   subtitle: admin ? 'Kiểm duyệt đề xuất' : 'Kho & bán học cụ',
                   onTap: () => context.push(
-                    admin
-                        ? '/staff/marketplace/reviews'
-                        : '/staff/marketplace',
+                    admin ? '/staff/marketplace/reviews' : '/staff/marketplace',
                   ),
                 ),
               ),
@@ -509,8 +497,9 @@ class StaffWorkspace extends ConsumerWidget {
                   icon: Icons.local_shipping_rounded,
                   color: const Color(0xFF0984E3),
                   title: admin ? 'Đơn hàng sàn' : 'Đơn học cụ của tôi',
-                  subtitle:
-                      admin ? 'Xác nhận & giao hàng' : 'Theo dõi đơn đặt mua',
+                  subtitle: admin
+                      ? 'Xác nhận & giao hàng'
+                      : 'Theo dõi đơn đặt mua',
                   onTap: () => context.push(
                     admin ? '/staff/orders' : '/staff/marketplace/orders',
                   ),
@@ -669,9 +658,9 @@ class StaffWorkspace extends ConsumerWidget {
                         ],
                       ),
                       child: Theme(
-                        data: Theme.of(context).copyWith(
-                          dividerColor: Colors.transparent,
-                        ),
+                        data: Theme.of(
+                          context,
+                        ).copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
                           tilePadding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -681,7 +670,9 @@ class StaffWorkspace extends ConsumerWidget {
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1687A7).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFF1687A7,
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -731,15 +722,17 @@ class StaffWorkspace extends ConsumerWidget {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF00B894).withValues(
-                                      alpha: 0.12,
-                                    ),
+                                    color: const Color(
+                                      0xFF00B894,
+                                    ).withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     c['priceVnd'] == null || c['priceVnd'] == 0
                                         ? 'Miễn phí'
-                                        : currencyFormatter.format(c['priceVnd']),
+                                        : currencyFormatter.format(
+                                            c['priceVnd'],
+                                          ),
                                     style: const TextStyle(
                                       fontSize: 11,
                                       color: Color(0xFF00B894),
@@ -790,11 +783,17 @@ class StaffWorkspace extends ConsumerWidget {
                                   bottom: Radius.circular(16),
                                 ),
                               ),
-                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                12,
+                                16,
+                                16,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  if ((c['description'] as String?)?.isNotEmpty ==
+                                  if ((c['description'] as String?)
+                                          ?.isNotEmpty ==
                                       true) ...[
                                     Text(
                                       c['description'],
@@ -805,7 +804,10 @@ class StaffWorkspace extends ConsumerWidget {
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    Divider(height: 1, color: Colors.grey.shade200),
+                                    Divider(
+                                      height: 1,
+                                      color: Colors.grey.shade200,
+                                    ),
                                     const SizedBox(height: 12),
                                   ],
                                   const Text(
@@ -834,8 +836,9 @@ class StaffWorkspace extends ConsumerWidget {
                                             side: const BorderSide(
                                               color: Color(0xFF1687A7),
                                             ),
-                                            foregroundColor:
-                                                const Color(0xFF1687A7),
+                                            foregroundColor: const Color(
+                                              0xFF1687A7,
+                                            ),
                                           ),
                                           onPressed: () =>
                                               showCourseLecturesDialog(
@@ -864,8 +867,9 @@ class StaffWorkspace extends ConsumerWidget {
                                               vertical: 11,
                                               horizontal: 8,
                                             ),
-                                            backgroundColor:
-                                                const Color(0xFF1687A7),
+                                            backgroundColor: const Color(
+                                              0xFF1687A7,
+                                            ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(12),
@@ -937,7 +941,9 @@ class StaffWorkspace extends ConsumerWidget {
                                           {
                                             'courseId': c['id'],
                                             'name': v['name'],
-                                            'capacity': int.parse(v['capacity']!),
+                                            'capacity': int.parse(
+                                              v['capacity']!,
+                                            ),
                                           },
                                         );
                                       }
@@ -971,10 +977,11 @@ class StaffWorkspace extends ConsumerWidget {
                                         Expanded(
                                           child: OutlinedButton.icon(
                                             style: OutlinedButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(
-                                                vertical: 11,
-                                                horizontal: 6,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 11,
+                                                    horizontal: 6,
+                                                  ),
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                     BorderRadius.circular(12),
@@ -1006,10 +1013,11 @@ class StaffWorkspace extends ConsumerWidget {
                                         Expanded(
                                           child: OutlinedButton.icon(
                                             style: OutlinedButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(
-                                                vertical: 11,
-                                                horizontal: 6,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 11,
+                                                    horizontal: 6,
+                                                  ),
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                     BorderRadius.circular(12),

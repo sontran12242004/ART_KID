@@ -176,16 +176,6 @@ class _KidHomeScreenState extends ConsumerState<KidHomeScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Card lớn 3: Vẽ & Ghép tranh phòng khách
-                    _buildFeatureCard(
-                      title: 'Vẽ & Ghép Tranh',
-                      subtitle: 'Vẽ các bạn thú & ghép tranh kéo-thả vui nhộn',
-                      icon: Icons.extension_rounded,
-                      color: const Color(0xFFFF9F1C),
-                      onTap: () => context.push(RoutePaths.matchingGame),
-                    ),
-                    const SizedBox(height: 16),
-
                     // Card lớn 4: Huy hiệu & Ngôi sao
                     _buildFeatureCard(
                       title: 'Huy Hiệu & Cúp',
