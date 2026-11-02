@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/widgets/kid_button.dart';
 import '../../../drawing_canvas/presentation/widgets/parental_consent_dialog.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 class HandDrawnSubmissionScreen extends StatefulWidget {
   const HandDrawnSubmissionScreen({super.key, required this.lessonId});
@@ -33,9 +34,7 @@ class _HandDrawnSubmissionScreenState extends State<HandDrawnSubmissionScreen> {
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Không thể mở máy ảnh: $error')));
+      showAppSnackBar(context, SnackBar(content: Text('Không thể mở máy ảnh: $error')));
     }
   }
 

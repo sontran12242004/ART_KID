@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/parent_dashboard_provider.dart';
+import '../../../../core/network/api_interceptor.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Màn hình Cài đặt / Đổi mã PIN bảo vệ Kid Mode — Parent Mode
 class ParentPinSetupScreen extends ConsumerStatefulWidget {
@@ -37,7 +39,8 @@ class _ParentPinSetupScreenState extends ConsumerState<ParentPinSetupScreen> {
       await usecase(parentId: 'current-parent', newPin: _newPinController.text);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showAppSnackBar(
+          context,
           const SnackBar(
             content: Text('Đã cập nhật mã PIN Kid Mode thành công!'),
             backgroundColor: Colors.green,
@@ -47,8 +50,9 @@ class _ParentPinSetupScreenState extends ConsumerState<ParentPinSetupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+        showAppSnackBar(
+          context,
+          SnackBar(content: Text(apiError(e)), backgroundColor: Colors.red),
         );
       }
     } finally {

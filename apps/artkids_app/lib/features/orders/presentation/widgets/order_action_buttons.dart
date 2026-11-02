@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/routing/route_paths.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/enums/order_status.dart';
+import '../../../../core/widgets/app_snack_bar.dart';
 
 /// Các nút hành động hiển thị linh hoạt theo trạng thái của đơn hàng
 class OrderActionButtons extends StatelessWidget {
@@ -116,7 +117,8 @@ class OrderActionButtons extends StatelessWidget {
             ),
           ),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
+            showAppSnackBar(
+              context,
               SnackBar(
                 content: Text(
                   order.sellerProgress.isNotEmpty
@@ -235,7 +237,8 @@ class OrderActionButtons extends StatelessWidget {
     }
 
     if (order.sellerProgress.isNotEmpty && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Text(
             'Xem tiến độ và mã vận đơn do từng giảng viên cung cấp trong chi tiết đơn. Chưa có đường dẫn tra cứu được xác minh.',
@@ -246,7 +249,8 @@ class OrderActionButtons extends StatelessWidget {
     }
     // Fallback nếu không có url hoặc không mở được
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(
           content: Text(
             'Mã vận đơn ${order.shippingInfo.trackingNumber ?? order.orderCode} từ ${order.shippingInfo.carrierName}.',
@@ -478,13 +482,18 @@ class OrderActionButtons extends StatelessWidget {
               ),
               onPressed: () {
                 Navigator.of(dialogCtx).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
+                showAppSnackBar(
+                  context,
                   const SnackBar(
                     content: Row(
                       children: [
                         Icon(Icons.check_circle_rounded, color: Colors.white),
                         SizedBox(width: 8),
-                        Text('Cảm ơn phụ huynh đã gửi đánh giá quý báu!'),
+                        Expanded(
+                          child: Text(
+                            'Cảm ơn phụ huynh đã gửi đánh giá quý báu!',
+                          ),
+                        ),
                       ],
                     ),
                     backgroundColor: Color(0xFF27AE60),
