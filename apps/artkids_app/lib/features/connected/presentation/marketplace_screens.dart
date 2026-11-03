@@ -89,9 +89,22 @@ class MarketplaceListingDetail extends ConsumerWidget {
   });
   final String id;
   final bool review;
+  void _back(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(review ? '/staff/marketplace/reviews' : '/staff/marketplace');
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
     appBar: AppBar(
+      leading: IconButton(
+        tooltip: 'Quay lại',
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => _back(context),
+      ),
       title: Text(review ? 'Chi tiết duyệt học cụ' : 'Chi tiết học cụ'),
     ),
     body: ApiView(
@@ -99,62 +112,54 @@ class MarketplaceListingDetail extends ConsumerWidget {
       builder: (raw) {
         final p = Map<String, dynamic>.from(raw);
         if (!review) {
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Wrap(
-                  spacing: 12,
-                  children: [
-                    ActionButton(
-                      label: 'Đổi còn / hết hàng và gửi duyệt',
-                      action: (r) => r
-                          .read(dioProvider)
-                          .put(
-                            '/marketplace/listings/$id/availability',
-                            data: {
-                              'isAvailable': p['isAvailable'] != true,
-                              'expectedRevision': p['revision'],
-                            },
-                          ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        final ok = await confirm(
-                          context,
-                          'Gỡ học cụ',
-                          'Gỡ học cụ khỏi cửa hàng? Lịch sử đơn hàng vẫn được giữ lại.',
-                        );
-                        if (!ok || !context.mounted) return;
-                        final saved = await mutate(
-                          context,
-                          ref,
-                          '/marketplace/listings/$id',
-                          {},
-                          method: 'DELETE',
-                        );
-                        if (saved && context.mounted) context.pop();
-                      },
-                      child: const Text('Gỡ học cụ'),
-                    ),
-                  ],
+          return CourseProductPublishScreen(
+            product: p,
+            courseId: p['courseId'] as String?,
+            embedded: true,
+            header: Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                ActionButton(
+                  label: 'Đổi còn / hết hàng và gửi duyệt',
+                  action: (r) => r
+                      .read(dioProvider)
+                      .put(
+                        '/marketplace/listings/$id/availability',
+                        data: {
+                          'isAvailable': p['isAvailable'] != true,
+                          'expectedRevision': p['revision'],
+                        },
+                      ),
                 ),
-              ),
-              Expanded(
-                child: CourseProductPublishScreen(
-                  product: p,
-                  courseId: p['courseId'] as String?,
+                TextButton(
+                  onPressed: () async {
+                    final ok = await confirm(
+                      context,
+                      'Gỡ học cụ',
+                      'Gỡ học cụ khỏi cửa hàng? Lịch sử đơn hàng vẫn được giữ lại.',
+                    );
+                    if (!ok || !context.mounted) return;
+                    final saved = await mutate(
+                      context,
+                      ref,
+                      '/marketplace/listings/$id',
+                      {},
+                      method: 'DELETE',
+                    );
+                    if (saved && context.mounted) _back(context);
+                  },
+                  child: const Text('Gỡ học cụ'),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         }
         return ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            ProductThumbnail(
-              url: p['thumbnailUrl'] as String,
-            ),
+            ProductThumbnail(url: p['thumbnailUrl'] as String),
             const SizedBox(height: 16),
             Text(p['name'], style: Theme.of(context).textTheme.headlineSmall),
             Text(money(p['priceVnd'])),
@@ -190,11 +195,17 @@ class MarketplaceListingDetail extends ConsumerWidget {
                     const EntryField('reason', 'Lý do từ chối'),
                   ]);
                   if (values == null || !context.mounted) return;
-                  await mutate(context, ref, '/marketplace/reviews/$id', {
-                    ...values,
-                    'status': 'rejected',
-                    'expectedRevision': p['revision'],
-                  }, success: 'Đã từ chối và gửi lý do cho giảng viên.');
+                  await mutate(
+                    context,
+                    ref,
+                    '/marketplace/reviews/$id',
+                    {
+                      ...values,
+                      'status': 'rejected',
+                      'expectedRevision': p['revision'],
+                    },
+                    success: 'Đã từ chối và gửi lý do cho giảng viên.',
+                  );
                 },
                 child: const Text('Từ chối và gửi lý do'),
               ),

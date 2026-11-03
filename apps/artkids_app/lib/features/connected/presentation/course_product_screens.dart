@@ -17,10 +17,14 @@ class CourseProductPublishScreen extends ConsumerStatefulWidget {
     this.courseId,
     this.product,
     this.onSaved,
+    this.embedded = false,
+    this.header,
   });
   final String? courseId;
   final Map<String, dynamic>? product;
   final VoidCallback? onSaved;
+  final bool embedded;
+  final Widget? header;
 
   @override
   ConsumerState<CourseProductPublishScreen> createState() =>
@@ -135,16 +139,18 @@ class _CourseProductPublishState
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(_editing ? 'Chỉnh sửa học cụ' : 'Đăng bán học cụ'),
-      leading: widget.onSaved == null
-          ? null
-          : IconButton(
-              tooltip: 'Đóng chỉnh sửa',
-              onPressed: _busy ? null : () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close),
-            ),
-    ),
+    appBar: widget.embedded
+        ? null
+        : AppBar(
+            title: Text(_editing ? 'Chỉnh sửa học cụ' : 'Đăng bán học cụ'),
+            leading: widget.onSaved == null
+                ? null
+                : IconButton(
+                    tooltip: 'Đóng chỉnh sửa',
+                    onPressed: _busy ? null : () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+          ),
     body: Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -154,6 +160,10 @@ class _CourseProductPublishState
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
+              if (widget.header != null) ...[
+                widget.header!,
+                const SizedBox(height: 24),
+              ],
               const Text(
                 'Mọi thay đổi đều cần quản trị viên duyệt trước khi hiển thị. Bạn tự chuẩn bị hàng và sắp xếp vận chuyển.',
               ),
@@ -164,6 +174,7 @@ class _CourseProductPublishState
                 if (widget.product!['rejectionReason'] != null)
                   Text('Lý do từ chối: ${widget.product!['rejectionReason']}'),
               ],
+              const SizedBox(height: 20),
               ApiView(
                 path: '/courses?pageSize=100',
                 builder: (data) {
