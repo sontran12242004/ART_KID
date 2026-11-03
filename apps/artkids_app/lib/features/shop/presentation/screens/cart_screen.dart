@@ -1,3 +1,4 @@
+import '../../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -38,14 +39,7 @@ class CartScreen extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 1,
         titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF2C3E50),
-            size: 18,
-          ),
-          onPressed: () => context.pop(),
-        ),
+        leading: const AppBackButton(),
         title: Text(
           'Giỏ hàng ($totalCount)',
           style: const TextStyle(

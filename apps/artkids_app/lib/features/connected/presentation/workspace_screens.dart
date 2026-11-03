@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -104,7 +105,7 @@ class ConnectedBadges extends ConsumerWidget {
   const ConnectedBadges({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Huy hiệu & Cúp')),
+    appBar: AppBar(leading: const AppBackButton(), title: const Text('Huy hiệu & Cúp')),
     body: ApiView(
       path: '/children/${ref.watch(authProvider).selectedChild?.id}/badges',
       builder: (data) => ListView(
@@ -1052,7 +1053,7 @@ class AdminOrders extends ConsumerWidget {
   const AdminOrders({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Quản lý đơn hàng')),
+    appBar: AppBar(leading: const AppBackButton(), title: const Text('Quản lý đơn hàng')),
     body: ApiView(
       path: '/commerce/orders?pageSize=100',
       builder: (data) => ListView(

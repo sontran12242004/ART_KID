@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,10 @@ class ConnectedCourses extends ConsumerWidget {
   const ConnectedCourses({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Khóa học vẽ')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Khóa học vẽ'),
+    ),
     body: ApiView(
       path: '/courses?pageSize=100',
       builder: (data) => ListView(
@@ -93,7 +97,10 @@ class ConnectedLessons extends ConsumerWidget {
   final String courseId;
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Bài học')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Bài học'),
+    ),
     body: ApiView(
       path:
           '/courses/$courseId/lessons?childId=${ref.watch(authProvider).selectedChild?.id ?? ''}',
@@ -128,7 +135,10 @@ class ConnectedLesson extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final child = ref.watch(authProvider).selectedChild;
     return Scaffold(
-      appBar: AppBar(title: const Text('Học vẽ')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('Học vẽ'),
+      ),
       body: ApiView(
         path: '/lessons/$lessonId?childId=${child?.id ?? ''}',
         builder: (l) => LayoutBuilder(
@@ -305,7 +315,10 @@ class _SubmissionUploadState extends ConsumerState<SubmissionUpload> {
   bool busy = false;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Nộp bài vẽ')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Nộp bài vẽ'),
+    ),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -406,7 +419,10 @@ class SubmissionDetail extends ConsumerWidget {
   final String id;
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Bài vẽ và đánh giá')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Bài vẽ và đánh giá'),
+    ),
     body: ApiView(
       path: '/kid/submissions/$id',
       builder: (data) {

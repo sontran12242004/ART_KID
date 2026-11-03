@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -144,7 +145,7 @@ class _CourseProductPublishState
         : AppBar(
             title: Text(_editing ? 'Chỉnh sửa học cụ' : 'Đăng bán học cụ'),
             leading: widget.onSaved == null
-                ? null
+                ? const AppBackButton()
                 : IconButton(
                     tooltip: 'Đóng chỉnh sửa',
                     onPressed: _busy ? null : () => Navigator.of(context).pop(),
@@ -577,7 +578,10 @@ class CourseProductsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Học cụ của khóa học')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Học cụ của khóa học'),
+    ),
     body: ApiView(
       path: '/shop/products?courseId=$courseId&pageSize=100',
       builder: (data) {

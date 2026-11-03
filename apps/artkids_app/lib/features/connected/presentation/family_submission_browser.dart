@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,6 +41,7 @@ class _FamilySubmissionBrowserState
     });
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: Text(
           root
               ? 'Bài vẽ & nhận xét · Khóa học'

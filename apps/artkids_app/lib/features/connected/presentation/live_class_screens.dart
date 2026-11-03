@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -364,6 +365,7 @@ class _LiveClassesScreenState extends ConsumerState<LiveClassesScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF9EE),
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: const Text('Lớp học trực tuyến'),
         actions: [
           IconButton(
@@ -1128,6 +1130,7 @@ class _LiveSessionDetailScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFFFF9EE),
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: const Text('Chi tiết buổi học'),
         actions: [
           IconButton(

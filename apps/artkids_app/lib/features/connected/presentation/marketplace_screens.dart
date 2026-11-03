@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +18,7 @@ class _ListingsState extends ConsumerState<MarketplaceListingsScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
+      leading: const AppBackButton(),
       title: Text(widget.review ? 'Duyệt học cụ' : 'Học cụ của tôi'),
     ),
     floatingActionButton: widget.review

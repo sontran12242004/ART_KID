@@ -1,3 +1,4 @@
+import '../../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -59,7 +60,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: const Color(0xFFFFF9EE),
-    appBar: AppBar(title: const Text('Đăng ký phụ huynh')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Đăng ký phụ huynh'),
+    ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),

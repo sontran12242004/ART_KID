@@ -1,3 +1,4 @@
+import '../../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +9,10 @@ class KidPinGateScreen extends ConsumerWidget {
   const KidPinGateScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Xác nhận mã PIN')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Xác nhận mã PIN'),
+    ),
     body: Center(
       child: ActionButton(
         label: 'Nhập PIN để vào học',

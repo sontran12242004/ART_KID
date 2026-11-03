@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,7 +41,10 @@ class _ConnectedCheckoutState extends ConsumerState<ConnectedCheckout> {
     final cart = ref.watch(cartProvider);
     final single = widget.id != null;
     return Scaffold(
-      appBar: AppBar(title: const Text('Xác nhận đặt hàng')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('Xác nhận đặt hàng'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -187,7 +191,10 @@ class ConnectedPlans extends StatelessWidget {
   const ConnectedPlans({super.key});
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Gói học')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Gói học'),
+    ),
     body: ApiView(
       path: '/commerce/plans',
       builder: (data) => ListView(

@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,7 +9,10 @@ class GradingCoursesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Chấm bài · Khóa học')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Chấm bài · Khóa học'),
+    ),
     body: ApiView(
       path: '/grading/courses',
       builder: (data) => ListView(
@@ -47,7 +51,10 @@ class GradingLessonsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Chấm bài · Bài học')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Chấm bài · Bài học'),
+    ),
     body: ApiView(
       path: '/grading/courses/$courseId/lessons',
       builder: (data) => ListView(
@@ -103,7 +110,10 @@ class _GradingSubmissionsScreenState extends State<GradingSubmissionsScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Bài vẽ học sinh')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Bài vẽ học sinh'),
+    ),
     body: ApiView(
       path:
           '/grading/lessons/${widget.lessonId}/submissions?pendingOnly=$pendingOnly&page=$page',

@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -135,7 +136,10 @@ class _VnpayPaymentScreenState extends ConsumerState<VnpayPaymentScreen> {
     final paid = data?['paymentStatus'] == 'paid';
     final awaitingConfirmation = !paid && widget.result == 'pending';
     return Scaffold(
-      appBar: AppBar(title: const Text('Thanh toán VNPay Sandbox')),
+      appBar: AppBar(
+        leading: const AppBackButton(),
+        title: const Text('Thanh toán VNPay Sandbox'),
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),

@@ -1,3 +1,4 @@
+import '../../../../core/routing/app_back_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,14 +51,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         backgroundColor: Colors.white,
         elevation: 0.5,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F3B46),
-            size: 20,
-          ),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        leading: const AppBackButton(),
         title: const Text(
           'Chi Tiết Học Cụ',
           style: TextStyle(
@@ -648,10 +642,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                             final quantity = _selectedQuantity;
                             final ok = await ref
                                 .read(cartProvider.notifier)
-                                .addToCart(
-                                  product,
-                                  quantity: quantity,
-                                );
+                                .addToCart(product, quantity: quantity);
                             if (!context.mounted) return;
                             if (!ok) {
                               showAppSnackBar(

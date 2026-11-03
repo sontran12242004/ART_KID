@@ -1,3 +1,4 @@
+import '../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +15,10 @@ class _SellerOrdersState extends State<SellerOrdersScreen> {
   int _page = 1;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Đơn học cụ của tôi')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Đơn học cụ của tôi'),
+    ),
     body: ApiView(
       path: '/marketplace/orders?page=$_page&pageSize=20',
       builder: (data) => ListView(
@@ -63,7 +67,10 @@ class SellerOrderDetailScreen extends StatelessWidget {
   final String id;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Chi tiết đơn học cụ')),
+    appBar: AppBar(
+      leading: const AppBackButton(),
+      title: const Text('Chi tiết đơn học cụ'),
+    ),
     body: ApiView(
       path: '/marketplace/orders/$id',
       builder: (data) => ListView(
