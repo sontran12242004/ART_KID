@@ -30,7 +30,7 @@ public sealed class LearningController(LearningService service) : ControllerBase
         return Ok(await service.Course(id));
     }
 
-    [HttpPost("courses"), Authorize(Roles = "admin,instructor")]
+    [HttpPost("courses"), Authorize(Roles = "instructor")]
     public async Task<IActionResult> CreateCourse(CourseRequest r)
     {
         return Ok(await service.SaveCourse(null, r));

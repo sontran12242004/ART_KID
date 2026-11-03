@@ -74,6 +74,8 @@ public sealed class LearningService(
 
     public async Task<Course> SaveCourse(string? id, CourseRequest r)
     {
+        if (id is null)
+            Roles("instructor");
         Roles("admin", "instructor");
         var teacher = Actor.Role == "instructor" ? Actor.Id : r.InstructorId ?? Actor.Id;
         var user = await Get<User>(teacher);

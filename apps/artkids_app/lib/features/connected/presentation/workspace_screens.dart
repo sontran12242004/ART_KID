@@ -1,3 +1,4 @@
+import 'admin_dashboard.dart';
 import '../../../core/routing/app_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -292,14 +293,16 @@ class StaffWorkspace extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 10),
-            Text(
+            Expanded(child: Text(
               admin ? 'Quản Trị ART KID' : 'Giảng Viên ART KID',
+              maxLines: 1, overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Color(0xFF0F3B46),
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
               ),
-            ),
+            )),
+
           ],
         ),
         actions: [
@@ -428,6 +431,11 @@ class StaffWorkspace extends ConsumerWidget {
 
           const SizedBox(height: 22),
 
+          if (admin) ...[
+            const AdminDashboard(),
+            const SizedBox(height: 24),
+          ],
+
           // 2. Section: Tác vụ chính
           Row(
             children: [
@@ -440,14 +448,15 @@ class StaffWorkspace extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
+              const Expanded(child: Text(
                 'Bảng Điều Khiển Tác Vụ',
                 style: TextStyle(
                   fontSize: 15.5,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF0F3B46),
                 ),
-              ),
+              )),
+
             ],
           ),
           const SizedBox(height: 12),
@@ -511,7 +520,7 @@ class StaffWorkspace extends ConsumerWidget {
           const SizedBox(height: 24),
 
           // 3. Section: Khóa học
-          Row(
+          if (!admin) Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
@@ -576,10 +585,10 @@ class StaffWorkspace extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          if (!admin) const SizedBox(height: 14),
 
           // 4. Danh sách khóa học
-          ApiView(
+          if (!admin) ApiView(
             path: '/courses?pageSize=100',
             builder: (data) {
               final courses = (data['items'] as List)

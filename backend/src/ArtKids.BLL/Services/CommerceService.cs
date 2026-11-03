@@ -13,6 +13,35 @@ public sealed class CommerceService(
     VnpayService vnpay
 ) : ServiceBase(store, actor)
 {
+    public async Task<object> AdminDashboard()
+    {
+        Roles("admin");
+        var now = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7));
+        var monthStart = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, now.Offset)
+            .UtcDateTime;
+        var monthEnd = monthStart.AddMonths(1);
+        var paid = Q<Order>().Where(x => x.PaymentStatus == "paid" && x.Status != "cancelled");
+        var courses = Q<Course>().Where(x => !x.IsDeleted);
+        return new
+        {
+            totalRevenueVnd = await paid.SumAsync(x => (long?)x.TotalAmountVnd) ?? 0,
+            monthRevenueVnd = await paid
+                .Where(x => (x.PaidAt ?? x.CreatedAt) >= monthStart
+                    && (x.PaidAt ?? x.CreatedAt) < monthEnd)
+                .SumAsync(x => (long?)x.TotalAmountVnd) ?? 0,
+            revenueMonth = now.ToString("MM/yyyy"),
+            courseCount = await courses.CountAsync(),
+            publishedCourseCount = await courses.CountAsync(x => x.IsPublished),
+            paidOrderCount = await paid.CountAsync(),
+            pendingOrderCount = await Q<Order>().CountAsync(x =>
+                x.Status == "pending_confirmation" && x.PaymentStatus != "paid"),
+            childCount = await Q<ChildProfile>().CountAsync(),
+            pendingProductCount = await Q<Product>().CountAsync(x =>
+                x.IsActive && x.ApprovalStatus == "pending"),
+            updatedAt = DateTime.UtcNow,
+        };
+    }
+
     public async Task<object> Products(
         int page,
         int size,
