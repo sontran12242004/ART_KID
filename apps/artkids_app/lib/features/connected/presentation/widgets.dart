@@ -88,6 +88,42 @@ class ApiView extends ConsumerWidget {
       );
 }
 
+/// Product thumbnails may be public CDN URLs or protected API media paths.
+class ProductThumbnail extends ConsumerWidget {
+  const ProductThumbnail({super.key, required this.url, this.height = 220});
+  final String url;
+  final double height;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final uri = Uri.tryParse(url);
+    if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http')) {
+      return Image.network(
+        url,
+        height: height,
+        fit: BoxFit.contain,
+        errorBuilder: (_, _, _) => SizedBox(
+          height: height,
+          child: const Center(child: Icon(Icons.broken_image_outlined)),
+        ),
+      );
+    }
+    final path = url.startsWith('/api/v1/') ? url.substring(7) : url;
+    return ref
+        .watch(mediaBytesProvider(path))
+        .when(
+          data: (bytes) =>
+              Image.memory(bytes, height: height, fit: BoxFit.contain),
+          loading: () => SizedBox(
+            height: height,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, _) =>
+              SizedBox(height: 80, child: Center(child: Text(apiError(e)))),
+        );
+  }
+}
+
 class PrivateImage extends ConsumerWidget {
   const PrivateImage({super.key, required this.assetId, this.height = 220});
   final String assetId;

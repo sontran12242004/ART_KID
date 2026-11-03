@@ -229,10 +229,8 @@ class _CourseProductPublishState
                   _editing &&
                   (widget.product!['thumbnailUrl'] as String? ?? '')
                       .isNotEmpty) ...[
-                PrivateImage(
-                  assetId: Uri.parse(
-                    widget.product!['thumbnailUrl'] as String,
-                  ).pathSegments.last,
+                ProductThumbnail(
+                  url: widget.product!['thumbnailUrl'] as String,
                   height: 200,
                 ),
                 const SizedBox(height: 12),
@@ -475,10 +473,8 @@ class _CourseProductsManagerState extends ConsumerState<CourseProductsManager> {
                                   if (imageUrl.isNotEmpty)
                                     SizedBox(
                                       width: 96,
-                                      child: PrivateImage(
-                                        assetId: Uri.parse(
-                                          imageUrl,
-                                        ).pathSegments.last,
+                                      child: ProductThumbnail(
+                                        url: imageUrl,
                                         height: 96,
                                       ),
                                     ),

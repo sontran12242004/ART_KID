@@ -69,7 +69,7 @@ void main() {
           apiDataProvider(
             '/courses?pageSize=100',
           ).overrideWith((ref) async => {'items': []}),
-          mediaBytesProvider('/media/image-1').overrideWith(
+          mediaBytesProvider('/media/products/image-1').overrideWith(
             (ref) async => Uint8List.fromList(
               base64Decode(
                 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGnUAAAAASUVORK5CYII=',
@@ -119,7 +119,7 @@ void main() {
           apiDataProvider('/marketplace/reviews/seller-product').overrideWith(
             (ref) async => {...product, 'approvalStatus': 'pending'},
           ),
-          mediaBytesProvider('/media/image-1').overrideWith(
+          mediaBytesProvider('/media/products/image-1').overrideWith(
             (ref) async => Uint8List.fromList(
               base64Decode(
                 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGnUAAAAASUVORK5CYII=',

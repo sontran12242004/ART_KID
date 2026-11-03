@@ -152,8 +152,8 @@ class MarketplaceListingDetail extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            PrivateImage(
-              assetId: Uri.parse(p['thumbnailUrl'] as String).pathSegments.last,
+            ProductThumbnail(
+              url: p['thumbnailUrl'] as String,
             ),
             const SizedBox(height: 16),
             Text(p['name'], style: Theme.of(context).textTheme.headlineSmall),
