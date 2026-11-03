@@ -18,7 +18,6 @@ Future<void> signOut(WidgetRef ref) async {
           .post('/auth/logout', data: {'refreshToken': refresh});
     }
   } catch (_) {
-    /* Local sign-out still clears the session if the server is unavailable. */
   } finally {
     ref.invalidate(apiDataProvider);
     ref.invalidate(mediaBytesProvider);
