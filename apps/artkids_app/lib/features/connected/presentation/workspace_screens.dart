@@ -462,7 +462,7 @@ class StaffWorkspace extends ConsumerWidget {
           const SizedBox(height: 12),
 
           // 2x2 Quick Action Cards
-          Row(
+          if (!admin) Row(
             children: [
               Expanded(
                 child: _buildQuickActionCard(
@@ -485,7 +485,7 @@ class StaffWorkspace extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          if (!admin) const SizedBox(height: 12),
           Row(
             children: [
               Expanded(

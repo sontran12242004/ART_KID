@@ -67,11 +67,15 @@ void main() {
         if (role == 'admin') {
           expect(find.byType(AdminDashboard), findsOneWidget);
           expect(find.text('Tạo khóa học'), findsNothing);
+        expect(find.text('Chấm bài học sinh'), findsNothing);
+        expect(find.text('Lớp trực tuyến'), findsNothing);
           expect(find.text('Tổng tiền đã nhận'), findsOneWidget);
           expect(find.text('12'), findsOneWidget);
         } else {
           expect(find.byType(AdminDashboard), findsNothing);
           expect(find.text('Tạo khóa học'), findsOneWidget);
+        expect(find.text('Chấm bài học sinh'), findsOneWidget);
+        expect(find.text('Lớp trực tuyến'), findsOneWidget);
         }
         expect(tester.takeException(), isNull);
       },
